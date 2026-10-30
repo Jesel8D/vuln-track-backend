@@ -65,3 +65,12 @@ para identificar exactamente las fuentes (no contiene secretos operativos):
 | `docs/SCHEMA.md` | `362c90a8def181e717ad4e7796412f73515b3913f28f45782d115157cd30cd0a` |
 | `docs/PROVISIONAL_DECISIONS.md` | `e5f4076db7b090a09eb5d8bd69cc23215a42be641e62585bc8eac5f13bc23676` |
 | `docs/TEST_RESULTS.md` | `60a4f61cf2beef4655b4ce1832233512ac70b53e1d019db83e4506c3beeba2fd` |
+
+## Continuación V1.1
+
+Se verificaron otra vez rama limpia y existencia de 578f74a antes de modificar código.
+Se leyeron SQL/privilegios, modelos, verificador, autenticación, servicios idempotentes,
+fixtures y pruebas. Las referencias locales conservan los commits arriba identificados
+sin cambios. La autorización de esta misión permite preparar propiedad y migraciones
+para ensayo desechable; no cambia el estado pendiente de aprobación ni autoriza aplicar
+DDL persistente. No se repitieron accesos de publicación ni operaciones de credenciales.

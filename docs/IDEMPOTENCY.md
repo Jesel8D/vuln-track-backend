@@ -1,36 +1,37 @@
-# Registro idempotente: implementado en el servicio
+# Idempotencia autenticada y propiedad — PROPUESTA V1.1
 
-La ruta de API se versiona `/api/v1/assets`; el ámbito almacenado sigue siendo exactamente
-`POST /assets` porque lo exige el CHECK de Database V1. Clave validada como UUID canónico de 36 caracteres por
-Pydantic, cliente genera una por operación lógica. No es deduplicación de inventario.
+Se mantiene el algoritmo transaccional V1 y el contrato de snapshots. Ruta HTTP
+`/api/v1/assets`, ámbito persistido exactamente `POST /assets` por el CHECK real.
+Clave UUID canónica de 36 caracteres; ámbito PK `(user_id,method,route,idempotency_key)`.
+Huella SHA-256 de JSON canónico versionado (1), NFC/strip, opcionales null, método/ruta.
+No incluye un propietario del cliente: el actor ya forma parte del ámbito persistido.
 
-1. Exigir permiso de creación antes de abrir transacción. Actualmente denegado en runtime.
-2. Huella SHA-256 del JSON canónico ordenado del cuerpo validado: NFC, recorte, null
-   explícito para opcionales, UTF-8 y versión de canonicalización 1, método/ruta incluidos.
-3. En una sola transacción, buscar resultado previo; si no existe, insertar activo UUID,
-   leer timestamp servidor y construir snapshot completo; insertar solicitud con FK al
-   activo, hash y respuesta 201. Commit antes de retornar.
-4. Dos ausencias concurrentes pueden insertar activos provisionales. La PK real de la
-   solicitud decide el ganador. Solo se trata SQLSTATE 23505 **de esa PK** como colisión
-   idempotente. La transacción perdedora revierte también su activo; abre otra transacción
-   READ COMMITTED y recupera el snapshot ganador. No basta el SELECT inicial.
-5. Al repetir, comprobar nuevamente autorización, huella, vigencia y visibilidad del activo;
-   devolver mismo cuerpo, 201 y Location. Otro payload: 409. Lock/statement timeout: 503
-   transitorio, cliente reintenta la misma clave. Las operaciones no esperan servicios externos.
+1. Autenticar usuario activo y usar su UUID validado. El cliente no envía created_by.
+2. En una transacción READ COMMITTED, buscar registro previo. Si falta, insertar activo
+   con created_by=actor y la solicitud/snapshot, confirmando ambos juntos.
+3. En una carrera, la PK de solicitud determina el ganador. SQLSTATE 23505 de esa PK
+   revierte **también** el activo perdedor y su propietario; después se recupera el snapshot
+   confirmado en una transacción nueva. No basta el SELECT inicial.
+4. En replay, comprobar visibilidad por propiedad **antes** de comparar hash/expiración.
+   Si el activo ya no pertenece al actor o es histórico sin dueño: 404 sin snapshot,
+   incluso si existe un registro técnico previo para ese usuario. No infiere propiedad.
+5. Misma clave/cuerpo/actor devuelve idéntico 201, cuerpo y Location. Payload distinto:
+   409. Usuario B con la misma clave tiene otro ámbito y puede crear su propio activo,
+   pero nunca recibe el de A. Consultarlo directamente devuelve 404.
 
-Database fija por defecto 24 h desde inserción de la fila; esa ventana sigue **PROPUESTA**,
-no aprobación global. Tras caducar: 409 IDEMPOTENCY_EXPIRED y reconciliación explícita;
-no borrar ni reutilizar la clave automáticamente. No existe endpoint de reconciliación
-ni tarea de limpieza. Retención y eliminación requieren decisión antes de producción.
-Dos claves diferentes crean dos activos, aunque el cuerpo sea igual.
+24 h desde inserción sigue siendo ventana PROPUESTA. Una clave vencida no se borra ni
+reutiliza automáticamente: 409 para el propietario, reconciliación pendiente. Expiración
+no cambia propiedad ni revela recursos de terceros. Distintas claves pueden crear activos
+idénticos: no se implementa deduplicación de inventario. Lock/pool/statement timeout: 503,
+reintentar misma clave/cuerpo; nunca abrir transacción esperando un servicio externo.
 
-Evidencia PostgreSQL 16.15: dos threads/conexiones, barrera en before_insert de la solicitud
-que fuerza a ambas transacciones a pasar el SELECT inicial antes de competir. Se verifica
-mismo snapshot, una fila de activo y una solicitud. Otras pruebas comprueban claves distintas,
-ámbito por usuario, conflicto de payload, fallo inyectado tras insertar activo y antes de
-commit (cero filas), reintento recuperado, respuesta descartada tras commit y expiración.
-Los tests no simulan una desconexión TCP real a mitad del commit: esa prueba queda pendiente.
+Pruebas V1.1: login y política reales, dos peticiones HTTP concurrentes con barrera en
+inserción de solicitud para forzar ambas lecturas de ausencia. Una alta/solicitud/owner
+confirmados; replay del ganador. Se prueban distintas claves, misma clave con payloads
+distintos (201/409), dos usuarios con misma clave, FK, rollback antes de commit y retry,
+revocación de propiedad, baja de cuenta, históricos y expiración. Se comprueba el vínculo
+persistido Asset.created_by = solicitud.user_id para cada alta concurrente.
 
-Estas garantías se verificaron en el servicio con permisos sintéticos de fixture. El flujo
-móvil → API autorizado → PostgreSQL sigue bloqueado por propiedad/ACL; no se reclama una
-idempotencia operativa de extremo a extremo hasta resolverlo.
+La pérdida de respuesta se simula descartando un resultado ya confirmado y repitiendo:
+no es una desconexión TCP real durante commit. Esa prueba de transporte y la integración
+móvil siguen pendientes. No se usan políticas sintéticas como evidencia V1.1.

@@ -13,9 +13,7 @@ from app.core.errors import APIError
 from app.db.session import build_session_factory
 from app.db.verify_schema import verify_schema
 from app.models.database_v1 import Asset, RegistrationRequest, User
-from app.services.assets import AssetService
-from app.services.authorization import AssetAuthorization
-from tests.conftest import FixtureAuthorization, login
+from tests.conftest import login
 
 pytestmark = pytest.mark.postgres
 
@@ -72,23 +70,31 @@ def test_runtime_role_minimum_privileges(db_app):
             connection.execute(text("CREATE TABLE vulntrack.forbidden(id int)"))
 
 
-def test_production_authorization_denies(db_app, users, payload):
+def test_real_authorization_denies_foreign_and_unowned(db_app, users, payload):
     _, client = db_app
     headers = login(client, users)
-    assert client.get("/api/v1/assets", headers=headers).status_code == 403
+    assert client.get("/api/v1/assets", headers=headers).json()["page"]["total"] == 0
     assert client.get(f"/api/v1/assets/{uuid4()}", headers=headers).status_code == 404
     result = client.post(
         "/api/v1/assets",
         headers=headers | {"Idempotency-Key": str(uuid4())},
         json=payload.model_dump(),
     )
-    assert result.status_code == 403
+    assert result.status_code == 201
+    other = login(client, users, index=1)
+    assert client.get(result.headers["location"], headers=other).status_code == 404
+    # Original seed remains unowned after migration and is hidden from both users.
+    for identity in [headers, other]:
+        assert (
+            client.get(
+                "/api/v1/assets/10000000-0000-4000-8000-000000000001", headers=identity
+            ).status_code
+            == 404
+        )
 
 
-def test_api_service_with_explicit_fixture_scope(db_app, users, payload):
-    # Only tests the independent routes/service under a synthetic scope, not a product policy.
+def test_api_service_with_real_ownership(db_app, users, payload):
     app, client = db_app
-    app.state.assets = AssetService(app.state.session_factory, FixtureAuthorization(users[0][0]))
     headers = login(client, users)
     headers["Idempotency-Key"] = str(uuid4())
     result = client.post("/api/v1/assets", headers=headers, json=payload.model_dump())
@@ -143,7 +149,7 @@ def test_concurrent_same_key(authorized_service, payload, postgres):
     with postgres.connect() as connection:
         assert (
             connection.scalar(
-                select(func.count()).select_from(Asset).where(Asset.manufacturer == str(user_id))
+                select(func.count()).select_from(Asset).where(Asset.created_by == user_id)
             )
             == 1
         )
@@ -186,7 +192,7 @@ def test_rollback_and_recovery(authorized_service, payload, postgres):
     with postgres.connect() as connection:
         assert (
             connection.scalar(
-                select(func.count()).select_from(Asset).where(Asset.manufacturer == str(user_id))
+                select(func.count()).select_from(Asset).where(Asset.created_by == user_id)
             )
             == 0
         )
@@ -197,11 +203,22 @@ def test_expiry_and_revoked_scope(authorized_service, payload, postgres):
     service, user_id = authorized_service
     key = uuid4()
     body = service.register(user_id, key, payload)
-    service.authorization = AssetAuthorization()
+    # An explicit maintenance reassignment in the disposable test DB revokes A's access.
+    with postgres.begin() as connection:
+        connection.execute(
+            text("UPDATE vulntrack.assets SET created_by=NULL WHERE id=:id"), {"id": body["id"]}
+        )
     with pytest.raises(APIError) as exc:
         service.register(user_id, key, payload)
-    assert exc.value.status == 403
-    service.authorization = FixtureAuthorization(user_id)
+    assert exc.value.status == 404
+    with pytest.raises(APIError) as changed:
+        service.register(user_id, key, payload.model_copy(update={"version": "other"}))
+    assert changed.value.status == 404  # no hash/expiry disclosure after losing ownership
+    with postgres.begin() as connection:
+        connection.execute(
+            text("UPDATE vulntrack.assets SET created_by=:owner WHERE id=:id"),
+            {"owner": user_id, "id": body["id"]},
+        )
     with postgres.begin() as connection:
         connection.execute(
             text(
@@ -237,7 +254,7 @@ def test_same_key_is_scoped_per_user(db_app, users, payload):
     key = uuid4()
     bodies = []
     for user_id in users[0]:
-        service = AssetService(app.state.session_factory, FixtureAuthorization(user_id))
+        service = app.state.assets
         bodies.append(
             service.register(
                 user_id, key, payload.model_copy(update={"manufacturer": str(user_id)})

@@ -150,9 +150,26 @@ try:
         print("Catálogo capturado desde SQL de referencia; revisar diff.", flush=True)
     elif "--docker-smoke" in sys.argv:
         api_name = name + "-api"
+        from uuid import uuid4
+
+        from app.core.security import hash_password
+
+        smoke_username = "smoke_" + secrets.token_hex(8)
+        smoke_password = secrets.token_urlsafe(24)
+        sql(
+            "INSERT INTO vulntrack.users(id,username,password_hash,active) VALUES ('"
+            + str(uuid4())
+            + "','"
+            + smoke_username
+            + "','"
+            + hash_password(smoke_password)
+            + "',true);"
+        )
         api_env = {
             **os.environ,
             "TOKEN_SECRET": secrets.token_urlsafe(48),
+            "SMOKE_USERNAME": smoke_username,
+            "SMOKE_PASSWORD": smoke_password,
             "DATABASE_URL": URL.create(
                 "postgresql+psycopg",
                 username="backend_test_api",
@@ -175,16 +192,38 @@ try:
                 "DATABASE_URL",
                 "-e",
                 "TOKEN_SECRET",
-                "vulntrack-backend:v1",
+                "-e",
+                "SMOKE_USERNAME",
+                "-e",
+                "SMOKE_PASSWORD",
+                "vulntrack-backend:v1.1",
                 env=api_env,
             )
-            smoke = (
-                "import urllib.request,os; "
-                "assert os.getuid()==10001; "
-                "assert urllib.request.urlopen('http://127.0.0.1:8000/health').status==200; "
-                "assert urllib.request.urlopen('http://127.0.0.1:8000/ready').status==200; "
-                "print('Container smoke: UID 10001, health 200, ready PostgreSQL 200')"
-            )
+            smoke = """
+import json, os, urllib.request, uuid
+assert os.getuid() == 10001
+base = "http://127.0.0.1:8000"
+assert urllib.request.urlopen(base + "/health").status == 200
+assert urllib.request.urlopen(base + "/ready").status == 200
+def call(path, body=None, headers=None):
+    req = urllib.request.Request(base + path, headers=headers or {},
+        data=json.dumps(body).encode() if body is not None else None)
+    req.add_header("Content-Type", "application/json")
+    with urllib.request.urlopen(req) as response:
+        return response.status, json.load(response)
+_, token = call("/api/v1/auth/login", {
+    "username": os.environ["SMOKE_USERNAME"], "password": os.environ["SMOKE_PASSWORD"]})
+headers = {"Authorization": "Bearer " + token["access_token"], "Idempotency-Key": str(uuid.uuid4())}
+body = {"device_type":"router","manufacturer":"Smoke",
+        "model":"Example","version":"1","site_label":"LAB"}
+status, asset = call("/api/v1/assets", body, headers)
+assert status == 201
+assert call("/api/v1/assets", body, headers) == (201, asset)
+assert call("/api/v1/assets/" + asset["id"], headers=headers) == (200, asset)
+_, page = call("/api/v1/assets", headers=headers)
+assert page["items"] == [asset] and page["page"]["total"] == 1
+print("Container V1.1: UID 10001, health/ready 200, login 200, create/replay 201, own get/list 200")
+"""
             for _ in range(30):
                 result = subprocess.run(
                     ["docker", "exec", api_name, "python", "-c", smoke],

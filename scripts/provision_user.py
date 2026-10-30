@@ -33,7 +33,10 @@ def main():
                 sys.exit("La cuenta ya existe; no se modificará")
             user_id = uuid4()
             session.add(User(id=user_id, username=username, active=True, password_hash=encoded))
-        print(f"Cuenta creada: {user_id}. No tiene permisos de activos en Database V1.")
+        print(
+            f"Cuenta creada: {user_id}. "
+            "Acceso propuesto V1.1 limitado a activos propios tras migración revisada."
+        )
     except Exception as exc:
         # DBAPI errors may carry statement values. Print type, never str(exc).
         sys.exit(f"Aprovisionamiento fallido ({type(exc).__name__}); transacción revertida")

@@ -29,7 +29,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         yield
         engine.dispose()
 
-    app = FastAPI(title="VulnTrack API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="VulnTrack API", version="0.1.1", lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
     app.state.session_factory = build_session_factory(engine)
@@ -66,6 +66,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             type(exc).__name__,
             state,
         )
+        if state in {"42703", "42P01"}:
+            return response(
+                request, 503, "DATABASE_SCHEMA_NOT_READY", "Esquema requerido no disponible"
+            )
         if isinstance(exc, TimeoutError) or state in {"55P03", "57014"}:
             return response(request, 503, "DATABASE_BUSY", "Servicio temporalmente ocupado")
         if isinstance(exc, DBAPIError) and (
@@ -89,7 +93,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             )
             if not safe_role:
                 raise APIError(503, "UNSAFE_DATABASE_ROLE", "Dependencia no disponible")
-            connection.execute(text("SELECT id FROM vulntrack.assets LIMIT 0"))
+            connection.execute(text("SELECT id, created_by FROM vulntrack.assets LIMIT 0"))
             connection.execute(text("SELECT id, active FROM vulntrack.users LIMIT 0"))
             connection.execute(
                 text("SELECT user_id FROM vulntrack.asset_registration_requests LIMIT 0")

@@ -4,15 +4,14 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 
 from app.core.config import Settings
 from app.core.security import hash_password
 from app.db.session import build_session_factory
 from app.main import create_app
-from app.models.database_v1 import Asset, User
-from app.services.assets import AssetService
+from app.models.database_v1 import User
 
 
 @pytest.fixture
@@ -83,28 +82,11 @@ def users(postgres):
     return ids, password
 
 
-class FixtureAuthorization:
-    """Explicit synthetic test scope; NOT an ownership rule or an API bypass shipped at runtime."""
-
-    def __init__(self, user_id):
-        self.user_id = user_id
-
-    def require_create(self, user_id):
-        assert user_id == self.user_id
-
-    def require_list(self, user_id):
-        assert user_id == self.user_id
-
-    def visible_assets(self, user_id):
-        return Asset.manufacturer == str(user_id)
-
-
 @pytest.fixture
 def authorized_service(db_app, users):
     app, _ = db_app
     user_id = users[0][0]
-    service = AssetService(app.state.session_factory, FixtureAuthorization(user_id))
-    return service, user_id
+    return app.state.assets, user_id
 
 
 @pytest.fixture
@@ -113,7 +95,7 @@ def payload(users):
 
     return AssetCreate(
         device_type="router",
-        manufacturer=str(users[0][0]),
+        manufacturer="Example brand",
         model="Example",
         version="1.0",
         site_label="LAB",
@@ -130,3 +112,14 @@ def login(client, users, index=0):
     )
     assert response.status_code == 200, response.text
     return {"Authorization": "Bearer " + response.json()["access_token"]}
+
+
+@pytest.fixture
+def legacy_postgres(postgres):
+    name = "vulntrack_backend_test_migration_" + uuid4().hex
+    # postgres fixture has validated runner identity and DB name before we reach this point.
+    with postgres.connect().execution_options(isolation_level="AUTOCOMMIT") as connection:
+        connection.execute(text(f'CREATE DATABASE "{name}" TEMPLATE "vulntrack_backend_test_v1"'))
+    engine = create_engine(postgres.url.set(database=name), hide_parameters=True)
+    yield engine
+    engine.dispose()  # Data lives only in the runner's tmpfs; no persistent DBs are touched.

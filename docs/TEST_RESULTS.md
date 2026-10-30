@@ -1,87 +1,93 @@
-# Resultados reales — 30-10-2026
+# Resultados Backend V1.1 — propuesta, 30-10-2026
 
-Entorno Linux x86_64, Python 3.12.14, Docker Engine 28.4.0, Compose 2.40.3.
-PostgreSQL real **16.15**, imagen/digest idénticos al Compose de Database V1.
-Dependencias instaladas y fijadas en los dos lockfiles. No se usó SQLite.
+Entorno: Linux x86_64, Python 3.12.14, Docker 28.4.0, PostgreSQL real **16.15** con
+la misma imagen/digest del Database V1 original. No se usó SQLite ni base persistente.
+Dependencias de V1 conservadas; versión de aplicación/paquete 0.1.1.
 
-## Resultado de la suite final
+## Ejecuciones verificadas
 
-| Comando | Resultado |
+| Comando/comprobación | Resultado |
 |---|---|
-| `python -m pytest -q` (sin variables PostgreSQL) | **25 passed, 12 skipped**, salida 0; skips explícitos de integración |
-| `DATABASE_V1_PATH=/tmp/vuln-track-database python scripts/test_postgres.py -q` | **37 passed**, salida 0; ninguna omitida ni fallida |
+| Suite V1 antes de editar | **37 passed**, salida 0; commit 578f74a intacto |
+| Etapa de migración/guard | **44 passed**, salida 0; commit 8023bb4 |
+| `DATABASE_V1_PATH=/tmp/vuln-track-database python scripts/test_postgres.py -q` | **56 passed**, sin skips/fallos, 21.61 s |
+| `python -m pytest -q` sin PostgreSQL | **25 passed, 31 skipped**, salida 0 |
+| SQL original `001_integrity.sql` antes de migrar | **55 comprobaciones** (20 positivas/35 rechazos), salida 0 |
 | `ruff check .` | All checks passed |
 | `python -m pip check` | No broken requirements found |
 | `python -m compileall -q app alembic scripts` | Salida 0 |
-| `python -m alembic heads` | `0001_database_v1 (head)` |
-| Alembic `upgrade head`, `check`, invocados por test con PostgreSQL temporal | Salida 0, sin operaciones de cambio de esquema V1 |
+| `python -m alembic heads` | `0002_asset_owner (head)` |
+| Alembic `upgrade`, `check` sobre desechables | Aprobados, sin recreación de tablas |
 | `git diff --check` | Sin errores |
-| Build Docker con CA de proxy montada como secret | Salida 0 |
-| Runner `--docker-smoke` | UID 10001, `/health` 200, `/ready` 200 con PostgreSQL real |
+| Docker build `vulntrack-backend:v1.1` con CA del proxy montada | Aprobado |
+| Runner `--docker-smoke` sobre V1.1 migrado | UID 10001, health/ready/login 200; creación/replay 201; detalle/lista propios 200 |
 
-Python/pytest/ruff se ejecutaron desde `.venv/bin/`. Ejecución final completa:
-`vulntrack-backend-test-1004426efccd`, **37 passed en 8.18 s**.
-Cada runner crea un contenedor nuevo con tmpfs y puerto aleatorio solo en localhost;
-se detiene al terminar y no modifica volúmenes persistentes.
+Suite final: `vulntrack-backend-test-b3b9bb6897b7`.
+Smoke de imagen: `vulntrack-backend-test-775115708041`, imagen SHA-256
+`81a9624cff73b84ac6bee8b1ce942b17f2d01930a597b3128924e270b66c3df4`. Los comandos Python/Ruff usaron
+`.venv/bin/`. Todos los contenedores de pruebas son nuevos con tmpfs; las bases copiadas
+para migraciones viven dentro de ese mismo servidor. Se detienen al finalizar y no se
+alteran volúmenes persistentes. El runner comprueba hashes de referencias antes de aplicar
+SQL y únicamente después añade el grant de hash al login temporal dedicado.
 
-Advertencia de dependencias observada: Starlette 1.10.0 depreca TestClient con httpx
-frente a httpx2. Las pruebas con httpx 0.28.1 pasan; no se ocultó el aviso ni se añadió
-una dependencia extra solo para suprimirlo. Revisar esa transición al actualizar el stack.
+Advertencia observada y no ocultada: Starlette 1.10.0 depreca TestClient con httpx,
+aunque las pruebas con httpx 0.28.1 pasan. Revisar transición al actualizar dependencias.
+La advertencia Alembic de path_separator se resolvió configurando `path_separator=os`.
 
-## Evidencia cubierta
+## Migración e integridad
 
-- Validación de requeridos, tipos estrictos, límites, extras, NFC/null/control/surrogates.
-- Configuración insegura rechazada, DB TLS obligatorio en producción.
-- Hash Argon2id válido/incorrecto/ausente/malformado/parámetros abusivos, JWT firmado,
-  manipulado, vencido, claims obligatorios, issuer/audience y TTL; limiter por cuenta.
-- HTTP health y readiness fallida sin DB; errores uniformes, cuerpo grande/chunked,
-  JSON inválido y logs de excepción sin el mensaje secreto inyectado.
-- Login/me con PostgreSQL y credencial de app mínima; credenciales incorrectas, seed
-  inactivo, desactivación y reactivación invalidando JWT previo.
-- Verificación de catálogo, PK/FK/tipos/defaults/checks/índices/triggers/funciones;
-  baseline y ausencia de drift Alembic. Drift de columna bloquea el verificador.
-- Denegación productiva 403/404 de activos. La clase real no permite accesos positivos.
-- Registro/detalle/lista API bajo **ámbito sintético de fixtures** y autenticación real;
-  paginación con página vacía conservando total; 404 ajeno/inexistente; idempotency key
-  con formato/longitud inválidos y payload inválido.
-- Dos solicitudes simultáneas a servicio con misma clave, barrera en inserción del
-  registro: ambas atraviesan el SELECT de ausencia. Una sola alta/solicitud confirmadas,
-  snapshot idéntico. Claves distintas crean dos activos; misma clave en usuarios distintos
-  tiene ámbitos separados; payload diferente devuelve conflicto.
-- Fallo después de insertar activo y antes de commit: todo revierte; mismo intento se
-  recupera. Resultado ya confirmado descartado por el cliente: repetir devuelve snapshot.
-- Clave vencida denegada sin crear otro activo; permiso revocado impide replay.
-- Integridad referencial y prohibición al login runtime de DELETE/DDL; agotamiento de
-  pool limitado por timeout de 1 s en la prueba.
+- V1 sin versión, reconocimiento 0001, revisión ya 0001 y upgrade a 0002.
+- Columna nullable UUID, FK RESTRICT e índice esperado; catálogo y ORM sin drift.
+- Mismos IDs/datos/fechas y OID de tabla: sin recreación, sin backfill ni modificaciones
+  de seed. Todos los históricos siguen created_by NULL.
+- Ejecución repetida no repite DDL. Sin reconocimiento explícito de propuesta, upgrade
+  0002 se rechaza conservando V1; revisiones desconocidas o columnas inesperadas se rechazan.
+- Stamp ciego a 0002 falla y no deja revisión falsa. Downgrade que perdería propiedad se bloquea.
+- Fallo inyectado después de DDL revierte columna/FK/índice y revisión en una transacción.
+- SQL equivalente de docs/proposals aplicado en otra copia desechable produce exactamente
+  el catálogo V1.1 y conserva históricos; no asigna una revisión Alembic por su cuenta.
 
-## SQL de referencia verificado
+## Autorización e idempotencia reales
 
-Se aplicaron **sin modificaciones** `001_schema.sql`, `002_privileges.sql`, el seed y
-`tests/001_integrity.sql` del commit b493fd1. Comprobaciones contadas sobre el archivo:
-**20 assert_true + 35 expect_error = 55**, ejecutadas con ON_ERROR_STOP y salida 0.
-La suite original verifica restricciones, privilegios y deja rollback de sus datos.
-El grant de lectura de hash del login de pruebas se realiza DESPUÉS de esa suite;
-no se concedió al grupo vulntrack_app ni se cambiaron sus pruebas.
+Ningún test V1.1 sustituye la política ni current_user. Se retiró FixtureAuthorization.
+Usuarios de prueba nuevos, Argon2id/JWT, login SQL mínimo y PostgreSQL real:
 
-El runner original `bash tests/run.sh` se intentó y **falló antes del bootstrap**:
-los directorios clonados de referencia tienen permisos que el UID PostgreSQL de su
-contenedor no puede leer. Se conservaron los archivos y su seguridad; el runner del
-backend transmite el mismo SQL por stdin a psql y usa tmpfs desechable. No se afirma
-que se repitieran las pruebas de persistencia/reinicio de aquel runner original.
+- Registro autenticado asigna actor como created_by; sin identidad devuelve 401.
+- created_by del cliente, incluso null o ID propio, devuelve 422 sin escribir.
+- Detalle propio 200; ajeno/sin dueño/inexistente 404; listado y total solo propios,
+  paginación vacía/orden estable y filtro SQL por owner comprobado.
+- Misma clave/actor/payload: snapshot/Location/201 idénticos. Otro payload: 409.
+- B reutiliza clave de A: ámbito independiente y activo propio, nunca snapshot de A;
+  consulta directa cruzada denegada. Misma información de inventario no comparte activos.
+- Dos peticiones API autenticadas sincronizadas antes de insertar solicitud: misma clave
+  crea un solo activo/solicitud/propietario. Claves distintas crean dos; misma clave con
+  payload distinto produce 201/409. Se verifica created_by=solicitud.user_id persistido.
+- Error antes de commit revierte activo/owner/solicitud; retry con misma clave funciona.
+- Pérdida simulada de respuesta tras commit se recupera sin duplicar.
+- Revocación explícita de propietario en prueba impide replay antes de revelar conflicto
+  o expiración. Usuario desactivado no puede consultar/listar/crear/repetir.
+- Un registro idempotente histórico de A sobre un activo sin dueño NO le concede propiedad.
+- Expiración no concede acceso cruzado ni reutiliza una fila vencida.
+- FK a usuario inexistente y borrado de usuario propietario se rechazan; login runtime no
+  puede reasignar owner, borrar activos ni crear tablas. Pool limitado y timeouts V1 pasan.
+- Readiness V1.1 devuelve 503 frente a una copia V1 aún sin migrar; health sigue 200.
 
-## Fallos detectados y corregidos
+## Fallos intermedios corregidos
 
-Durante la implementación: conexión prematura al servidor temporal de initdb (se espera
-ahora TCP), comparación de representación TIMESTAMPTZ (ambos lados se compilan con
-dialecto PostgreSQL), comentarios ORM faltantes (se conservaron los originales),
-y archivos de imagen no legibles por UID 10001 (lectura de código estático en Dockerfile).
-Se repitieron las verificaciones correspondientes hasta pasar. No se cambiaron checks,
-seeds ni pruebas upstream para forzar éxitos. No quedan fallos de pytest o Ruff conocidos.
+Al mover el fixture de bases legadas faltó importar `text`: una ejecución dejó 48
+pruebas aprobadas y 8 errores de preparación. Se corrigió el import y se repitió desde
+otro contenedor nuevo: 56 aprobadas. No se relajaron pruebas/checks ni se ocultaron errores.
+Instalación editable sin aislamiento falló por ausencia local de setuptools; el mecanismo
+normal con aislamiento instaló correctamente 0.1.1 y pip check pasó.
 
-## Pendiente/no ejecutado
+## Limitaciones y evidencias anteriores
 
-Acceso positivo con una política de permisos productiva, móvil/web reales, desconexión
-TCP durante commit, retención/reconciliación operativa, carga, restauración de backup,
-TLS remoto y despliegue multiworker. Los ámbitos positivos de fixtures no prueban una
-propiedad de activos ausente en Database V1. V1 no está aceptado como completo.
-No se ejecutaron escaneos, NVD, ZAP ni cambios remotos en GitHub.
+V1 permanece documentado en [TEST_RESULTS_V1.md](TEST_RESULTS_V1.md), como evidencia
+histórica, no descripción del comportamiento actual. El fallo de mounts del runner
+upstream fue documentado allí; este runner usa sus mismos SQL inmutables por stdin.
+No se afirma haber repetido persistencia/reinicio del runner original de Database.
+
+No se probó desconexión TCP real durante commit, carga, recuperación de backup, integración
+móvil/web ni producción multiworker/TLS remoto. Política de propietario y coordinación
+Database requieren aprobación formal. No se tocaron GitHub/credenciales ni se ejecutaron
+NVD/ZAP/escaneos. No hay preparación para producción declarada.

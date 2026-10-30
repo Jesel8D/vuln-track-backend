@@ -1,18 +1,23 @@
-"""Fail closed: Database V1 has no ownership/ACL. Never infer it from requests."""
+"""PROPUESTA V1.1: ownership only, without administrators or implicit historical grants.
+
+The API supplies a UUID from current_user after verifying active identity. This policy
+never accepts an owner from a request body. NULL owners match no ordinary user.
+"""
 
 from uuid import UUID
 
-from sqlalchemy import false
-
-from app.core.errors import APIError
+from app.core.errors import unauthorized
+from app.models.database_v1 import Asset
 
 
 class AssetAuthorization:
     def require_create(self, user_id: UUID) -> None:
-        raise APIError(403, "ASSET_POLICY_PENDING", "Autorización de activos pendiente")
+        if not isinstance(user_id, UUID):
+            raise unauthorized()
 
     def visible_assets(self, user_id: UUID):
-        return false()
+        self.require_create(user_id)
+        return Asset.created_by == user_id
 
     def require_list(self, user_id: UUID) -> None:
-        raise APIError(403, "ASSET_POLICY_PENDING", "Autorización de activos pendiente")
+        self.require_create(user_id)

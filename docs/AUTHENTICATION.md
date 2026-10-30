@@ -44,17 +44,28 @@ Limiter local con bloqueo de threads, cuota por cuenta y origen, claves HMAC y m
 acotada. No confía en X-Forwarded-For; no sustituye un control compartido para múltiples
 réplicas. Puede denegar temporalmente cuentas atacadas: revisar política de abuso.
 
-## Autorización: bloqueo real
+## Autorización propuesta V1.1: propiedad individual
 
-Database V1 carece de `assets.created_by`, roles de negocio, ACL o grants por objeto.
-La existencia de `asset_registration_requests.user_id` identifica un intento, **no un
-permiso de acceso**. Tampoco `analysis_runs.initiated_by` acredita propiedad del activo.
-Por ello AssetAuthorization deniega crear/listar y genera filtro SQL false para detalle.
-Nadie autenticado puede enumerar ni leer activos ajenos; tampoco hay activos permitidos
-hasta implementar un modelo aprobado. No se inventaron columnas, tenants ni administrador
-permanente. La API no ofrece modificación/eliminación.
+Estado **PROPUESTA**, pendiente de aprobación formal antes de integración. En esta rama,
+la API verifica primero JWT, usuario activo y versión de identidad; después usa su UUID
+como propietario, nunca un dato del cuerpo o cabecera de identidad libre.
 
-Los tests positivos usan FixtureAuthorization solo en `tests/`, con un marcador
-sintético de fixtures, sin sustituir autenticación: login/hash/JWT/PostgreSQL son reales.
-No se distribuye esa clase en la imagen. Esto prueba los componentes independientes,
-no acredita permisos operativos del producto. Véase OPEN_DECISIONS antes de habilitar.
+`AssetAuthorization` filtra `assets.created_by = user.id` en PostgreSQL. Crear/listar
+requiere una identidad UUID validada por la dependencia de autenticación; los usuarios
+activos pueden crear sus propios activos. No hay administrador, rol global ni bypass.
+El listado y su total comparten el filtro y snapshot. Detalle ajeno, sin dueño o ausente
+produce el mismo 404. No hay actualización/eliminación/asignación de propiedad en la API.
+`created_by` no forma parte del esquema de entrada ni de salida: extra=forbid rechaza
+cualquier intento de enviarlo, incluso null o el ID propio.
+
+La columna nullable conserva los históricos sin dueño. Ni idempotency.user_id ni el
+iniciador de un análisis acreditan propiedad. Solo una futura asignación explícita,
+autorizada y auditada podría vincular históricos: no se preparó un endpoint ni se hizo
+backfill. Usuario inactivo no puede crear, consultar, listar ni recuperar un replay.
+
+Las pruebas de V1.1 utilizan login real, hashes reales, JWT y la política entregada,
+sobre PostgreSQL desechable. Se retiró FixtureAuthorization: ninguna prueba positiva
+de V1.1 sustituye la política ni la dependencia de autenticación. La confianza en el
+login SQL es una frontera técnica: no se añade RLS ni se permite acceso SQL de clientes.
+La decisión de propiedad y el despliegue siguen sujetos a aprobación, aunque funcionen
+y estén probados en esta propuesta. Ver MIGRATIONS y OPEN_DECISIONS.

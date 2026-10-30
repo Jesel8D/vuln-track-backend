@@ -39,7 +39,7 @@ class AssetService:
                     previous = session.get(RegistrationRequest, identity)
                     if previous:
                         return self._replay(session, user_id, previous, fingerprint)
-                    asset = Asset(id=uuid4(), **payload.model_dump())
+                    asset = Asset(id=uuid4(), created_by=user_id, **payload.model_dump())
                     session.add(asset)
                     session.flush()
                     body = AssetRead.model_validate(asset).model_dump(mode="json")
@@ -74,15 +74,15 @@ class AssetService:
                     return self._replay(session, user_id, previous, fingerprint)
 
     def _replay(self, session, user_id, previous, fingerprint):
-        if previous.request_hash != fingerprint:
-            raise APIError(409, "IDEMPOTENCY_CONFLICT", "Clave utilizada con otros datos")
-        if previous.expires_at <= session.scalar(select(func.statement_timestamp())):
-            raise APIError(409, "IDEMPOTENCY_EXPIRED", "Clave expirada; requiere reconciliación")
         visible = session.scalar(
             select(Asset.id).where(Asset.id == previous.asset_id, self._visible(user_id))
         )
         if visible is None:
             raise APIError(404, "ASSET_NOT_FOUND", "Activo no encontrado")
+        if previous.request_hash != fingerprint:
+            raise APIError(409, "IDEMPOTENCY_CONFLICT", "Clave utilizada con otros datos")
+        if previous.expires_at <= session.scalar(select(func.statement_timestamp())):
+            raise APIError(409, "IDEMPOTENCY_EXPIRED", "Clave expirada; requiere reconciliación")
         return previous.response_body
 
     def get(self, user_id: UUID, asset_id: UUID) -> AssetRead:

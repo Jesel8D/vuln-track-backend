@@ -114,13 +114,20 @@ def test_jwt(settings):
         )
 
 
-def test_authorization_fails_closed():
+def test_authorization_requires_identity_and_filters_owner():
     policy = AssetAuthorization()
-    for operation in [policy.require_create, policy.require_list]:
+    for operation in [policy.require_create, policy.require_list, policy.visible_assets]:
         with pytest.raises(APIError) as exc:
-            operation(uuid4())
-        assert exc.value.status == 403
-    assert str(policy.visible_assets(uuid4())) == "false"
+            operation(None)
+        assert exc.value.status == 401
+    owner_id = uuid4()
+    policy.require_create(owner_id)
+    policy.require_list(owner_id)
+    expression = policy.visible_assets(owner_id)
+    assert "assets.created_by" in str(expression)
+    assert expression.compile().params == {"created_by_1": owner_id}
+    with pytest.raises(ValidationError):
+        AssetCreate(**BODY, created_by=str(owner_id))
 
 
 def test_limiter():

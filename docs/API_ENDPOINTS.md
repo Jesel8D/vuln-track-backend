@@ -1,29 +1,35 @@
-# API V1 provisional
+# API V1.1 propuesta: activos propios
 
-Contrato adaptado de ASSET_CONTRACT_PROPOSAL, no promovido a decisión aprobada en Context.
-Tabla de rutas y ejemplos en README; esquemas ejecutables en `/openapi.json` y `/docs`.
+Contrato adaptado de ASSET_CONTRACT_PROPOSAL, pendiente de aprobación formal.
+La decisión de propiedad no se promueve a APROBADA por estar implementada/probada.
 
-Activo: device_type (1–80), manufacturer/model/version/site_label (1–120), todos texto
+| Método | Ruta | Identidad | Respuesta |
+|---|---|---|---|
+| GET | /health | No | 200 proceso HTTP |
+| GET | /ready | No | 200 dependencias/esquema; 503 si falta created_by |
+| POST | /api/v1/auth/login | Credenciales | JWT temporal; 401 genérico si falla |
+| GET | /api/v1/auth/me | Bearer activo | Identidad sin hash |
+| POST | /api/v1/assets | Bearer activo + Idempotency-Key | 201 propio; replay 201; conflicto 409 |
+| GET | /api/v1/assets | Bearer activo | 200 items y total exclusivamente propios |
+| GET | /api/v1/assets/{id} | Bearer activo | 200 propio; 404 ajeno/sin dueño/inexistente |
+
+Entrada: device_type (1–80), manufacturer/model/version/site_label (1–120), texto
 estricto obligatorio. inventory_label (1–120) y notes (1–1000), opcionales null.
-Normalización NFC/strip, controles y surrogates rechazados; opcional vacío no es null.
-Campos extra prohibidos. Versiones no se convierten a números ni se exige semver.
-No se aceptan IDs/propietarios del cliente ni URLs de escaneo. Respuesta incluye UUID
-y created_at servidor; no incluye updated_at, hashes ni información de usuarios.
+NFC/strip, controles/surrogates rechazados; opcional vacío no es null. Versiones texto,
+sin semver obligatorio. Cuerpo ≤8192 bytes, incluidos cuerpos chunked.
 
-Listado preparado: limit=20 (1–100), offset=0 (0–1000000), orden created_at,id;
-`items` y `page` con limit/offset/total del conjunto autorizado. Sin filtros adicionales.
-Detalle ausente o fuera de ámbito: 404. Actualmente ningún activo tiene ámbito autorizado.
+Campos extra prohibidos: `created_by`, `owner_id`, IDs o fechas del cliente se rechazan.
+El backend asigna created_by exclusivamente desde current_user. Salida: campos del
+activo más id/created_at servidor; no incluye owner, hashes ni secretos. No se cambia
+el formato de snapshots V1 ni la versión de la huella canónica.
 
-Errores uniformes:
+Listado: limit=20 (1–100), offset=0 (0–1000000), orden `(created_at,id)`. Respuesta
+`{items:[...],page:{limit,offset,total}}`, con filtro SQL `created_by = usuario` aplicado
+antes de paginar y contar. Una página vacía conserva el total autorizado, nunca el global.
+No existen filtros adicionales ni endpoints PATCH/DELETE/admin/asignación histórica.
 
-```json
-{"error":{"code":"VALIDATION_ERROR","message":"Solicitud inválida","request_id":"UUID-servidor"}}
-```
-
-401 incluye WWW-Authenticate Bearer; 403 política pendiente; 404 recurso no visible;
-409 colisión/expiración idempotente; 413 cuerpo >8192 bytes; 422 validación/JSON malformado;
-429 cuota login; 500 fallo interno/persistencia; 503 dependencia/pool/lock/consulta no disponible.
-Se usa 422 para JSON y parámetros inválidos de manera uniforme con FastAPI, elección
-provisional distinta del 400 ilustrado en algunos borradores. Sin detalles de entrada en errores.
-Todas las respuestas reciben X-Request-ID, no-store y nosniff; no se confía en correlación
-aportada por cliente. No se implementan PATCH, DELETE, scans ni endpoints externos.
+Errores: `{error:{code,message,request_id}}`. 401 con WWW-Authenticate Bearer; 404 no
+revela existencia ajena; 409 payload distinto/expiración; 413 tamaño; 422 validación/JSON;
+429 cuota login; 500 fallo inesperado; 503 dependencia/pool/locks/esquema no preparado.
+No se serializa el contenido rechazado ni información de propietario. X-Request-ID es
+generado por servidor; respuestas no-store/nosniff. OpenAPI en /docs y /openapi.json.

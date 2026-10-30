@@ -4,11 +4,10 @@ import os
 import subprocess
 import sys
 from types import SimpleNamespace
-from uuid import uuid4
 
 import pytest
 from alembic.config import Config
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import inspect, text
 
 from alembic import command
 from app.db.verify_schema import (
@@ -19,17 +18,6 @@ from app.db.verify_schema import (
 )
 
 pytestmark = pytest.mark.postgres
-
-
-@pytest.fixture
-def legacy_postgres(postgres):
-    name = "vulntrack_backend_test_migration_" + uuid4().hex
-    # postgres fixture has validated runner identity and DB name before we reach this point.
-    with postgres.connect().execution_options(isolation_level="AUTOCOMMIT") as connection:
-        connection.execute(text(f'CREATE DATABASE "{name}" TEMPLATE "vulntrack_backend_test_v1"'))
-    engine = create_engine(postgres.url.set(database=name), hide_parameters=True)
-    yield engine
-    engine.dispose()  # Data lives only in the runner's tmpfs; no persistent DBs are touched.
 
 
 def migrate(engine, *args, proposal=False):
