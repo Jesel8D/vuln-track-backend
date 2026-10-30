@@ -27,7 +27,8 @@ hacerse solo por un responsable autorizado, contra la base identificada. Altas m
 recuperación y administración de usuarios quedan fuera de alcance.
 
 Tokens Bearer JWT HS256 con secreto aleatorio externo ≥32 bytes. Se validan firma,
-algoritmo fijo, issuer, audience, exp, iat, nbf, sub UUID, jti y versión de usuario.
+algoritmo fijo, issuer, audience escalar estricta, exp/iat/nbf enteros coherentes, sub UUID,
+jti y versión de usuario.
 TTL máximo 15 minutos, sin refresh. Cada acceso consulta active y updated_at; cualquier
 cambio de usuario mediante el trigger V1 invalida los tokens anteriores, incluida una
 baja seguida de reactivación. Rotar TOKEN_SECRET revoca todos. No registrar tokens.
@@ -69,3 +70,8 @@ de V1.1 sustituye la política ni la dependencia de autenticación. La confianza
 login SQL es una frontera técnica: no se añade RLS ni se permite acceso SQL de clientes.
 La decisión de propiedad y el despliegue siguen sujetos a aprobación, aunque funcionen
 y estén probados en esta propuesta. Ver MIGRATIONS y OPEN_DECISIONS.
+
+V1.3 mantiene este mecanismo y agrega CORS explícito sin cookies. Ver
+[CORS](CORS.md), [contrato web/móvil](FRONTEND_MOBILE_INTEGRATION.md) y
+[revisión JWT/propuesta de revocación individual](JWT_SECURITY_REVIEW.md). Esta última
+es documentación de evolución pendiente, no otra sesión, tabla o endpoint implementado.

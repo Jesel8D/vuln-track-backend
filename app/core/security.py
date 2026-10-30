@@ -69,13 +69,18 @@ def decode_token(token: str, settings) -> dict:
             algorithms=["HS256"],
             audience="vulntrack-api",
             issuer="vulntrack",
-            options={"require": ["sub", "iat", "nbf", "exp", "iss", "aud", "jti", "ver"]},
+            options={
+                "require": ["sub", "iat", "nbf", "exp", "iss", "aud", "jti", "ver"],
+                "strict_aud": True,
+            },
         )
         UUID(claims["sub"])
         UUID(claims["jti"])
         if (
-            not isinstance(claims["ver"], str)
-            or claims["exp"] - claims["iat"] > settings.token_ttl_seconds
+            any(type(claims[field]) is not int for field in ("iat", "nbf", "exp"))
+            or not claims["iat"] <= claims["nbf"] < claims["exp"]
+            or not 0 < claims["exp"] - claims["iat"] <= settings.token_ttl_seconds
+            or not isinstance(claims["ver"], str)
         ):
             raise ValueError
         return claims

@@ -83,3 +83,11 @@ servicios y tests; se repitieron 56 pruebas antes de cambios. Las referencias ma
 los mismos commits y checkouts limpios, sin nuevas operaciones de publicación. El patch
 propuesto se deriva exclusivamente de 001_schema.sql fijado y se aplica en copia temporal.
 Ambas rutas se probaron en servidores nuevos tmpfs; no hubo SQL contra persistentes.
+
+## Preparación web/móvil V1.3
+
+Inicio comprobado en 3d23a1afdf5fae1321c90abf91ea874408977dfa, misma rama limpia.
+Se revisaron CORS (antes ausente), Settings, JWT, dependencias y contratos reales.
+Suite previa: 71 aprobadas con PostgreSQL. Se mantienen rutas y esquema 0002; no se
+modifican migraciones, modelos ni repositorios externos. CORS queda vacío por defecto;
+se ensayan perfiles explícitos de pruebas y Docker únicamente sobre bases desechables.

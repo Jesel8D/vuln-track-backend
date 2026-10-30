@@ -10,6 +10,7 @@ from starlette.exceptions import HTTPException
 
 from app.api.router import router
 from app.core.config import Settings, get_settings
+from app.core.cors import BrowserCORSMiddleware
 from app.core.errors import APIError
 from app.core.http import RequestBoundary, error_body
 from app.core.security import LoginLimiter
@@ -29,13 +30,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         yield
         engine.dispose()
 
-    app = FastAPI(title="VulnTrack API", version="0.1.1", lifespan=lifespan)
+    app = FastAPI(title="VulnTrack API", version="0.1.3", lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
     app.state.session_factory = build_session_factory(engine)
     app.state.assets = AssetService(app.state.session_factory, AssetAuthorization())
     app.state.login_limiter = LoginLimiter(settings.login_attempts_per_minute)
     app.add_middleware(RequestBoundary, max_body_bytes=settings.max_body_bytes)
+    # Outside RequestBoundary: CORS also wraps its 413 and sanitized 500 responses.
+    app.add_middleware(
+        BrowserCORSMiddleware, allow_origins=settings.cors_origins, max_age=settings.cors_max_age
+    )
 
     def response(request, status, code, message):
         headers = {"WWW-Authenticate": "Bearer"} if status == 401 else {}

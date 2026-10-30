@@ -9,7 +9,7 @@ No se cambian decisiones de Context. No se implementaron clientes, NVD, ZAP ni e
 | Fuga entre usuarios | Identidad activa en servidor; created_by impuesto por API; filtro SQL antes de contar/paginar; 404 ajeno/NULL; tests reales en ambas rutas | Login SQL es privado/confiable; no hay RLS para conexiones arbitrarias |
 | Fuga por idempotencia | PK por actor; visibilidad antes de hash/expiración; snapshot solo autorizado; carreras autenticadas con rollback | Retención/24 h y reconciliación pendientes; no prueba de corte TCP durante commit |
 | JWT/contraseñas | Argon2id; firma/issuer/audience/exp/usuario activo; hash deferred; errores sin entrada; no-store/nosniff | Sin revocación individual, refresh ni logout servidor; web debe decidir almacenamiento contra XSS |
-| CORS/transporte de clientes | Contrato declara CORS ausente, Bearer en cabecera y HTTPS remoto; no se abrió wildcard | React en otro origen bloqueado hasta aprobar configuración; CORS no autoriza recursos |
+| CORS/transporte de clientes | V1.3 añade lista explícita validada, Bearer y HTTPS remoto; sin wildcard/cookies | Lista vacía por defecto; orígenes de despliegue requieren revisión, CORS no autoriza recursos |
 | Baseline falso | Catálogo por revisión + ORM; adopción solo sin revisión o 0002, validación antes/después y transacción | Requiere mantenimiento y credencial privilegiada, nunca login API |
 | Carrera entre herramientas de esquema | Advisory lock común a Alembic/adopción; SHARE de tablas durante adopción; timeout probado | Serialización cooperativa, no defensa frente a DBA hostil o DDL externo no coordinado |
 | Drift de triggers | Se detectó que pg_get_triggerdef no revela habilitación; se añadió tgenabled y rechazo probado | El verificador no certifica toda configuración/grants del servidor |
@@ -28,3 +28,11 @@ significa aprobación. Durante esta misión solo se usaron contenedores tmpfs nu
 
 No se configuraron credenciales GitHub ni se hizo push/merge. Publicación futura mediante
 SSH desde equipo autorizado y PR revisado, conservando historial y sin force.
+
+## Continuación V1.3
+
+CORS ahora es configurable y se prueba sobre el flujo HTTP autenticado, también en
+errores y preflight. No está abierto por defecto ni concede acceso a activos ajenos.
+JWT refuerza audiencia escalar y tipos/orden de claims temporales, conservando HS256.
+No hay sesiones nuevas ni migraciones. Ver CORS.md y JWT_SECURITY_REVIEW.md para
+configuración, evidencia y propuesta no implementada de revocación individual.

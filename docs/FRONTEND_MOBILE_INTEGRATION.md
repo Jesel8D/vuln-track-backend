@@ -1,4 +1,4 @@
-# Contrato real para React y React Native — preparación V1.2
+# Contrato real para React y React Native — preparación V1.3
 
 API implementada V1.1, estado de propiedad **PROPUESTA**, pendiente de aprobación e
 integración coordinada. Este documento no implementa clientes ni agrega endpoints.
@@ -6,6 +6,12 @@ OpenAPI ejecutable: `/openapi.json`; explorador `/docs`. Ejemplos sintéticos, s
 reales. Los bloques JSON se validan automáticamente contra los modelos reales.
 
 Base de desarrollo local: `http://127.0.0.1:8000`, prefijo funcional `/api/v1`.
+Configurar la URL pública en el cliente, sin incrustar secretos. Ejemplo de configuración
+React/Vite: `VITE_API_BASE_URL=http://127.0.0.1:8000/api/v1`. React Native usará el mecanismo
+de configuración acordado por su proyecto; si adopta Expo, un ejemplo público es
+`EXPO_PUBLIC_API_BASE_URL=https://api.dev.example.edu/api/v1`. No se crean esos proyectos
+en esta misión. No duplicar /api/v1 al concatenar rutas; cambiar la URL base no cambia el
+Origin de la página ni configura automáticamente el backend.
 Uso remoto requiere HTTPS y una API correctamente autorizada/configurada. El navegador
 nunca se conecta a PostgreSQL. En un teléfono físico localhost es el propio teléfono:
 acordar URL HTTPS accesible de la API; no publicar PostgreSQL ni abrir interfaces a ciegas.
@@ -151,9 +157,25 @@ JWT robado puede seguir válido hasta expirar, cambiar usuario o rotar secreto. 
 cookie de sesión, refresh ni expiración por inactividad implementada. No inventar esos
 flujos al integrar. Si se eligen cookies se debe diseñar CSRF/transporte separadamente.
 
-La API no tiene CORS habilitado: React en otro origen quedará bloqueado por el navegador.
-Aprobar lista exacta de orígenes y cabeceras (Authorization, Idempotency-Key, Content-Type),
-y exposición de Location/X-Request-ID/Retry-After antes de habilitar esa integración.
-CORS no es autenticación ni afecta del mismo modo a clientes nativos. No abrir wildcard
-para facilitar pruebas. Todas las respuestas son no-store/nosniff; el cliente debe evitar
-cachés compartidas, telemetría con tokens y renderizado HTML de notas no confiables.
+V1.3 implementa CORS configurable, **cerrado por defecto**. Para Vite local, establecer
+en el backend `CORS_ORIGINS=["http://localhost:5173"]` (sin barra final). Añadir el origen
+127.0.0.1 solo si se utiliza. Producción admite únicamente orígenes HTTPS explícitos,
+sin localhost/loopback ni comodines. Leer [CORS.md](CORS.md) para el perfil completo.
+
+El navegador puede hacer preflight OPTIONS sin token: 200 JSON `{"status":"ok"}` si
+origen/método/cabeceras están permitidos, o 400 con CORS_PREFLIGHT_DENIED si no. Se permiten
+GET/POST y cabeceras Authorization, Content-Type, Idempotency-Key, Accept más safelisted
+estándar. Location, X-Request-ID, Retry-After y WWW-Authenticate quedan expuestas.
+Usar Bearer explícito con `credentials: "omit"`, no cookies/include. La API rechaza una
+configuración con CORS_ALLOW_CREDENTIALS=true. Un OPTIONS ordinario no es login ni ruta nueva.
+
+CORS no es autenticación: un origen permitido no concede recursos de terceros y un
+cliente nativo sin Origin no queda bloqueado por CORS. Un origen no listado no recibe
+Allow-Origin, pero un HTTP real autenticado puede procesarse igualmente; no asumir un
+403 como control de red. Las respuestas 401/413/500/503 de orígenes permitidos conservan
+CORS para que el cliente pueda distinguir fallos. No registrar tokens al depurarlos.
+
+Todas las respuestas son no-store/nosniff. Evitar cachés entre usuarios, telemetría con
+secretos y renderizado HTML de notas no confiables. Consultar
+[revisión JWT y revocación propuesta](JWT_SECURITY_REVIEW.md): sin refresh ni revocación
+individual implementados, tampoco hay una ruta de logout que el cliente deba inventar.

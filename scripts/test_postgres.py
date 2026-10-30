@@ -195,6 +195,7 @@ try:
         api_env = {
             **os.environ,
             "TOKEN_SECRET": secrets.token_urlsafe(48),
+            "CORS_ORIGINS": '["http://localhost:5173"]',
             "SMOKE_USERNAME": smoke_username,
             "SMOKE_PASSWORD": smoke_password,
             "DATABASE_URL": URL.create(
@@ -223,20 +224,42 @@ try:
                 "SMOKE_USERNAME",
                 "-e",
                 "SMOKE_PASSWORD",
-                os.environ.get("BACKEND_TEST_IMAGE", "vulntrack-backend:v1.2"),
+                "-e",
+                "CORS_ORIGINS",
+                os.environ.get("BACKEND_TEST_IMAGE", "vulntrack-backend:v1.3"),
                 env=api_env,
             )
             smoke = """
-import json, os, urllib.request, uuid
+import json, os, urllib.request, urllib.error, uuid
 assert os.getuid() == 10001
 base = "http://127.0.0.1:8000"
 assert urllib.request.urlopen(base + "/health").status == 200
 assert urllib.request.urlopen(base + "/ready").status == 200
+origin = "http://localhost:5173"
+preflight = urllib.request.Request(base + "/api/v1/assets", method="OPTIONS", headers={
+    "Origin":origin, "Access-Control-Request-Method":"POST",
+    "Access-Control-Request-Headers":"authorization,content-type,idempotency-key"})
+with urllib.request.urlopen(preflight) as result:
+    assert result.status == 200 and json.load(result) == {"status":"ok"}
+    assert result.headers["Access-Control-Allow-Origin"] == origin
+    assert result.headers.get("Access-Control-Allow-Credentials") is None
+forbidden = urllib.request.Request(base + "/api/v1/assets", method="OPTIONS", headers={
+    "Origin":"https://unlisted.example", "Access-Control-Request-Method":"POST"})
+try:
+    urllib.request.urlopen(forbidden)
+    raise AssertionError("Unlisted origin accepted")
+except urllib.error.HTTPError as error:
+    assert error.code == 400 and error.headers.get("Access-Control-Allow-Origin") is None
+    assert json.load(error)["error"]["code"] == "CORS_PREFLIGHT_DENIED"
 def call(path, body=None, headers=None):
     req = urllib.request.Request(base + path, headers=headers or {},
         data=json.dumps(body).encode() if body is not None else None)
     req.add_header("Content-Type", "application/json")
+    req.add_header("Origin", origin)
     with urllib.request.urlopen(req) as response:
+        assert response.headers["Access-Control-Allow-Origin"] == origin
+        assert response.headers.get("Access-Control-Allow-Credentials") is None
+        assert "Location" in response.headers["Access-Control-Expose-Headers"]
         return response.status, json.load(response)
 _, token = call("/api/v1/auth/login", {
     "username": os.environ["SMOKE_USERNAME"], "password": os.environ["SMOKE_PASSWORD"]})
@@ -249,7 +272,7 @@ assert call("/api/v1/assets", body, headers) == (201, asset)
 assert call("/api/v1/assets/" + asset["id"], headers=headers) == (200, asset)
 _, page = call("/api/v1/assets", headers=headers)
 assert page["items"] == [asset] and page["page"]["total"] == 1
-print("Container V1.1: UID 10001, health/ready 200, login 200, create/replay 201, own get/list 200")
+print("V1.3: UID 10001; preflight allowed 200/denied 400; CORS login/create/replay/get/list OK")
 """
             for _ in range(30):
                 result = subprocess.run(
@@ -274,6 +297,7 @@ print("Container V1.1: UID 10001, health/ready 200, login 200, create/replay 201
                 "tests/integration/test_postgres.py",
                 "tests/integration/test_ownership.py",
                 "tests/integration/test_client_contract.py",
+                "tests/integration/test_browser_http_contract.py",
                 "-k",
                 "not v11_readiness_rejects_unmigrated_v1",
                 *arguments,

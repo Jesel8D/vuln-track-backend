@@ -32,3 +32,8 @@ de un bootstrap nuevo ya tiene guard transaccional probado, pero publicarlo/apli
 sobre persistentes depende de aprobación. React/React Native tienen contrato documentado;
 CORS web, transporte/almacenamiento de tokens y retención local requieren revisión antes
 de implementar clientes. No se añadieron endpoints ni se habilitó CORS amplio.
+
+V1.3 implementa el mecanismo CORS seguro (lista explícita, sin cookies, cerrada por
+defecto); sigue pendiente aprobar la lista concreta de orígenes para cada despliegue.
+La propuesta de revocación individual está en JWT_SECURITY_REVIEW.md: no se agregó
+almacén, endpoint ni migración. La propiedad continúa PROPUESTA y no se cambian D-001/D-002.

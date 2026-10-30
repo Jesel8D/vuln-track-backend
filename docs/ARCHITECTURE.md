@@ -33,3 +33,9 @@ La migración de propiedad sigue PROPUESTA y no se aplica al arrancar la API. El
 verificador usa catálogo por revisión: V1 inmutable y delta mínimo V1.1. Readiness
 comprueba también created_by y devuelve 503 cuando aún falta el esquema requerido.
 No se añade una capa de permisos ficticia ni se expone el ID del propietario en respuestas.
+
+V1.3 incorpora BrowserCORSMiddleware fuera de RequestBoundary para que también sus
+respuestas 413/500 tengan CORS cuando el origen esté permitido. Preflight genera JSON,
+correlación y cabeceras seguras directamente, sin autenticación ni SQL. La política de
+orígenes no altera la identidad ni el filtro de propietario. GET/POST y cabeceras de
+Bearer/JSON/idempotencia son constantes revisables, no un allow-all configurable.

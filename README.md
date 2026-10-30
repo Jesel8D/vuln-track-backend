@@ -1,7 +1,7 @@
-# VulnTrack V1.2 — preparación de integración (API V1.1 propuesta)
+# VulnTrack Backend V1.3 — preparación web y móvil
 
 Continúa V1 (`578f74a`) y V1.1 (`8546b48`), sin reescribirlos ni cambiar main.
-V1.2 prepara coordinación y contratos; la API conserva versión 0.1.1 y las mismas rutas. Implementa propiedad
+V1.3 añade CORS explícito y endurece JWT; paquete/OpenAPI 0.1.3, mismas rutas /api/v1. Implementa propiedad
 individual de activos mediante `assets.created_by`, nullable para preservar históricos,
 FK UUID a users e índice por propietario/fecha/id. El servidor asigna propietario desde
 la identidad autenticada; el cliente no puede imponerlo. Detalle y listado solo muestran
@@ -111,6 +111,9 @@ Para crear **una cuenta nueva** local mediante mantenimiento, ver
 | `TOKEN_SECRET` | Obligatorio, mínimo 32 bytes, aleatorio; secreto |
 | `ENVIRONMENT` | `development`, `test`, `production` |
 | `TOKEN_TTL_SECONDS` | 900; rango 60–900 |
+| `CORS_ORIGINS` | Lista JSON explícita; defecto `[]` |
+| `CORS_ALLOW_CREDENTIALS` | false; true se rechaza (sin cookies) |
+| `CORS_MAX_AGE` | 600 s; rango 0–3600 |
 | `DB_POOL_SIZE`, `DB_MAX_OVERFLOW` | 5, 5; conexiones por proceso |
 | `DB_POOL_TIMEOUT`, `DB_POOL_RECYCLE` | 30 s, 1800 s |
 | `DB_POOL_PRE_PING` | true |
@@ -122,8 +125,11 @@ Para crear **una cuenta nueva** local mediante mantenimiento, ver
 
 Producción exige `sslmode=verify-full&sslrootcert=/ruta/ca.pem` en la URL. Desarrollo
 local usa el enlace localhost de Database sin TLS. La API requiere HTTPS mediante
-terminación TLS correctamente operada antes de uso remoto. No hay CORS abierto ni
-confianza automática en cabeceras de proxy. Limitar conexiones/tiempos HTTP en el proxy.
+terminación TLS correctamente operada antes de uso remoto. CORS permanece cerrado
+por defecto. Para React/Vite local, configurar `CORS_ORIGINS=["http://localhost:5173"]`
+en `.env`; producción requiere HTTPS explícito sin localhost ni comodines. Se permiten
+GET/POST, Authorization/Idempotency-Key y cabeceras JSON; OPTIONS no requiere token ni DB.
+No hay cookies cross-origin ni confianza automática en cabeceras de proxy. Ver [CORS](docs/CORS.md). Limitar conexiones/tiempos HTTP en el proxy.
 
 ## API y ejemplos
 
@@ -188,12 +194,12 @@ sin migrar queda cubierto en la suite completa. El SQL original de 55 aserciones
 altera y se ejecuta solo sobre V1, pues espera cinco FKs y el esquema nuevo tiene seis.
 
 ```bash
-docker build -t vulntrack-backend:v1.2 .
+docker build -t vulntrack-backend:v1.3 .
 DATABASE_V1_PATH=../vuln-track-database python scripts/test_postgres.py --docker-smoke
 ```
 
 En Codex Cloud, el build se verificó con
-`docker build --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt -t vulntrack-backend:v1.2 .`.
+`docker build --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt -t vulntrack-backend:v1.3 .`.
 El certificado solo se monta durante instalación; nunca se deshabilita TLS.
 
 Para ejecutar la imagen junto al Compose local: copiar `.env` a `.env.docker` (ignorado),
@@ -201,7 +207,7 @@ cambiar **solo el host/puerto DB** a `postgres:5432` y arrancar:
 
 ```bash
 docker run -d --name vulntrack-api --network vulntrack-dev_default \
-  --env-file .env.docker -p 127.0.0.1:8000:8000 vulntrack-backend:v1.2
+  --env-file .env.docker -p 127.0.0.1:8000:8000 vulntrack-backend:v1.3
 docker stop vulntrack-api
 ```
 
@@ -220,6 +226,8 @@ La limitación de login es local al proceso; hace falta una cuota compartida en 
 antes de múltiples réplicas. No se ha certificado preparación para producción.
 
 - [Coordinación Database V1.1 y rutas verificadas](docs/DATABASE_V1_1_COORDINATION.md)
+- [CORS por entorno](docs/CORS.md)
+- [Revisión JWT y propuesta de revocación](docs/JWT_SECURITY_REVIEW.md)
 - [Contrato React/React Native](docs/FRONTEND_MOBILE_INTEGRATION.md)
 - [Revisión de seguridad de integración](docs/INTEGRATION_SECURITY_REVIEW.md)
 - [Arquitectura y decisiones](docs/ARCHITECTURE.md)

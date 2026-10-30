@@ -31,5 +31,7 @@ No existen filtros adicionales ni endpoints PATCH/DELETE/admin/asignación hist�
 Errores: `{error:{code,message,request_id}}`. 401 con WWW-Authenticate Bearer; 404 no
 revela existencia ajena; 409 payload distinto/expiración; 413 tamaño; 422 validación/JSON;
 429 cuota login; 500 fallo inesperado; 503 dependencia/pool/locks/esquema no preparado.
-No se serializa el contenido rechazado ni información de propietario. X-Request-ID es
+No se serializa el contenido rechazado ni información de propietario.
+V1.3 agrega preflight CORS OPTIONS en middleware, sin endpoint de negocio nuevo:
+200 JSON status ok o 400 CORS_PREFLIGHT_DENIED; perfil explícito en CORS.md. X-Request-ID es
 generado por servidor; respuestas no-store/nosniff. OpenAPI en /docs y /openapi.json.
