@@ -1,5 +1,6 @@
 """Read-only compatibility check. Catalog snapshot derives from the upstream SQL, not ORM."""
 
+import argparse
 import json
 from importlib.resources import files
 
@@ -10,6 +11,9 @@ from sqlalchemy.dialects import postgresql
 
 from app.db.base import Base
 from app.models import database_v1  # noqa: F401
+
+V1_REVISION = "0001_database_v1"
+OWNERSHIP_REVISION = "0002_asset_owner"
 
 QUERIES = {
     "columns": """
@@ -60,12 +64,60 @@ def catalog(connection):
     }
 
 
-def verify_schema(connection):
+def expected_catalog(revision):
     expected = json.loads(files("app.db").joinpath("database_v1_catalog.json").read_text())
+    if revision == OWNERSHIP_REVISION:
+        expected["columns"].append(
+            {
+                "table_name": "assets",
+                "column_name": "created_by",
+                "type": "uuid",
+                "not_null": False,
+                "default": None,
+            }
+        )
+        expected["columns"].sort(key=lambda row: (row["table_name"], row["column_name"]))
+        expected["constraints"].append(
+            {
+                "table_name": "assets",
+                "name": "assets_created_by_fkey",
+                "type": "f",
+                "definition": (
+                    "FOREIGN KEY (created_by) REFERENCES vulntrack.users(id) ON DELETE RESTRICT"
+                ),
+            }
+        )
+        expected["constraints"].sort(key=lambda row: (row["table_name"], row["name"]))
+        expected["indexes"].append(
+            {
+                "tablename": "assets",
+                "indexname": "assets_owner_created_id_idx",
+                "indexdef": "CREATE INDEX assets_owner_created_id_idx ON vulntrack.assets "
+                "USING btree (created_by, created_at, id)",
+            }
+        )
+        expected["indexes"].sort(key=lambda row: (row["tablename"], row["indexname"]))
+    elif revision != V1_REVISION:
+        raise RuntimeError("Revisión de esquema desconocida; operación bloqueada")
+    return expected
+
+
+def installed_revision(connection):
+    heads = MigrationContext.configure(connection).get_current_heads()
+    if len(heads) > 1 or (heads and heads[0] not in {V1_REVISION, OWNERSHIP_REVISION}):
+        raise RuntimeError("Revisión Alembic desconocida o múltiple; operación bloqueada")
+    return heads[0] if heads else None
+
+
+def verify_schema(connection, revision=OWNERSHIP_REVISION):
+    expected = expected_catalog(revision)
     actual = catalog(connection)
     differences = [key for key in expected if actual[key] != expected[key]]
     if differences:
         raise RuntimeError("Baseline bloqueado: difiere catálogo " + ", ".join(differences))
+    if revision == V1_REVISION:
+        # The immutable upstream catalog validates legacy V1 independently of head ORM.
+        return True
     inspector = inspect(connection)
     for table in Base.metadata.sorted_tables:
         columns = {c["name"]: c for c in inspector.get_columns(table.name, schema="vulntrack")}
@@ -150,10 +202,15 @@ if __name__ == "__main__":
     from app.core.config import get_settings
     from app.db.session import build_engine
 
+    parser = argparse.ArgumentParser(description="Verificación de esquema solo lectura")
+    parser.add_argument(
+        "--revision", choices=[V1_REVISION, OWNERSHIP_REVISION], default=OWNERSHIP_REVISION
+    )
+    args = parser.parse_args()
     engine = build_engine(get_settings())
     try:
         with engine.connect() as connection:
-            verify_schema(connection)
-        print("Database V1: catálogo y estructura ORM compatibles (solo lectura).")
+            verify_schema(connection, args.revision)
+        print(f"Esquema {args.revision}: compatible (solo lectura).")
     finally:
         engine.dispose()

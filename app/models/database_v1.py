@@ -1,4 +1,4 @@
-"""Mappings of Database V1 b493fd1. No schema creation at application startup."""
+"""Database V1 mappings plus proposed V1.1 ownership; migrations are explicit."""
 
 from datetime import datetime
 from uuid import UUID
@@ -74,7 +74,11 @@ class Asset(Audit, Base):
         ),
         check("updated_at >= created_at", "assets_time_order"),
         Index("assets_created_id_idx", "created_at", "id"),
+        Index("assets_owner_created_id_idx", "created_by", "created_at", "id"),
         {"schema": SCHEMA},
+    )
+    created_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("vulntrack.users.id", name="assets_created_by_fkey", ondelete="RESTRICT")
     )
     device_type: Mapped[str] = mapped_column(Text)
     manufacturer: Mapped[str] = mapped_column(Text)

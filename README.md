@@ -1,5 +1,9 @@
 # VulnTrack Backend V1 — entrega para revisión
 
+Etapa V1.1 en preparación: migración de propiedad propuesta y validada únicamente en
+PostgreSQL desechable. Véase [migraciones](docs/MIGRATIONS.md). La autorización positiva
+se integrará en la siguiente etapa; este cambio no aprueba la decisión arquitectónica.
+
 API modular FastAPI para el flujo móvil → backend → PostgreSQL. Compatible con
 Database V1 `b493fd1`, sin recrear sus tablas. **V1 todavía no está completo**:
 el esquema no contiene propiedad ni ACL de activos. Por seguridad, la política

@@ -124,6 +124,16 @@ try:
         "TEST_APP_DATABASE_URL": url("backend_test_api"),
         "TEST_DISPOSABLE_DATABASE": name,
     }
+    if "--catalog" not in sys.argv:
+        # Freeze a legacy copy for migration tests BEFORE any Alembic change.
+        sql("CREATE DATABASE vulntrack_backend_test_v1 TEMPLATE vulntrack_backend_test;")
+        migration = subprocess.run(
+            [sys.executable, "-m", "alembic", "-x", "ownership_proposal=1", "upgrade", "head"],
+            cwd=ROOT,
+            env={**test_env, "MIGRATION_DATABASE_URL": url("postgres")},
+        )
+        if migration.returncode:
+            sys.exit(migration.returncode)
     if "--catalog" in sys.argv:
         import json
 
