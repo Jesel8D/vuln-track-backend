@@ -22,7 +22,7 @@ sin migrar y sí se ejecuta en la suite completa. Los 42 skips del comando sin P
 son explícitos; el runner completo ejecuta todas, sin modificar asserts originales.
 
 Suite final completa: `vulntrack-backend-test-c78d22b41a27`, **71 passed en 27.05 s**.
-Ruta nueva verificada con `vulntrack-backend-test-7d8fa2087968`, **26 passed, 1 deselected**.
+Ruta nueva verificada con `vulntrack-backend-test-37c3c21c2260`, **26 passed, 1 deselected**.
 El seed original se aplica dos veces en la ruta nueva; preserva activos NULL, usuario
 inactivo sin hash, dos análisis y un hallazgo. El catálogo/ORM final es idéntico al de
 V1 actualizado por Alembic.
@@ -89,6 +89,9 @@ CA solo montada durante build; no se deshabilita TLS ni se incorpora al reposito
 Una ejecución inicial se detuvo con **1 error de colección** por dos módulos de test con
 el mismo nombre en carpetas sin paquete. Se añadieron __init__.py para nombres inequívocos;
 la suite completa posterior pasó. No se borraron cachés ni se omitieron pruebas para ocultarlo.
+El primer diff del patch señalaba espacios en líneas vacías de contexto. Se redujo
+el contexto del patch, conservando SHA-256 idéntico del SQL resultante y sin desactivar
+comprobaciones de whitespace. Se verificaron otra vez materialización y ruta nueva.
 Permanece **1 aviso** Starlette/TestClient sobre futura transición de httpx; no afecta resultados
 ni se suprimió. No quedan fallos conocidos de pytest/Ruff en la entrega.
 
