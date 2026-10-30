@@ -38,7 +38,8 @@ QUERIES = {
         ORDER BY tablename,indexname
     """,
     "triggers": """
-        SELECT c.relname AS table_name,t.tgname AS name,pg_get_triggerdef(t.oid) AS definition
+        SELECT c.relname AS table_name,t.tgname AS name,pg_get_triggerdef(t.oid) AS definition,
+               t.tgenabled::text AS enabled
         FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
         JOIN pg_namespace n ON n.oid=c.relnamespace
         WHERE n.nspname='vulntrack' AND NOT t.tgisinternal ORDER BY c.relname,t.tgname
@@ -66,6 +67,10 @@ def catalog(connection):
 
 def expected_catalog(revision):
     expected = json.loads(files("app.db").joinpath("database_v1_catalog.json").read_text())
+    # Original CREATE TRIGGER uses PostgreSQL's enabled-origin default. Preserve the
+    # immutable V1 snapshot while validating a property pg_get_triggerdef does not show.
+    for trigger in expected["triggers"]:
+        trigger["enabled"] = "O"
     if revision == OWNERSHIP_REVISION:
         expected["columns"].append(
             {
@@ -103,7 +108,9 @@ def expected_catalog(revision):
 
 
 def installed_revision(connection):
-    heads = MigrationContext.configure(connection).get_current_heads()
+    heads = MigrationContext.configure(
+        connection, opts={"version_table_schema": "public"}
+    ).get_current_heads()
     if len(heads) > 1 or (heads and heads[0] not in {V1_REVISION, OWNERSHIP_REVISION}):
         raise RuntimeError("Revisión Alembic desconocida o múltiple; operación bloqueada")
     return heads[0] if heads else None

@@ -74,3 +74,12 @@ fixtures y pruebas. Las referencias locales conservan los commits arriba identif
 sin cambios. La autorización de esta misión permite preparar propiedad y migraciones
 para ensayo desechable; no cambia el estado pendiente de aprobación ni autoriza aplicar
 DDL persistente. No se repitieron accesos de publicación ni operaciones de credenciales.
+
+## Preparación de integración V1.2
+
+Inicio verificado en 8546b48650b93ac4b4135dcdf32fa51d8a5454c4, misma rama limpia.
+Se revisaron Alembic, ORM, catálogo/SQL/privilegios/seed reales, autenticación, middleware,
+servicios y tests; se repitieron 56 pruebas antes de cambios. Las referencias mantienen
+los mismos commits y checkouts limpios, sin nuevas operaciones de publicación. El patch
+propuesto se deriva exclusivamente de 001_schema.sql fijado y se aplica en copia temporal.
+Ambas rutas se probaron en servidores nuevos tmpfs; no hubo SQL contra persistentes.

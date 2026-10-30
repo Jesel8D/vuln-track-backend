@@ -26,8 +26,9 @@ fallida después del DDL revierte columna, FK, índice y revisión en la misma t
 
 Ver [procedimiento y coordinación](MIGRATIONS.md). Las instalaciones existentes usan
 Alembic; el SQL equivalente en docs/proposals es solo material de revisión para Database.
-Nunca aplicar ambos mecanismos sobre la misma instalación. Actualizar bootstrap y su
-procedimiento de reconocimiento necesita coordinación adicional antes de publicarse.
+Nunca aplicar ambos mecanismos sobre la misma instalación. El patch de bootstrap y su reconocimiento verificado se prepararon/probaron en V1.2;
+siguen pendientes de aprobación y coordinación antes de publicarse. Véase
+[contrato de coordinación](DATABASE_V1_1_COORDINATION.md).
 
 Configuración de conexiones: engine por proceso; pool 5+5, pre-ping y recycle;
 connect_timeout, statement_timeout, lock_timeout e idle_in_transaction_session_timeout.

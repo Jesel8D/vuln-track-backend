@@ -1,0 +1,20 @@
+--- a/sql/001_schema.sql
++++ b/sql/001_schema.sql
+@@ -30,6 +30,8 @@
+ 
+ CREATE TABLE vulntrack.assets (
+     id uuid PRIMARY KEY,
++    created_by uuid CONSTRAINT assets_created_by_fkey
++        REFERENCES vulntrack.users(id) ON DELETE RESTRICT,
+     device_type text NOT NULL,
+     manufacturer text NOT NULL,
+     model text NOT NULL,
+@@ -130,6 +132,8 @@
+ 
+ -- Índices a partir de las consultas previstas, además de PK y UNIQUE.
+ CREATE INDEX assets_created_id_idx ON vulntrack.assets (created_at, id);
++CREATE INDEX assets_owner_created_id_idx
++    ON vulntrack.assets (created_by, created_at, id);
+ CREATE INDEX analysis_runs_asset_started_idx ON vulntrack.analysis_runs (asset_id, started_at DESC, id);
+ CREATE INDEX analysis_runs_initiated_by_idx ON vulntrack.analysis_runs (initiated_by);
+ CREATE INDEX findings_analysis_id_idx ON vulntrack.findings (analysis_id, id);

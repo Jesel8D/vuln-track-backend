@@ -1,93 +1,103 @@
-# Resultados Backend V1.1 — propuesta, 30-10-2026
+# Evidencia de integración V1.2 — 30-10-2026
 
-Entorno: Linux x86_64, Python 3.12.14, Docker 28.4.0, PostgreSQL real **16.15** con
-la misma imagen/digest del Database V1 original. No se usó SQLite ni base persistente.
-Dependencias de V1 conservadas; versión de aplicación/paquete 0.1.1.
+Estado **PROPUESTA**, no aprobación de propiedad ni preparación de producción.
+Linux x86_64, Python 3.12.14, Docker 28.4.0 y PostgreSQL real **16.15** con digest
+idéntico a Database V1. API/paquete siguen 0.1.1; V1.2 prepara coordinación y herramientas,
+no añade endpoints, dependencias ni una nueva revisión de esquema. No se utilizó SQLite.
 
-## Ejecuciones verificadas
+## Resultados exactos
 
-| Comando/comprobación | Resultado |
-|---|---|
-| Suite V1 antes de editar | **37 passed**, salida 0; commit 578f74a intacto |
-| Etapa de migración/guard | **44 passed**, salida 0; commit 8023bb4 |
-| `DATABASE_V1_PATH=/tmp/vuln-track-database python scripts/test_postgres.py -q` | **56 passed**, sin skips/fallos, 21.61 s |
-| `python -m pytest -q` sin PostgreSQL | **25 passed, 31 skipped**, salida 0 |
-| SQL original `001_integrity.sql` antes de migrar | **55 comprobaciones** (20 positivas/35 rechazos), salida 0 |
-| `ruff check .` | All checks passed |
-| `python -m pip check` | No broken requirements found |
-| `python -m compileall -q app alembic scripts` | Salida 0 |
-| `python -m alembic heads` | `0002_asset_owner (head)` |
-| Alembic `upgrade`, `check` sobre desechables | Aprobados, sin recreación de tablas |
-| `git diff --check` | Sin errores |
-| Docker build `vulntrack-backend:v1.1` con CA del proxy montada | Aprobado |
-| Runner `--docker-smoke` sobre V1.1 migrado | UID 10001, health/ready/login 200; creación/replay 201; detalle/lista propios 200 |
+Python y Ruff se ejecutaron desde `.venv/bin/`. Referencia original Database b493fd1.
 
-Suite final: `vulntrack-backend-test-b3b9bb6897b7`.
-Smoke de imagen: `vulntrack-backend-test-775115708041`, imagen SHA-256
-`81a9624cff73b84ac6bee8b1ce942b17f2d01930a597b3128924e270b66c3df4`. Los comandos Python/Ruff usaron
-`.venv/bin/`. Todos los contenedores de pruebas son nuevos con tmpfs; las bases copiadas
-para migraciones viven dentro de ese mismo servidor. Se detienen al finalizar y no se
-alteran volúmenes persistentes. El runner comprueba hashes de referencias antes de aplicar
-SQL y únicamente después añade el grant de hash al login temporal dedicado.
+| Ejecución | Aprobadas | Fallidas | Omitidas | Excluidas |
+|---|---:|---:|---:|---:|
+| Suite anterior V1.1, antes de cambios | 56 | 0 | 0 | 0 |
+| Completa V1 original → migración, `scripts/test_postgres.py -q` | **71** | **0** | **0** | **0** |
+| Bootstrap propuesto nuevo → adopción verificada, `--bootstrap-v11 -q` | **26** | **0** | **0** | **1** |
+| pytest sin variables PostgreSQL | **29** | **0** | **42** | **0** |
 
-Advertencia observada y no ocultada: Starlette 1.10.0 depreca TestClient con httpx,
-aunque las pruebas con httpx 0.28.1 pasan. Revisar transición al actualizar dependencias.
-La advertencia Alembic de path_separator se resolvió configurando `path_separator=os`.
+Las 26 pruebas de bootstrap nuevo son un subconjunto repetido en otra instalación,
+no 26 pruebas distintas adicionales. La única excluida allí comprueba readiness de V1
+sin migrar y sí se ejecuta en la suite completa. Los 42 skips del comando sin PostgreSQL
+son explícitos; el runner completo ejecuta todas, sin modificar asserts originales.
 
-## Migración e integridad
+Suite final completa: `vulntrack-backend-test-c78d22b41a27`, **71 passed en 27.05 s**.
+Ruta nueva verificada con `vulntrack-backend-test-7d8fa2087968`, **26 passed, 1 deselected**.
+El seed original se aplica dos veces en la ruta nueva; preserva activos NULL, usuario
+inactivo sin hash, dos análisis y un hallazgo. El catálogo/ORM final es idéntico al de
+V1 actualizado por Alembic.
 
-- V1 sin versión, reconocimiento 0001, revisión ya 0001 y upgrade a 0002.
-- Columna nullable UUID, FK RESTRICT e índice esperado; catálogo y ORM sin drift.
-- Mismos IDs/datos/fechas y OID de tabla: sin recreación, sin backfill ni modificaciones
-  de seed. Todos los históricos siguen created_by NULL.
-- Ejecución repetida no repite DDL. Sin reconocimiento explícito de propuesta, upgrade
-  0002 se rechaza conservando V1; revisiones desconocidas o columnas inesperadas se rechazan.
-- Stamp ciego a 0002 falla y no deja revisión falsa. Downgrade que perdería propiedad se bloquea.
-- Fallo inyectado después de DDL revierte columna/FK/índice y revisión en una transacción.
-- SQL equivalente de docs/proposals aplicado en otra copia desechable produce exactamente
-  el catálogo V1.1 y conserva históricos; no asigna una revisión Alembic por su cuenta.
+## Comandos reproducibles (únicamente desechables)
 
-## Autorización e idempotencia reales
+```bash
+source .venv/bin/activate
+python -m pytest -q
+ruff check .
+python -m pip check
+python -m compileall -q app alembic scripts
+python -m alembic heads
+python scripts/database_proposal.py --database-v1 ../vuln-track-database
+DATABASE_V1_PATH=../vuln-track-database python scripts/test_postgres.py -q
+DATABASE_V1_PATH=../vuln-track-database python scripts/test_postgres.py --bootstrap-v11 -q
+```
 
-Ningún test V1.1 sustituye la política ni current_user. Se retiró FixtureAuthorization.
-Usuarios de prueba nuevos, Argon2id/JWT, login SQL mínimo y PostgreSQL real:
+Ruff: All checks passed. pip check: No broken requirements found. Compileall: salida 0.
+Alembic heads: `0002_asset_owner (head)`. No se cambió main ni ninguna revisión existente.
+El materializador verifica SHA-256 de fuente/patch/salida y no modifica Database.
+Manifest/source/patch desconocidos se rechazan; no hay un bootstrap paralelo autoritativo.
 
-- Registro autenticado asigna actor como created_by; sin identidad devuelve 401.
-- created_by del cliente, incluso null o ID propio, devuelve 422 sin escribir.
-- Detalle propio 200; ajeno/sin dueño/inexistente 404; listado y total solo propios,
-  paginación vacía/orden estable y filtro SQL por owner comprobado.
-- Misma clave/actor/payload: snapshot/Location/201 idénticos. Otro payload: 409.
-- B reutiliza clave de A: ámbito independiente y activo propio, nunca snapshot de A;
-  consulta directa cruzada denegada. Misma información de inventario no comparte activos.
-- Dos peticiones API autenticadas sincronizadas antes de insertar solicitud: misma clave
-  crea un solo activo/solicitud/propietario. Claves distintas crean dos; misma clave con
-  payload distinto produce 201/409. Se verifica created_by=solicitud.user_id persistido.
-- Error antes de commit revierte activo/owner/solicitud; retry con misma clave funciona.
-- Pérdida simulada de respuesta tras commit se recupera sin duplicar.
-- Revocación explícita de propietario en prueba impide replay antes de revelar conflicto
-  o expiración. Usuario desactivado no puede consultar/listar/crear/repetir.
-- Un registro idempotente histórico de A sobre un activo sin dueño NO le concede propiedad.
-- Expiración no concede acceso cruzado ni reutiliza una fila vencida.
-- FK a usuario inexistente y borrado de usuario propietario se rechazan; login runtime no
-  puede reasignar owner, borrar activos ni crear tablas. Pool limitado y timeouts V1 pasan.
-- Readiness V1.1 devuelve 503 frente a una copia V1 aún sin migrar; health sigue 200.
+La ruta original ejecuta **55 aserciones SQL originales** (20 positivas/35 negativas)
+antes de migrar, sin modificar el archivo. La ruta propuesta tiene seis FKs: aquel SQL
+espera cinco y no se presenta como suite V1.1. Se verifica en su lugar el catálogo exacto,
+ORM y pruebas API comunes. Database deberá versionar sus pruebas nuevas tras aprobación.
 
-## Fallos intermedios corregidos
+## Docker y HTTP real
 
-Al mover el fixture de bases legadas faltó importar `text`: una ejecución dejó 48
-pruebas aprobadas y 8 errores de preparación. Se corrigió el import y se repitió desde
-otro contenedor nuevo: 56 aprobadas. No se relajaron pruebas/checks ni se ocultaron errores.
-Instalación editable sin aislamiento falló por ausencia local de setuptools; el mecanismo
-normal con aislamiento instaló correctamente 0.1.1 y pip check pasó.
+```bash
+docker build --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt \
+  -t vulntrack-backend:v1.2 .
+DATABASE_V1_PATH=../vuln-track-database python scripts/test_postgres.py --docker-smoke
+DATABASE_V1_PATH=../vuln-track-database python scripts/test_postgres.py --bootstrap-v11 --docker-smoke
+```
 
-## Limitaciones y evidencias anteriores
+Build salida 0, imagen SHA-256
+`3c567346dfb35222fc706efc5773e01bb6096e6ee11f5ad6d858209f4475658b`.
+Los dos smoke terminaron con salida 0: UID 10001, health/ready/login 200,
+creación/replay 201, detalle/listado propios 200 sobre HTTP real.
+Proyectos: `vulntrack-backend-test-e8c7694917d6` (migración) y
+`vulntrack-backend-test-9a8e4b81d225` (bootstrap nuevo).
+CA solo montada durante build; no se deshabilita TLS ni se incorpora al repositorio.
 
-V1 permanece documentado en [TEST_RESULTS_V1.md](TEST_RESULTS_V1.md), como evidencia
-histórica, no descripción del comportamiento actual. El fallo de mounts del runner
-upstream fue documentado allí; este runner usa sus mismos SQL inmutables por stdin.
-No se afirma haber repetido persistencia/reinicio del runner original de Database.
+## Cobertura nueva que aporta evidencia
 
-No se probó desconexión TCP real durante commit, carga, recuperación de backup, integración
-móvil/web ni producción multiworker/TLS remoto. Política de propietario y coordinación
-Database requieren aprobación formal. No se tocaron GitHub/credenciales ni se ejecutaron
-NVD/ZAP/escaneos. No hay preparación para producción declarada.
+- Patch mínimo aplicado a copia de SQL original fijado; manifiesto verificable.
+- Instalación vacía con 001 propuesto, 002/seed originales intactos; reconocimiento
+  Alembic solo tras comprobar esquema/ORM. Después `alembic check` y upgrade son repetibles.
+- Adopción de V1 o revisión 0001 rechazada; nunca reetiqueta una migración pendiente.
+- Falta de índice o trigger deshabilitado bloquea reconocimiento sin dejar versión falsa.
+- Fallo después del registro de versión revierte ese registro; datos de negocio intactos.
+- Lock compartido entre Alembic/adopción y timeout seguro en dos conexiones.
+- Catálogo esperado añade verificación de tgenabled: pg_get_triggerdef no detectaba ese
+  drift en V1.1. Snapshot original conservado, sin reescribir sus datos.
+- Ejemplos JSON de clientes validados contra modelos reales; rutas/header idempotente y
+  rechazo de owner comprobados en OpenAPI; respuestas/headers/redacción probados.
+- Ambas rutas repiten login/activos/autorización/paginación/idempotencia/concurrencia reales,
+  sin políticas o dependencias de identidad sustituidas. No se habilita CORS para pasar tests.
+
+## Incidencias, avisos y límites
+
+Una ejecución inicial se detuvo con **1 error de colección** por dos módulos de test con
+el mismo nombre en carpetas sin paquete. Se añadieron __init__.py para nombres inequívocos;
+la suite completa posterior pasó. No se borraron cachés ni se omitieron pruebas para ocultarlo.
+Permanece **1 aviso** Starlette/TestClient sobre futura transición de httpx; no afecta resultados
+ni se suprimió. No quedan fallos conocidos de pytest/Ruff en la entrega.
+
+No se prueba aquí un backup/restauración de producción, capacidad, múltiples plataformas,
+TLS remoto, clientes React/React Native reales ni corte TCP durante commit. El SQL de
+bootstrap nuevo se ensaya en clúster dedicado vacío; el rol global del bootstrap original
+no es idempotente sobre otro clúster que ya lo contenga. Eso no se oculta ni se debilita.
+
+Todos los servidores son nuevos, tmpfs, password aleatorio y puertos solo localhost;
+se detienen al finalizar. No se tocaron datos persistentes, repos externos, credenciales
+GitHub, frontend/móvil, NVD ni ZAP. Las propuestas siguen pendientes de aprobación.
+Evidencia anterior: [V1](TEST_RESULTS_V1.md) y [V1.1](TEST_RESULTS_V1_1.md).

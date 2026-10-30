@@ -11,7 +11,7 @@ La misión autoriza implementación revisable y pruebas desechables de propiedad
 | Idempotencia y concurrencia con propietarios | Probadas a través de API y PostgreSQL | Transporte TCP real durante commit, móvil |
 | JWT y credenciales | V1 conservado, usuarios activos y versión verificados | Revocación individual/sesiones, operación de altas/recuperación |
 | Baseline/migración | Verificación por revisión, rollback DDL, drift y stamp indebido probados | Copia restaurada y revisión de cada destino antes de uso persistente |
-| Bootstrap futuro Database | Fragmento SQL equivalente probado | Cambios en SQL/SCHEMA/tests/diagrama de Database y reconocimiento de bootstrap V1.1 |
+| Bootstrap futuro Database | Patch derivado del SQL y reconocimiento validado probados en V1.2 | Aprobación y cambios en SQL/SCHEMA/tests/diagrama de Database |
 
 Sin administración global, acceso a terceros ni endpoints de asignación/actualización/
 eliminación. NULL no es público. La cuenta técnica es confiable y privada; autorización
@@ -25,3 +25,10 @@ La aprobación deberá registrarse en Context por responsables; este trabajo no 
 La propuesta funciona y está probada, pero **no se declara lista para producción**.
 GitHub sigue sin recibir estos commits; no se intentó push ni se tocaron credenciales
 en la misión V1.1. Recuperar/publicar manualmente desde el bundle verificado.
+
+La preparación V1.2 no agrega decisiones aprobadas: ambas rutas de instalación producen
+el mismo catálogo y se verifican con autorización/idempotencia reales. El reconocimiento
+de un bootstrap nuevo ya tiene guard transaccional probado, pero publicarlo/aplicarlo
+sobre persistentes depende de aprobación. React/React Native tienen contrato documentado;
+CORS web, transporte/almacenamiento de tokens y retención local requieren revisión antes
+de implementar clientes. No se añadieron endpoints ni se habilitó CORS amplio.

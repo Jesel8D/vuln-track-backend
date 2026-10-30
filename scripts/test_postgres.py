@@ -30,6 +30,9 @@ digests = {
 for path, digest in digests.items():
     if hashlib.sha256((reference / path).read_bytes()).hexdigest() != digest:
         sys.exit(f"Referencia distinta a Database V1 b493fd1: {path}; revisar integración")
+fresh_bootstrap = "--bootstrap-v11" in sys.argv
+if fresh_bootstrap and "--catalog" in sys.argv:
+    sys.exit("No se recaptura el catálogo V1 desde un bootstrap propuesto")
 name = "vulntrack-backend-test-" + secrets.token_hex(6)
 database = "vulntrack_backend_test"
 password = secrets.token_urlsafe(32)
@@ -97,7 +100,22 @@ try:
         sys.exit("PostgreSQL temporal no inició")
     print(sql("SELECT version();").strip(), flush=True)
     for source in required:
-        output = sql((reference / source).read_text())
+        if fresh_bootstrap and source.startswith("tests/"):
+            print(
+                "Integridad original V1 (5 FK): se ejecuta sin cambios en la ruta V1; "
+                "la ruta propuesta verifica 6 FK mediante catálogo y pytest.",
+                flush=True,
+            )
+            continue
+        if fresh_bootstrap and source == "sql/001_schema.sql":
+            from database_proposal import proposed_bootstrap
+
+            content = proposed_bootstrap(reference)
+        else:
+            content = (reference / source).read_text()
+        output = sql(content)
+        if source.startswith("seed/") and fresh_bootstrap:
+            sql(content)  # unmodified seed remains repeatable with NULL owners
         if source.startswith("tests/"):
             print("Integridad SQL referencia:", output.strip(), flush=True)
     sql(
@@ -123,8 +141,17 @@ try:
         "TEST_DATABASE_URL": url("postgres"),
         "TEST_APP_DATABASE_URL": url("backend_test_api"),
         "TEST_DISPOSABLE_DATABASE": name,
+        "TEST_BOOTSTRAP_KIND": "proposed" if fresh_bootstrap else "migrated",
     }
-    if "--catalog" not in sys.argv:
+    if fresh_bootstrap:
+        adoption = subprocess.run(
+            [sys.executable, "-m", "app.db.adopt_schema", "--confirm-proposal"],
+            cwd=ROOT,
+            env={**test_env, "MIGRATION_DATABASE_URL": url("postgres")},
+        )
+        if adoption.returncode:
+            sys.exit(adoption.returncode)
+    elif "--catalog" not in sys.argv:
         # Freeze a legacy copy for migration tests BEFORE any Alembic change.
         sql("CREATE DATABASE vulntrack_backend_test_v1 TEMPLATE vulntrack_backend_test;")
         migration = subprocess.run(
@@ -196,7 +223,7 @@ try:
                 "SMOKE_USERNAME",
                 "-e",
                 "SMOKE_PASSWORD",
-                "vulntrack-backend:v1.1",
+                os.environ.get("BACKEND_TEST_IMAGE", "vulntrack-backend:v1.2"),
                 env=api_env,
             )
             smoke = """
@@ -239,8 +266,20 @@ print("Container V1.1: UID 10001, health/ready 200, login 200, create/replay 201
         finally:
             subprocess.run(["docker", "stop", "--time", "10", api_name], capture_output=True)
     else:
+        arguments = [arg for arg in sys.argv[1:] if arg != "--bootstrap-v11"]
+        if fresh_bootstrap:
+            # These same real API tests run on BOTH installation paths. The legacy-only
+            # readiness test is covered in the full migrated suite, never changed/hidden.
+            arguments = [
+                "tests/integration/test_postgres.py",
+                "tests/integration/test_ownership.py",
+                "tests/integration/test_client_contract.py",
+                "-k",
+                "not v11_readiness_rejects_unmigrated_v1",
+                *arguments,
+            ]
         result = subprocess.run(
-            [sys.executable, "-m", "pytest", *sys.argv[1:]], cwd=ROOT, env=test_env
+            [sys.executable, "-m", "pytest", *arguments], cwd=ROOT, env=test_env
         )
         sys.exit(result.returncode)
 finally:

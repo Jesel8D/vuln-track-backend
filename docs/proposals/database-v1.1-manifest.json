@@ -1,0 +1,9 @@
+{
+  "status": "PROPUESTA",
+  "database_commit": "b493fd17e9290ca94fa085d49230073ed1837e1a",
+  "source": "sql/001_schema.sql",
+  "source_sha256": "fd2984a80911cd094283d9c9b1f503a7a0db87b921f9169c2a8362a8941b9297",
+  "proposed_sha256": "70d775f97eca5f1bee815dff28f66d3c45edecb49294c03e5bc3bc145386608a",
+  "patch": "database-v1.1-bootstrap.patch",
+  "patch_sha256": "a63da6067bdf1d5a02173da69006057bc21a04083a85aaa7398e966dadbdc917"
+}

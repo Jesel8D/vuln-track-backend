@@ -1,6 +1,7 @@
-# VulnTrack Backend V1.1 — PROPUESTA para revisión
+# VulnTrack V1.2 — preparación de integración (API V1.1 propuesta)
 
-Continúa Backend V1 (`578f74a`), sin reescribirlo ni cambiar main. Implementa propiedad
+Continúa V1 (`578f74a`) y V1.1 (`8546b48`), sin reescribirlos ni cambiar main.
+V1.2 prepara coordinación y contratos; la API conserva versión 0.1.1 y las mismas rutas. Implementa propiedad
 individual de activos mediante `assets.created_by`, nullable para preservar históricos,
 FK UUID a users e índice por propietario/fecha/id. El servidor asigna propietario desde
 la identidad autenticada; el cliente no puede imponerlo. Detalle y listado solo muestran
@@ -170,6 +171,7 @@ python -m pytest -q                         # Independientes; PostgreSQL se omit
 ruff check .
 python -m pip check
 DATABASE_V1_PATH=../vuln-track-database python scripts/test_postgres.py -q
+DATABASE_V1_PATH=../vuln-track-database python scripts/test_postgres.py --bootstrap-v11 -q
 ```
 
 El runner crea un contenedor **nuevo** PostgreSQL 16.15 con datos tmpfs desechables,
@@ -179,14 +181,19 @@ solo la base desechable a V1.1 y ejecuta pytest.
 Nunca acepta una URL persistente como destino del runner. Al terminar detiene solo
 su contenedor; tmpfs se pierde. No borra volúmenes existentes ni cambia referencias.
 Los contenedores detenidos quedan identificados por `vulntrack-backend-test-*`.
+El modo `--bootstrap-v11` inicia otro servidor vacío, aplica el patch revisable en una
+copia del SQL original, conserva privilegios/seed originales y reconoce Alembic solo
+tras verificar catálogo/ORM. Repite las pruebas API comunes; el test exclusivo de V1
+sin migrar queda cubierto en la suite completa. El SQL original de 55 aserciones no se
+altera y se ejecuta solo sobre V1, pues espera cinco FKs y el esquema nuevo tiene seis.
 
 ```bash
-docker build -t vulntrack-backend:v1.1 .
+docker build -t vulntrack-backend:v1.2 .
 DATABASE_V1_PATH=../vuln-track-database python scripts/test_postgres.py --docker-smoke
 ```
 
 En Codex Cloud, el build se verificó con
-`docker build --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt -t vulntrack-backend:v1.1 .`.
+`docker build --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt -t vulntrack-backend:v1.2 .`.
 El certificado solo se monta durante instalación; nunca se deshabilita TLS.
 
 Para ejecutar la imagen junto al Compose local: copiar `.env` a `.env.docker` (ignorado),
@@ -194,7 +201,7 @@ cambiar **solo el host/puerto DB** a `postgres:5432` y arrancar:
 
 ```bash
 docker run -d --name vulntrack-api --network vulntrack-dev_default \
-  --env-file .env.docker -p 127.0.0.1:8000:8000 vulntrack-backend:v1.1
+  --env-file .env.docker -p 127.0.0.1:8000:8000 vulntrack-backend:v1.2
 docker stop vulntrack-api
 ```
 
@@ -212,6 +219,9 @@ no autoriza escanearlo. Notas solo no sensibles: validarlas no detecta secretos.
 La limitación de login es local al proceso; hace falta una cuota compartida en el borde
 antes de múltiples réplicas. No se ha certificado preparación para producción.
 
+- [Coordinación Database V1.1 y rutas verificadas](docs/DATABASE_V1_1_COORDINATION.md)
+- [Contrato React/React Native](docs/FRONTEND_MOBILE_INTEGRATION.md)
+- [Revisión de seguridad de integración](docs/INTEGRATION_SECURITY_REVIEW.md)
 - [Arquitectura y decisiones](docs/ARCHITECTURE.md)
 - [Integración/baseline de Database](docs/DATABASE_INTEGRATION.md)
 - [Endpoints](docs/API_ENDPOINTS.md)

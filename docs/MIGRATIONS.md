@@ -73,9 +73,15 @@ seed sin dueños por defecto; extender pruebas de integridad para NULL, FK y RES
 `002_privileges.sql` no necesita ampliar privilegios para propiedad. Su grant de hash
 continúa como decisión separada. No reaplicar 001 sobre volúmenes existentes.
 
-Para evitar divergencia: primero verificar la equivalencia del nuevo bootstrap contra
-el mismo catálogo V1.1 y ORM, fijar su commit/digest y coordinar versiones antes de
-promoverlo. Hasta diseñar/probar el reconocimiento explícito de un bootstrap V1.1 sin
-historial Alembic, este backend **solo admite la ruta bootstrap V1 → migración Alembic**.
-Un bootstrap ya V1.1 sin versión se rechaza; no se soluciona con stamp a ciegas. Esto
-queda como puerta de la coordinación futura, no se publica un bootstrap incompatible.
+La preparación V1.2 cierra la puerta técnica para un bootstrap V1.1 sin historial:
+[DATABASE_V1_1_COORDINATION.md](DATABASE_V1_1_COORDINATION.md) documenta las dos rutas,
+el patch derivado del SQL original y `python -m app.db.adopt_schema --confirm-proposal`.
+Esa herramienta solo reconoce un catálogo/ORM V1.1 exacto sin revisión (o ya en 0002),
+verifica antes y después y no reemplaza una revisión V1 existente. No es stamp ciego.
+
+Alembic y adopción se serializan con un advisory lock de transacción cooperativo. La
+adopción bloquea las tablas durante verificación/reconocimiento. Se rechazan también
+triggers deshabilitados; el catálogo original no se reescribe. No sustituye una ventana
+de mantenimiento ni protege frente a DDL externo de un administrador hostil. La ruta
+V1 existente sigue usando exclusivamente Alembic; nunca ejecutar el ALTER informativo
+además del bootstrap o la migración. Ambas rutas se ensayaron en contenedores nuevos.
