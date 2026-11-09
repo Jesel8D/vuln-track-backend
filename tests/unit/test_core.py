@@ -24,7 +24,7 @@ BODY = dict(
 )
 
 
-@pytest.mark.parametrize("field", list(BODY))
+@pytest.mark.parametrize("field", [f for f in BODY if f != "version"])
 def test_required(field):
     body = {**BODY}
     del body[field]

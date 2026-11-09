@@ -123,3 +123,13 @@ def legacy_postgres(postgres):
     engine = create_engine(postgres.url.set(database=name), hide_parameters=True)
     yield engine
     engine.dispose()  # Data lives only in the runner's tmpfs; no persistent DBs are touched.
+
+
+@pytest.fixture(autouse=True)
+def forbid_uncontrolled_http(monkeypatch):
+    import httpx
+
+    def blocked(*args, **kwargs):
+        raise AssertionError("Pruebas sin red: usar MockTransport con fixture NVD")
+
+    monkeypatch.setattr(httpx.HTTPTransport, "handle_request", blocked)

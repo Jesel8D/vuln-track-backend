@@ -77,6 +77,8 @@ class Settings(BaseSettings):
     db_statement_timeout_ms: int = Field(default=10000, ge=100, le=60000)
     db_lock_timeout_ms: int = Field(default=3000, ge=100, le=10000)
     max_body_bytes: int = Field(default=8192, ge=1024, le=65536)
+    nvd_api_key: SecretStr | None = Field(default=None, repr=False)
+    nvd_timeout_seconds: int = Field(default=10, ge=1, le=20)
     login_attempts_per_minute: int = Field(default=10, ge=1, le=100)
 
     @field_validator("cors_origins")

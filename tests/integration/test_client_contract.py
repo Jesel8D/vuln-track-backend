@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import text
 
 from app.api.router import Token, UserRead
-from app.db.verify_schema import OWNERSHIP_REVISION, installed_revision, verify_schema
+from app.db.verify_schema import CPE_REVISION, installed_revision, verify_schema
 from app.schemas.assets import AssetList, AssetRead
 from tests.conftest import login
 
@@ -24,7 +24,7 @@ BODY = {
 
 def test_seed_and_schema_compatibility_on_both_installation_paths(postgres):
     with postgres.connect() as connection:
-        assert installed_revision(connection) == OWNERSHIP_REVISION
+        assert installed_revision(connection) == CPE_REVISION
         assert verify_schema(connection)
         assert connection.scalar(text("SELECT count(*) FROM vulntrack.analysis_runs")) == 2
         assert connection.scalar(text("SELECT count(*) FROM vulntrack.findings")) == 1

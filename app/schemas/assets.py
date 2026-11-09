@@ -10,12 +10,12 @@ Text120 = Annotated[str, StringConstraints(strict=True, min_length=1, max_length
 Text1000 = Annotated[str, StringConstraints(strict=True, min_length=1, max_length=1000)]
 
 
-class AssetCreate(BaseModel):
+class AssetFields(BaseModel):
     model_config = ConfigDict(extra="forbid")
     device_type: Text80
     manufacturer: Text120
     model: Text120
-    version: Text120
+    version: Text120 | None = None
     site_label: Text120
     inventory_label: Text120 | None = None
     notes: Text1000 | None = None
@@ -30,7 +30,16 @@ class AssetCreate(BaseModel):
         return value
 
 
-class AssetRead(AssetCreate):
+class AssetCreate(AssetFields):
+    @field_validator("version")
+    @classmethod
+    def real_version_or_null(cls, value):
+        if value is not None and value.casefold() in {"unknown", "*", "-"}:
+            raise ValueError("Usar null para versión desconocida")
+        return value
+
+
+class AssetRead(AssetFields):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     created_at: datetime

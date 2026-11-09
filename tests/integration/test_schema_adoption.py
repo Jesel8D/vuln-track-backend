@@ -54,8 +54,8 @@ def test_verified_adoption_preserves_data_and_is_idempotent(legacy_postgres):
                 )
                 == 0
             )
-    require_success(migrate(legacy_postgres, "check"))
     require_success(migrate(legacy_postgres, "upgrade", "head", proposal=True))
+    require_success(migrate(legacy_postgres, "check"))
 
 
 def test_adoption_requires_explicit_transaction(legacy_postgres):

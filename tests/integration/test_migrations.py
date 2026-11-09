@@ -11,6 +11,7 @@ from sqlalchemy import inspect, text
 
 from alembic import command
 from app.db.verify_schema import (
+    CPE_REVISION,
     OWNERSHIP_REVISION,
     V1_REVISION,
     installed_revision,
@@ -21,7 +22,7 @@ pytestmark = pytest.mark.postgres
 
 
 def migrate(engine, *args, proposal=False):
-    switches = ["-x", "ownership_proposal=1"] if proposal else []
+    switches = ["-x", "ownership_proposal=1", "-x", "mvp_a=1"] if proposal else []
     return subprocess.run(
         [sys.executable, "-m", "alembic", *switches, *args],
         text=True,
@@ -64,7 +65,7 @@ def test_migrate_v1_preserves_history_and_requires_explicit_proposal(legacy_post
     require_success(migrate(engine, "upgrade", "head", proposal=True))
     require_success(migrate(engine, "check"))
     with engine.connect() as connection:
-        assert installed_revision(connection) == OWNERSHIP_REVISION
+        assert installed_revision(connection) == CPE_REVISION
         assert verify_schema(connection)
         assert asset_snapshot(connection) == before
         assert (
@@ -83,7 +84,7 @@ def test_migrate_v1_preserves_history_and_requires_explicit_proposal(legacy_post
     require_success(migrate(engine, "upgrade", "head", proposal=True))
     assert migrate(engine, "downgrade", V1_REVISION).returncode != 0
     with engine.connect() as connection:
-        assert installed_revision(connection) == OWNERSHIP_REVISION
+        assert installed_revision(connection) == CPE_REVISION
         assert asset_snapshot(connection) == before
 
 

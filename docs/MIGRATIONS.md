@@ -1,3 +1,5 @@
+> **Rama MVP-A:** ver [contrato actualizado](MVP_A.md). Incluye versión nullable, CPE e historial y revisión 0003. Las secciones V1 siguientes conservan el antecedente.
+
 # V1.1: migración de propiedad propuesta
 
 Estado **PROPUESTA**, pendiente de aprobación formal y coordinación con Database antes

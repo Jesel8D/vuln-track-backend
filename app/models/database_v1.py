@@ -83,7 +83,7 @@ class Asset(Audit, Base):
     device_type: Mapped[str] = mapped_column(Text)
     manufacturer: Mapped[str] = mapped_column(Text)
     model: Mapped[str] = mapped_column(Text)
-    version: Mapped[str] = mapped_column(Text)
+    version: Mapped[str | None] = mapped_column(Text)
     site_label: Mapped[str] = mapped_column(Text)
     inventory_label: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)

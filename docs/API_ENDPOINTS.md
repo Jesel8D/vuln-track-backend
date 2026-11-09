@@ -1,3 +1,5 @@
+> **Rama MVP-A:** ver [contrato actualizado](MVP_A.md). Incluye versión nullable, CPE e historial y revisión 0003. Las secciones V1 siguientes conservan el antecedente.
+
 # API V1.1 propuesta: activos propios
 
 Contrato adaptado de ASSET_CONTRACT_PROPOSAL, pendiente de aprobación formal.

@@ -1,3 +1,5 @@
+> **Rama MVP-A:** ver [contrato y pruebas](docs/MVP_A.md). Incluye versión nullable, CPE e historial y revisión 0003. Las secciones V1 siguientes conservan el antecedente.
+
 # VulnTrack Backend V1.3 — preparación web y móvil
 
 Continúa V1 (`578f74a`) y V1.1 (`8546b48`), sin reescribirlos ni cambiar main.

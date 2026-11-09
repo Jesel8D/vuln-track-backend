@@ -14,6 +14,7 @@ from app.models import database_v1  # noqa: F401
 
 V1_REVISION = "0001_database_v1"
 OWNERSHIP_REVISION = "0002_asset_owner"
+CPE_REVISION = "0003_mvp_cpe"
 
 QUERIES = {
     "columns": """
@@ -66,6 +67,8 @@ def catalog(connection):
 
 
 def expected_catalog(revision):
+    if revision == CPE_REVISION:
+        return json.loads(files("app.db").joinpath("mvp_cpe_catalog.json").read_text())
     expected = json.loads(files("app.db").joinpath("database_v1_catalog.json").read_text())
     # Original CREATE TRIGGER uses PostgreSQL's enabled-origin default. Preserve the
     # immutable V1 snapshot while validating a property pg_get_triggerdef does not show.
@@ -111,19 +114,22 @@ def installed_revision(connection):
     heads = MigrationContext.configure(
         connection, opts={"version_table_schema": "public"}
     ).get_current_heads()
-    if len(heads) > 1 or (heads and heads[0] not in {V1_REVISION, OWNERSHIP_REVISION}):
+    if len(heads) > 1 or (
+        heads and heads[0] not in {V1_REVISION, OWNERSHIP_REVISION, CPE_REVISION}
+    ):
         raise RuntimeError("Revisión Alembic desconocida o múltiple; operación bloqueada")
     return heads[0] if heads else None
 
 
-def verify_schema(connection, revision=OWNERSHIP_REVISION):
+def verify_schema(connection, revision=None):
+    revision = revision or installed_revision(connection) or OWNERSHIP_REVISION
     expected = expected_catalog(revision)
     actual = catalog(connection)
     differences = [key for key in expected if actual[key] != expected[key]]
     if differences:
         raise RuntimeError("Baseline bloqueado: difiere catálogo " + ", ".join(differences))
-    if revision == V1_REVISION:
-        # The immutable upstream catalog validates legacy V1 independently of head ORM.
+    if revision in {V1_REVISION, OWNERSHIP_REVISION}:
+        # Immutable catalogs validate historical revisions independently of head ORM.
         return True
     inspector = inspect(connection)
     for table in Base.metadata.sorted_tables:
@@ -211,7 +217,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Verificación de esquema solo lectura")
     parser.add_argument(
-        "--revision", choices=[V1_REVISION, OWNERSHIP_REVISION], default=OWNERSHIP_REVISION
+        "--revision", choices=[V1_REVISION, OWNERSHIP_REVISION, CPE_REVISION], default=CPE_REVISION
     )
     args = parser.parse_args()
     engine = build_engine(get_settings())

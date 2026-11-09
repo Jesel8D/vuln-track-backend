@@ -1,6 +1,7 @@
 """Run only against a new, disposable container; never accepts an existing DB URL."""
 
 import hashlib
+import json
 import os
 import secrets
 import subprocess
@@ -30,8 +31,19 @@ digests = {
 for path, digest in digests.items():
     if hashlib.sha256((reference / path).read_bytes()).hexdigest() != digest:
         sys.exit(f"Referencia distinta a Database V1 b493fd1: {path}; revisar integración")
+manifest = json.loads((ROOT / "app/db/mvp_a_manifest.json").read_text())
+for relative, digest in manifest["database_files"].items():
+    source = reference / relative
+    if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != digest:
+        sys.exit(f"Contrato Database MVP-A distinto: {relative}; revisar coordinación")
+for relative, digest in manifest["backend_files"].items():
+    if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != digest:
+        sys.exit(f"Contrato Backend MVP-A distinto: {relative}; revisar manifiesto")
 fresh_bootstrap = "--bootstrap-v11" in sys.argv
-if fresh_bootstrap and "--catalog" in sys.argv:
+fresh_cpe = "--bootstrap-mvp-a" in sys.argv
+if fresh_bootstrap and fresh_cpe:
+    sys.exit("Elegir solo un modo de bootstrap")
+if (fresh_bootstrap or fresh_cpe) and "--catalog" in sys.argv:
     sys.exit("No se recaptura el catálogo V1 desde un bootstrap propuesto")
 name = "vulntrack-backend-test-" + secrets.token_hex(6)
 database = "vulntrack_backend_test"
@@ -143,7 +155,18 @@ try:
         "TEST_DISPOSABLE_DATABASE": name,
         "TEST_BOOTSTRAP_KIND": "proposed" if fresh_bootstrap else "migrated",
     }
-    if fresh_bootstrap:
+    if fresh_cpe:
+        # Freeze original V1 with data before installing the fresh MVP-A bootstrap.
+        sql("CREATE DATABASE vulntrack_backend_test_v1 TEMPLATE vulntrack_backend_test;")
+        sql((reference / "sql/bootstrap_mvp_a.sql").read_text())
+        adoption = subprocess.run(
+            [sys.executable, "-m", "app.db.adopt_schema", "--confirm-proposal", "--mvp-a"],
+            cwd=ROOT,
+            env={**test_env, "MIGRATION_DATABASE_URL": url("postgres")},
+        )
+        if adoption.returncode:
+            sys.exit(adoption.returncode)
+    elif fresh_bootstrap:
         adoption = subprocess.run(
             [sys.executable, "-m", "app.db.adopt_schema", "--confirm-proposal"],
             cwd=ROOT,
@@ -155,12 +178,34 @@ try:
         # Freeze a legacy copy for migration tests BEFORE any Alembic change.
         sql("CREATE DATABASE vulntrack_backend_test_v1 TEMPLATE vulntrack_backend_test;")
         migration = subprocess.run(
-            [sys.executable, "-m", "alembic", "-x", "ownership_proposal=1", "upgrade", "head"],
+            [
+                sys.executable,
+                "-m",
+                "alembic",
+                "-x",
+                "ownership_proposal=1",
+                "-x",
+                "mvp_a=1",
+                "upgrade",
+                "head",
+            ],
             cwd=ROOT,
             env={**test_env, "MIGRATION_DATABASE_URL": url("postgres")},
         )
         if migration.returncode:
             sys.exit(migration.returncode)
+    if fresh_bootstrap:
+        migration = subprocess.run(
+            [sys.executable, "-m", "alembic", "-x", "mvp_a=1", "upgrade", "head"],
+            cwd=ROOT,
+            env={**test_env, "MIGRATION_DATABASE_URL": url("postgres")},
+        )
+        if migration.returncode:
+            sys.exit(migration.returncode)
+    if "--catalog" not in sys.argv:
+        checks = reference / "tests/002_mvp_cpe.sql"
+        if checks.is_file():
+            print("Integridad SQL MVP-A:", sql(checks.read_text()).strip(), flush=True)
     if "--catalog" in sys.argv:
         import json
 
@@ -289,7 +334,9 @@ print("V1.3: UID 10001; preflight allowed 200/denied 400; CORS login/create/repl
         finally:
             subprocess.run(["docker", "stop", "--time", "10", api_name], capture_output=True)
     else:
-        arguments = [arg for arg in sys.argv[1:] if arg != "--bootstrap-v11"]
+        arguments = [
+            arg for arg in sys.argv[1:] if arg not in {"--bootstrap-v11", "--bootstrap-mvp-a"}
+        ]
         if fresh_bootstrap:
             # These same real API tests run on BOTH installation paths. The legacy-only
             # readiness test is covered in the full migrated suite, never changed/hidden.

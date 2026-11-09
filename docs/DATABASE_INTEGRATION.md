@@ -1,3 +1,5 @@
+> **Rama MVP-A:** ver [contrato actualizado](MVP_A.md). Incluye versión nullable, CPE e historial y revisión 0003. Las secciones V1 siguientes conservan el antecedente.
+
 # Database V1 y propuesta Backend V1.1
 
 Referencia intacta: `feat/postgresql-database-v1`, commit
