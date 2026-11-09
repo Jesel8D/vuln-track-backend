@@ -39,8 +39,18 @@ for relative, digest in manifest["database_files"].items():
 for relative, digest in manifest["backend_files"].items():
     if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != digest:
         sys.exit(f"Contrato Backend MVP-A distinto: {relative}; revisar manifiesto")
+b_manifest_path = ROOT / "app/db/mvp_b_manifest.json"
+if b_manifest_path.exists():
+    b_manifest = json.loads(b_manifest_path.read_text())
+    for group, base in [("database_files", reference), ("backend_files", ROOT)]:
+        for relative, digest in b_manifest[group].items():
+            if hashlib.sha256((base / relative).read_bytes()).hexdigest() != digest:
+                sys.exit(f"Contrato MVP-B distinto: {relative}; revisar coordinación")
 fresh_bootstrap = "--bootstrap-v11" in sys.argv
 fresh_cpe = "--bootstrap-mvp-a" in sys.argv
+fresh_cve = "--bootstrap-mvp-b" in sys.argv
+if fresh_cve:
+    fresh_cpe = True
 if fresh_bootstrap and fresh_cpe:
     sys.exit("Elegir solo un modo de bootstrap")
 if (fresh_bootstrap or fresh_cpe) and "--catalog" in sys.argv:
@@ -159,8 +169,16 @@ try:
         # Freeze original V1 with data before installing the fresh MVP-A bootstrap.
         sql("CREATE DATABASE vulntrack_backend_test_v1 TEMPLATE vulntrack_backend_test;")
         sql((reference / "sql/bootstrap_mvp_a.sql").read_text())
+        if fresh_cve:
+            sql((reference / "sql/bootstrap_mvp_b.sql").read_text())
         adoption = subprocess.run(
-            [sys.executable, "-m", "app.db.adopt_schema", "--confirm-proposal", "--mvp-a"],
+            [
+                sys.executable,
+                "-m",
+                "app.db.adopt_schema",
+                "--confirm-proposal",
+                "--mvp-b" if fresh_cve else "--mvp-a",
+            ],
             cwd=ROOT,
             env={**test_env, "MIGRATION_DATABASE_URL": url("postgres")},
         )
@@ -194,7 +212,7 @@ try:
         )
         if migration.returncode:
             sys.exit(migration.returncode)
-    if fresh_bootstrap:
+    if fresh_bootstrap or (fresh_cpe and not fresh_cve):
         migration = subprocess.run(
             [sys.executable, "-m", "alembic", "-x", "mvp_a=1", "upgrade", "head"],
             cwd=ROOT,
@@ -206,6 +224,10 @@ try:
         checks = reference / "tests/002_mvp_cpe.sql"
         if checks.is_file():
             print("Integridad SQL MVP-A:", sql(checks.read_text()).strip(), flush=True)
+    if "--catalog" not in sys.argv:
+        checks = reference / "tests/003_mvp_cve.sql"
+        if checks.is_file():
+            print("Integridad SQL MVP-B:", sql(checks.read_text()).strip(), flush=True)
     if "--catalog" in sys.argv:
         import json
 
@@ -335,7 +357,9 @@ print("V1.3: UID 10001; preflight allowed 200/denied 400; CORS login/create/repl
             subprocess.run(["docker", "stop", "--time", "10", api_name], capture_output=True)
     else:
         arguments = [
-            arg for arg in sys.argv[1:] if arg not in {"--bootstrap-v11", "--bootstrap-mvp-a"}
+            arg
+            for arg in sys.argv[1:]
+            if arg not in {"--bootstrap-v11", "--bootstrap-mvp-a", "--bootstrap-mvp-b"}
         ]
         if fresh_bootstrap:
             # These same real API tests run on BOTH installation paths. The legacy-only

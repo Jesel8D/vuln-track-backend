@@ -1,3 +1,5 @@
+> **Rama MVP-B:** [contrato, ejecución y límites](docs/MVP_B.md) · [resultados verificados](docs/MVP_B_RESULTS.md). Añade consulta CVE persistente, cobertura, evidencia y revisión; requiere revisión `0004_mvp_cve`. Las secciones V1/MVP-A siguientes conservan el antecedente.
+
 > **Rama MVP-A:** ver [contrato y pruebas](docs/MVP_A.md). Incluye versión nullable, CPE e historial y revisión 0003. Las secciones V1 siguientes conservan el antecedente.
 
 # VulnTrack Backend V1.3 — preparación web y móvil

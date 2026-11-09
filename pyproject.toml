@@ -21,7 +21,7 @@ dev = ["pytest>=8.3,<10", "httpx>=0.28,<1", "ruff>=0.11,<1"]
 include = ["app*"]
 
 [tool.setuptools.package-data]
-"app.db" = ["*_catalog.json", "*_manifest.json", "cpe_guards.sql", "cpe_table.sql"]
+"app.db" = ["*_catalog.json", "*_manifest.json", "cpe_guards.sql", "cpe_table.sql", "cve_schema.sql"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

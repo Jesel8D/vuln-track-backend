@@ -15,7 +15,13 @@ from sqlalchemy import create_engine, inspect, text
 
 from app.db.base import Base
 from app.db.coordination import lock_schema_operation
-from app.db.verify_schema import CPE_REVISION, OWNERSHIP_REVISION, installed_revision, verify_schema
+from app.db.verify_schema import (
+    CPE_REVISION,
+    CVE_REVISION,
+    OWNERSHIP_REVISION,
+    installed_revision,
+    verify_schema,
+)
 
 
 def adopt_verified_ownership(connection, script_directory):
@@ -23,7 +29,7 @@ def adopt_verified_ownership(connection, script_directory):
 
 
 def adopt_verified(connection, script_directory, revision):
-    if revision not in {OWNERSHIP_REVISION, CPE_REVISION}:
+    if revision not in {OWNERSHIP_REVISION, CPE_REVISION, CVE_REVISION}:
         raise RuntimeError("Revisión de adopción no permitida")
     if not connection.in_transaction():
         raise RuntimeError("Adopción requiere una transacción explícita")
@@ -31,7 +37,7 @@ def adopt_verified(connection, script_directory, revision):
     current = installed_revision(connection)
     if current not in {None, revision}:
         raise RuntimeError("Una revisión existente no se reemplaza mediante adopción")
-    if revision == CPE_REVISION and not inspect(connection).has_table(
+    if revision in {CPE_REVISION, CVE_REVISION} and not inspect(connection).has_table(
         "asset_cpe_identifications", schema="vulntrack"
     ):
         raise RuntimeError("Baseline bloqueado: falta tabla CPE")
@@ -39,7 +45,7 @@ def adopt_verified(connection, script_directory, revision):
     names = ", ".join(
         f'"{table.schema}"."{table.name}"'
         for table in Base.metadata.sorted_tables
-        if revision == CPE_REVISION or table.name != "asset_cpe_identifications"
+        if revision in {CPE_REVISION, CVE_REVISION} or table.name != "asset_cpe_identifications"
     )
     connection.execute(text(f"LOCK TABLE {names} IN SHARE MODE"))
     verify_schema(connection, revision)
@@ -64,7 +70,10 @@ def main():
         help="Reconocer ejecución de propuesta; no significa aprobación formal",
     )
     parser.add_argument("--mvp-a", action="store_true", help="Adoptar bootstrap MVP-A verificado")
+    parser.add_argument("--mvp-b", action="store_true", help="Adoptar bootstrap MVP-B verificado")
     args = parser.parse_args()
+    if args.mvp_a and args.mvp_b:
+        parser.error("Elegir una revisión de adopción")
     url = os.environ.get("MIGRATION_DATABASE_URL")
     if not url:
         parser.error("Definir MIGRATION_DATABASE_URL de mantenimiento fuera de Git")
@@ -81,7 +90,9 @@ def main():
         scripts = ScriptDirectory.from_config(config)
         with engine.begin() as connection:
             revision = adopt_verified(
-                connection, scripts, CPE_REVISION if args.mvp_a else OWNERSHIP_REVISION
+                connection,
+                scripts,
+                CVE_REVISION if args.mvp_b else CPE_REVISION if args.mvp_a else OWNERSHIP_REVISION,
             )
         print(f"Esquema verificado y reconocido: {revision}; sin cambios a datos de negocio.")
     except Exception as exc:

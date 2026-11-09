@@ -8,6 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError, TimeoutError
 from starlette.exceptions import HTTPException
 
+from app.api.analyses import router as analyses_router
 from app.api.cpe import router as cpe_router
 from app.api.router import router
 from app.core.config import Settings, get_settings
@@ -17,9 +18,12 @@ from app.core.http import RequestBoundary, error_body
 from app.core.security import LoginLimiter
 from app.db.session import build_engine, build_session_factory
 from app.integrations.nvd import NVDClient
+from app.integrations.nvd_cve import CVEClient
+from app.services.analyses import AnalysisService
 from app.services.assets import AssetService
 from app.services.authorization import AssetAuthorization
 from app.services.cpe import IdentificationService
+from app.services.cve_worker import CVEWorker
 
 logger = logging.getLogger("vulntrack")
 
@@ -30,8 +34,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app):
-        yield
-        engine.dispose()
+        if settings.cve_worker_enabled:
+            app.state.cve_worker.start()
+        try:
+            yield
+        finally:
+            app.state.cve_worker.close()
+            engine.dispose()
 
     app = FastAPI(title="VulnTrack API", version="0.1.3", lifespan=lifespan)
     app.state.settings = settings
@@ -40,8 +49,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.assets = AssetService(app.state.session_factory, AssetAuthorization())
     app.state.nvd = NVDClient(settings.nvd_api_key, settings.nvd_timeout_seconds)
     app.state.identifications = IdentificationService(
-        app.state.session_factory, AssetAuthorization(), app.state.nvd,
+        app.state.session_factory,
+        AssetAuthorization(),
+        app.state.nvd,
     )
+    app.state.cve = CVEClient(
+        settings.nvd_api_key, settings.nvd_timeout_seconds, quota=app.state.nvd.quota
+    )
+    app.state.analyses = AnalysisService(app.state.session_factory, AssetAuthorization())
+    app.state.cve_worker = CVEWorker(engine, app.state.session_factory, app.state.cve)
+    app.state.analyses.worker_ready = lambda: app.state.cve_worker.available
     app.state.login_limiter = LoginLimiter(settings.login_attempts_per_minute)
     app.add_middleware(RequestBoundary, max_body_bytes=settings.max_body_bytes)
     # Outside RequestBoundary: CORS also wraps its 413 and sanitized 500 responses.
@@ -110,17 +127,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             connection.execute(
                 text("SELECT user_id FROM vulntrack.asset_registration_requests LIMIT 0")
             )
-            connection.execute(text(
-                "SELECT id, valid_to FROM vulntrack.asset_cpe_identifications LIMIT 0"
-            ))
-            nullable = connection.scalar(text(
-                "SELECT NOT attnotnull FROM pg_attribute "
-                "WHERE attrelid='vulntrack.assets'::regclass AND attname='version'"
-            ))
+            connection.execute(
+                text("SELECT id, valid_to FROM vulntrack.asset_cpe_identifications LIMIT 0")
+            )
+            connection.execute(
+                text("SELECT identification_id, page_count FROM vulntrack.analysis_runs LIMIT 0")
+            )
+            connection.execute(text("SELECT evidence, reviewed_by FROM vulntrack.findings LIMIT 0"))
+            nullable = connection.scalar(
+                text(
+                    "SELECT NOT attnotnull FROM pg_attribute "
+                    "WHERE attrelid='vulntrack.assets'::regclass AND attname='version'"
+                )
+            )
             if not nullable:
                 raise APIError(503, "DATABASE_SCHEMA_NOT_READY", "Esquema requerido no disponible")
         return {"status": "ready"}
 
     app.include_router(router)
     app.include_router(cpe_router)
+    app.include_router(analyses_router)
     return app

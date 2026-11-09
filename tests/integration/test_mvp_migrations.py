@@ -42,8 +42,8 @@ def test_explicit_cpe_upgrade_preserves_v1_and_v11_history(legacy_postgres):
             == findings
         )
         assert c.scalar(text("SELECT 'vulntrack.assets'::regclass::oid")) == oid
-    require_success(migrate(engine, "check"))
     require_success(migrate(engine, "upgrade", "head", proposal=True))
+    require_success(migrate(engine, "check"))
     assert migrate(engine, "downgrade", OWNERSHIP_REVISION).returncode != 0
 
 
@@ -67,7 +67,7 @@ def test_cpe_post_ddl_failure_rolls_back_schema_and_marker(legacy_postgres, monk
         )
         patch.setattr(verifier, "verify_schema", injected)
         with pytest.raises(RuntimeError, match="post-DDL"):
-            command.upgrade(config, "head")
+            command.upgrade(config, CPE_REVISION)
     with legacy_postgres.connect() as c:
         assert installed_revision(c) == OWNERSHIP_REVISION
         assert real(c, OWNERSHIP_REVISION)
@@ -88,6 +88,6 @@ def test_cpe_catalog_rejects_disabled_guard_and_missing_unique_index(postgres):
     ]:
         with pytest.raises(RuntimeError, match="Baseline bloqueado"), postgres.begin() as c:
             c.execute(text(statement))
-            verify_schema(c, CPE_REVISION)
+            verify_schema(c)
     with postgres.connect() as c:
-        assert verify_schema(c, CPE_REVISION)
+        assert verify_schema(c)

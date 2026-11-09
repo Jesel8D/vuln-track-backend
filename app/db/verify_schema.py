@@ -15,6 +15,7 @@ from app.models import database_v1  # noqa: F401
 V1_REVISION = "0001_database_v1"
 OWNERSHIP_REVISION = "0002_asset_owner"
 CPE_REVISION = "0003_mvp_cpe"
+CVE_REVISION = "0004_mvp_cve"
 
 QUERIES = {
     "columns": """
@@ -67,6 +68,8 @@ def catalog(connection):
 
 
 def expected_catalog(revision):
+    if revision == CVE_REVISION:
+        return json.loads(files("app.db").joinpath("mvp_cve_catalog.json").read_text())
     if revision == CPE_REVISION:
         return json.loads(files("app.db").joinpath("mvp_cpe_catalog.json").read_text())
     expected = json.loads(files("app.db").joinpath("database_v1_catalog.json").read_text())
@@ -115,7 +118,7 @@ def installed_revision(connection):
         connection, opts={"version_table_schema": "public"}
     ).get_current_heads()
     if len(heads) > 1 or (
-        heads and heads[0] not in {V1_REVISION, OWNERSHIP_REVISION, CPE_REVISION}
+        heads and heads[0] not in {V1_REVISION, OWNERSHIP_REVISION, CPE_REVISION, CVE_REVISION}
     ):
         raise RuntimeError("Revisión Alembic desconocida o múltiple; operación bloqueada")
     return heads[0] if heads else None
@@ -128,7 +131,7 @@ def verify_schema(connection, revision=None):
     differences = [key for key in expected if actual[key] != expected[key]]
     if differences:
         raise RuntimeError("Baseline bloqueado: difiere catálogo " + ", ".join(differences))
-    if revision in {V1_REVISION, OWNERSHIP_REVISION}:
+    if revision in {V1_REVISION, OWNERSHIP_REVISION, CPE_REVISION}:
         # Immutable catalogs validate historical revisions independently of head ORM.
         return True
     inspector = inspect(connection)
@@ -217,7 +220,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Verificación de esquema solo lectura")
     parser.add_argument(
-        "--revision", choices=[V1_REVISION, OWNERSHIP_REVISION, CPE_REVISION], default=CPE_REVISION
+        "--revision",
+        choices=[V1_REVISION, OWNERSHIP_REVISION, CPE_REVISION, CVE_REVISION],
+        default=CVE_REVISION,
     )
     args = parser.parse_args()
     engine = build_engine(get_settings())

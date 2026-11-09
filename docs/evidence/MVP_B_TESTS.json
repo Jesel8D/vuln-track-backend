@@ -1,0 +1,76 @@
+{
+  "recorded_at_utc": "2026-11-09T05:30:25.165255+00:00",
+  "environment": {
+    "python": "3.12",
+    "postgres": "16.15-alpine",
+    "database": "new tmpfs container per runner",
+    "real_upstream_http_in_pytest": "blocked; MockTransport fixtures only; local Uvicorn HTTP allowed"
+  },
+  "unique_test_cases": 301,
+  "previous_cases": 194,
+  "new_cases": 107,
+  "new_case_breakdown": {
+    "unit": 58,
+    "migration": 6,
+    "postgres_cve_integration": 43
+  },
+  "warning": "One existing StarletteDeprecationWarning: httpx TestClient adapter",
+  "runs": [
+    {
+      "name": "baseline-mvp-a",
+      "command": "DATABASE_V1_PATH=../database .venv/bin/python scripts/test_postgres.py -q (before code changes)",
+      "passed": 194,
+      "failed": 0,
+      "skipped": 0,
+      "log_sha256": "f80653ecf8e73e7e32ff97741e779bfd14ef3f22b547c99cefbe6350f875df5b"
+    },
+    {
+      "name": "final-b-migrated",
+      "command": "DATABASE_V1_PATH=../database .venv/bin/python scripts/test_postgres.py -q",
+      "passed": 301,
+      "failed": 0,
+      "skipped": 0,
+      "log_sha256": "561c0da167794e42872ea8ec25a141ea041b871a9de18f070e7162c278e9ada5"
+    },
+    {
+      "name": "final-b-fresh",
+      "command": "DATABASE_V1_PATH=../database .venv/bin/python scripts/test_postgres.py --bootstrap-mvp-b -q",
+      "passed": 301,
+      "failed": 0,
+      "skipped": 0,
+      "log_sha256": "43cf0091ef07e450bc1ce7c5c7dfe83801d83d493fb304ace625525816dae0f8"
+    },
+    {
+      "name": "final-database-b",
+      "command": "python3 tests/run_mvp_b.py",
+      "passed": null,
+      "failed": 0,
+      "skipped": 0,
+      "log_sha256": "a25ece2fd7a45651bb711a3edb8fd0f3a1250e539f9bbd92ce8dbf9680d3d175"
+    },
+    {
+      "name": "database-a-regression",
+      "command": "python3 tests/run_mvp_a.py",
+      "passed": null,
+      "failed": 0,
+      "skipped": 0,
+      "log_sha256": "002f19994ee679db867b15b471055e113be3c4db4ef084ba8fbac185cd9134a0"
+    },
+    {
+      "name": "final-docker-http-b",
+      "command": "BACKEND_TEST_IMAGE=vulntrack-backend:mvp-b DATABASE_V1_PATH=../database .venv/bin/python scripts/test_postgres.py --docker-smoke",
+      "passed": null,
+      "failed": 0,
+      "skipped": 0,
+      "log_sha256": "fd14df9d91c5de60bb44acb77a8bdc9177f63a338e438892af0db1045ce4c0b2"
+    },
+    {
+      "name": "build-b",
+      "command": "docker --config /tmp/vulntrack-docker-buildx-config buildx build --load -t vulntrack-backend:mvp-b .",
+      "passed": null,
+      "failed": 0,
+      "skipped": 0,
+      "log_sha256": "05c361c932c683ff1b194b5d32d2227a9d2af33092e18856eea6f4c66cd98f84"
+    }
+  ]
+}

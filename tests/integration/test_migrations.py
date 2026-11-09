@@ -11,7 +11,7 @@ from sqlalchemy import inspect, text
 
 from alembic import command
 from app.db.verify_schema import (
-    CPE_REVISION,
+    CVE_REVISION,
     OWNERSHIP_REVISION,
     V1_REVISION,
     installed_revision,
@@ -65,7 +65,7 @@ def test_migrate_v1_preserves_history_and_requires_explicit_proposal(legacy_post
     require_success(migrate(engine, "upgrade", "head", proposal=True))
     require_success(migrate(engine, "check"))
     with engine.connect() as connection:
-        assert installed_revision(connection) == CPE_REVISION
+        assert installed_revision(connection) == CVE_REVISION
         assert verify_schema(connection)
         assert asset_snapshot(connection) == before
         assert (
@@ -84,7 +84,7 @@ def test_migrate_v1_preserves_history_and_requires_explicit_proposal(legacy_post
     require_success(migrate(engine, "upgrade", "head", proposal=True))
     assert migrate(engine, "downgrade", V1_REVISION).returncode != 0
     with engine.connect() as connection:
-        assert installed_revision(connection) == CPE_REVISION
+        assert installed_revision(connection) == CVE_REVISION
         assert asset_snapshot(connection) == before
 
 

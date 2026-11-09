@@ -57,9 +57,27 @@ class Quota:
             # Conservative spacing also without API key, no bursts (max 5/30s).
             self.next_call = now + 7
 
-    def backoff(self):
+    def backoff(self, retry_after=None):
+        from email.utils import parsedate_to_datetime
+
+        delay = 60.0
+        if retry_after:
+            try:
+                delay = max(delay, float(retry_after))
+            except ValueError:
+                try:
+                    delay = max(
+                        delay,
+                        (parsedate_to_datetime(retry_after) - datetime.now(UTC)).total_seconds(),
+                    )
+                except (ValueError, TypeError, OverflowError):
+                    pass
         with self.lock:
-            self.cooldown = self.clock() + 60
+            self.cooldown = max(self.cooldown, self.clock() + delay)
+
+    def wait_seconds(self):
+        with self.lock:
+            return max(0, self.next_call - self.clock(), self.cooldown - self.clock())
 
 
 class Title(BaseModel):
@@ -108,7 +126,7 @@ class NVDClient:
         self.transport = transport
         self.quota = quota or Quota()
 
-    def _page(self, params):
+    def _content(self, url, params):
         self.quota.reserve()
         headers = {"Accept": "application/json", "Accept-Encoding": "identity"}
         if self.api_key:
@@ -123,11 +141,17 @@ class NVDClient:
                     trust_env=False,
                     transport=self.transport,
                 ) as client,
-                client.stream("GET", NVD_URL, params=params, headers=headers) as response,
+                client.stream("GET", url, params=params, headers=headers) as response,
             ):
                 if response.status_code in {403, 429} or response.status_code >= 500:
-                    self.quota.backoff()
-                    raise APIError(503, "NVD_UNAVAILABLE", "NVD temporalmente no disponible")
+                    self.quota.backoff(response.headers.get("Retry-After"))
+                    raise APIError(
+                        503,
+                        getattr(self, "throttle_code", "NVD_UNAVAILABLE")
+                        if response.status_code in {403, 429}
+                        else "NVD_UNAVAILABLE",
+                        "NVD temporalmente no disponible",
+                    )
                 if response.status_code != 200:
                     raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta NVD no válida")
                 content = bytearray()
@@ -139,7 +163,17 @@ class NVDClient:
                         raise APIError(
                             502, "NVD_INVALID_RESPONSE", "Respuesta NVD demasiado grande"
                         )
-            page = NVDPage.model_validate_json(content)
+            return content
+        except httpx.TimeoutException:
+            raise APIError(504, "NVD_TIMEOUT", "NVD excedió el tiempo de espera") from None
+        except httpx.HTTPError:
+            raise APIError(503, "NVD_UNAVAILABLE", "NVD temporalmente no disponible") from None
+        except (ValidationError, ValueError):
+            raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta NVD no válida") from None
+
+    def _page(self, params):
+        try:
+            page = NVDPage.model_validate_json(self._content(NVD_URL, params))
             count = len(page.products)
             if (
                 page.format != "NVD_CPE"
@@ -153,10 +187,6 @@ class NVDClient:
             ):
                 raise ValueError("Inconsistent NVD page")
             return page
-        except httpx.TimeoutException:
-            raise APIError(504, "NVD_TIMEOUT", "NVD excedió el tiempo de espera") from None
-        except httpx.HTTPError:
-            raise APIError(503, "NVD_UNAVAILABLE", "NVD temporalmente no disponible") from None
         except (ValidationError, ValueError):
             raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta NVD no válida") from None
 

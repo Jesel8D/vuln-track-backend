@@ -121,7 +121,11 @@ def test_preflight_is_explicit_and_does_not_authenticate_or_query_db(
     assert response.json() == {"status": "ok"}
     assert response.headers["access-control-allow-origin"] == ORIGIN
     assert "Origin" in response.headers["vary"]
-    assert set(response.headers["access-control-allow-methods"].split(", ")) == {"GET", "POST"}
+    assert set(response.headers["access-control-allow-methods"].split(", ")) == {
+        "GET",
+        "POST",
+        "PATCH",
+    }
     allowed = {
         header.strip().lower()
         for header in response.headers["access-control-allow-headers"].split(",")
