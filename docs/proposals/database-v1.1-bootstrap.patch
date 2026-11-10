@@ -1,0 +1,12 @@
+--- a/sql/001_schema.sql
++++ b/sql/001_schema.sql
+@@ -32,2 +32,4 @@
+     id uuid PRIMARY KEY,
++    created_by uuid CONSTRAINT assets_created_by_fkey
++        REFERENCES vulntrack.users(id) ON DELETE RESTRICT,
+     device_type text NOT NULL,
+@@ -132,2 +134,4 @@
+ CREATE INDEX assets_created_id_idx ON vulntrack.assets (created_at, id);
++CREATE INDEX assets_owner_created_id_idx
++    ON vulntrack.assets (created_by, created_at, id);
+ CREATE INDEX analysis_runs_asset_started_idx ON vulntrack.analysis_runs (asset_id, started_at DESC, id);

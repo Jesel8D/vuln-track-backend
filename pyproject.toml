@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vulntrack-backend"
+version = "0.2.0"
+description = "API de VulnTrack con flujos heredados V1 y aplicaciones/workspaces Database V2"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn>=0.34,<1", "pydantic>=2.10,<3",
+  "pydantic-settings>=2.8,<3", "SQLAlchemy>=2.0.38,<2.1",
+  "psycopg[binary]>=3.2,<4", "alembic>=1.15,<2",
+  "argon2-cffi>=23.1,<26", "PyJWT>=2.10,<3", "httpx>=0.28,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3,<10", "httpx>=0.28,<1", "ruff>=0.11,<1"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.setuptools.package-data]
+"app.db" = ["*_catalog.json", "*_manifest.json", "cpe_guards.sql", "cpe_table.sql", "cve_schema.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["postgres: requires a disposable PostgreSQL Database instance"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
