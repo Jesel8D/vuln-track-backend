@@ -1,0 +1,37 @@
+CREATE TABLE vulntrack.asset_cpe_identifications (
+	id UUID NOT NULL,
+	asset_id UUID NOT NULL,
+	state TEXT NOT NULL,
+	cpe_name TEXT NOT NULL,
+	cpe_name_id UUID NOT NULL,
+	component_kind TEXT NOT NULL,
+	observed_version TEXT,
+	source TEXT NOT NULL,
+	validated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+	recorded_by UUID NOT NULL,
+	recorded_at TIMESTAMP WITH TIME ZONE NOT NULL,
+	reason TEXT NOT NULL,
+	replaces_id UUID,
+	valid_to TIMESTAMP WITH TIME ZONE,
+	idempotency_key UUID NOT NULL,
+	request_hash TEXT NOT NULL,
+	PRIMARY KEY (id),
+	CONSTRAINT cpe_asset_id_unique UNIQUE (asset_id, id),
+	CONSTRAINT cpe_idempotency_unique UNIQUE (asset_id, recorded_by, idempotency_key),
+	CONSTRAINT cpe_replaces_same_asset FOREIGN KEY(asset_id, replaces_id) REFERENCES vulntrack.asset_cpe_identifications (asset_id, id) ON DELETE RESTRICT,
+	CONSTRAINT cpe_state_valid CHECK (state IN ('confirmed', 'needs_review')),
+	CONSTRAINT cpe_component_valid CHECK (component_kind IN ('hardware', 'firmware', 'os', 'software')),
+	CONSTRAINT cpe_source_valid CHECK (source = 'NVD'),
+	CONSTRAINT cpe_name_valid CHECK (left(cpe_name, 8) = 'cpe:2.3:' AND vulntrack.valid_text(cpe_name, 1024)),
+	CONSTRAINT cpe_version_valid CHECK (observed_version IS NULL OR vulntrack.valid_text(observed_version, 120)),
+	CONSTRAINT cpe_reason_valid CHECK (vulntrack.valid_text(reason, 500)),
+	CONSTRAINT cpe_hash_valid CHECK (request_hash ~ '^[0-9a-f]{64}$'),
+	CONSTRAINT cpe_time_order CHECK (valid_to IS NULL OR valid_to >= recorded_at),
+	CONSTRAINT cpe_validation_order CHECK (validated_at <= recorded_at),
+	CONSTRAINT cpe_no_self_replace CHECK (replaces_id IS NULL OR replaces_id <> id),
+	FOREIGN KEY(asset_id) REFERENCES vulntrack.assets (id) ON DELETE RESTRICT,
+	FOREIGN KEY(recorded_by) REFERENCES vulntrack.users (id) ON DELETE RESTRICT
+);
+CREATE UNIQUE INDEX cpe_current_unique ON vulntrack.asset_cpe_identifications (asset_id) WHERE valid_to IS NULL;
+CREATE INDEX cpe_history_idx ON vulntrack.asset_cpe_identifications (asset_id, recorded_at, id);
+CREATE UNIQUE INDEX cpe_replaces_unique ON vulntrack.asset_cpe_identifications (replaces_id) WHERE replaces_id IS NOT NULL;

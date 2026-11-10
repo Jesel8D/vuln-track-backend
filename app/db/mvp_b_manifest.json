@@ -1,0 +1,14 @@
+{
+  "database_base": "80db7fd411f49f648263f275b412384bc49f7ed8",
+  "backend_base": "2e12badb7a29d421c72c1faf1cf11de5383d0b1b",
+  "database_files": {
+    "sql/bootstrap_mvp_b.sql": "6b222157a99d7816d2fc3445c2bdc150a90632c86a35888a89bf38ffd89430aa",
+    "tests/003_mvp_cve.sql": "aa9ee7316f6fdfa5deca083864bc75c498e759e78b7de07a7ffb3447ef959993",
+    "init/10-mvp-a.sh": "c98f28f1503db930be676bdeda87f0c1502f1abed28339c4e30eb944f2a14d5d",
+    "init/20-mvp-b.sh": "c183300cdcec2ed7dbf691c32d0852272f0150f4c318d2ef9f667daf7b631aac"
+  },
+  "backend_files": {
+    "app/db/cve_schema.sql": "82e48b79248625c16f6d37082892b1f8c387a686fdd21a7f0298d484dbfc4076",
+    "app/db/mvp_cve_catalog.json": "879ed542f337d37623c7c301e802f6be31906854dd55a2b64e2fd0b5fb012c3f"
+  }
+}

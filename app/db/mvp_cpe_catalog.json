@@ -1,0 +1,1002 @@
+{
+  "columns": [
+    {
+      "table_name": "analysis_runs",
+      "column_name": "asset_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "completed_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "coverage",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "initiated_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "kind",
+      "type": "text",
+      "not_null": true,
+      "default": "'nvd_cve'::text"
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "selected_cpe",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "source_timestamp",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "started_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default": "'queued'::text"
+    },
+    {
+      "table_name": "analysis_runs",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "asset_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "component_kind",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "cpe_name",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "cpe_name_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "idempotency_key",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "observed_version",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "reason",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "recorded_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "recorded_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "replaces_id",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "request_hash",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "source",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "state",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "valid_to",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "column_name": "validated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "asset_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "expires_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "(statement_timestamp() + '24:00:00'::interval)"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "idempotency_key",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "method",
+      "type": "text",
+      "not_null": true,
+      "default": "'POST'::text"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "request_hash",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "response_body",
+      "type": "jsonb",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "response_status",
+      "type": "smallint",
+      "not_null": true,
+      "default": "201"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "route",
+      "type": "text",
+      "not_null": true,
+      "default": "'/assets'::text"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "column_name": "user_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "assets",
+      "column_name": "created_by",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "device_type",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "inventory_label",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "manufacturer",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "model",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "notes",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "site_label",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "assets",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "assets",
+      "column_name": "version",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "findings",
+      "column_name": "analysis_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "findings",
+      "column_name": "applicability",
+      "type": "text",
+      "not_null": true,
+      "default": "'potential'::text"
+    },
+    {
+      "table_name": "findings",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "findings",
+      "column_name": "cvss",
+      "type": "jsonb",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "findings",
+      "column_name": "external_id",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "findings",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "findings",
+      "column_name": "observed_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "findings",
+      "column_name": "source",
+      "type": "text",
+      "not_null": true,
+      "default": "'NVD'::text"
+    },
+    {
+      "table_name": "findings",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default": "'open'::text"
+    },
+    {
+      "table_name": "findings",
+      "column_name": "title",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "findings",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "users",
+      "column_name": "active",
+      "type": "boolean",
+      "not_null": true,
+      "default": "false"
+    },
+    {
+      "table_name": "users",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "users",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "password_hash",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "users",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "users",
+      "column_name": "username",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_asset_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (asset_id) REFERENCES vulntrack.assets(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_coverage_valid",
+      "type": "c",
+      "definition": "CHECK ((coverage = ANY (ARRAY['complete'::text, 'partial'::text])))"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_cpe_valid",
+      "type": "c",
+      "definition": "CHECK (((\"left\"(selected_cpe, 8) = 'cpe:2.3:'::text) AND vulntrack.valid_text(selected_cpe, 1024)))"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_execution_order",
+      "type": "c",
+      "definition": "CHECK ((completed_at >= started_at))"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_initiated_by_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (initiated_by) REFERENCES vulntrack.users(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_kind_v1",
+      "type": "c",
+      "definition": "CHECK ((kind = 'nvd_cve'::text))"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_lifecycle",
+      "type": "c",
+      "definition": "CHECK ((((status = 'queued'::text) AND (started_at IS NULL) AND (completed_at IS NULL) AND (coverage IS NULL)) OR ((status = 'running'::text) AND (started_at IS NOT NULL) AND (completed_at IS NULL) AND (coverage IS NULL)) OR ((status = 'completed'::text) AND (started_at IS NOT NULL) AND (completed_at IS NOT NULL) AND (coverage IS NOT NULL)) OR ((status = 'failed'::text) AND (completed_at IS NOT NULL))))"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_status_valid",
+      "type": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'completed'::text, 'failed'::text])))"
+    },
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "asset_cpe_identifications_asset_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (asset_id) REFERENCES vulntrack.assets(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "asset_cpe_identifications_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "asset_cpe_identifications_recorded_by_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (recorded_by) REFERENCES vulntrack.users(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_asset_id_unique",
+      "type": "u",
+      "definition": "UNIQUE (asset_id, id)"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_chain_complete",
+      "type": "t",
+      "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_component_valid",
+      "type": "c",
+      "definition": "CHECK ((component_kind = ANY (ARRAY['hardware'::text, 'firmware'::text, 'os'::text, 'software'::text])))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_hash_valid",
+      "type": "c",
+      "definition": "CHECK ((request_hash ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_idempotency_unique",
+      "type": "u",
+      "definition": "UNIQUE (asset_id, recorded_by, idempotency_key)"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_name_valid",
+      "type": "c",
+      "definition": "CHECK (((\"left\"(cpe_name, 8) = 'cpe:2.3:'::text) AND vulntrack.valid_text(cpe_name, 1024)))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_no_self_replace",
+      "type": "c",
+      "definition": "CHECK (((replaces_id IS NULL) OR (replaces_id <> id)))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_reason_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(reason, 500))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_replaces_same_asset",
+      "type": "f",
+      "definition": "FOREIGN KEY (asset_id, replaces_id) REFERENCES vulntrack.asset_cpe_identifications(asset_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_source_valid",
+      "type": "c",
+      "definition": "CHECK ((source = 'NVD'::text))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_state_valid",
+      "type": "c",
+      "definition": "CHECK ((state = ANY (ARRAY['confirmed'::text, 'needs_review'::text])))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_time_order",
+      "type": "c",
+      "definition": "CHECK (((valid_to IS NULL) OR (valid_to >= recorded_at)))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_validation_order",
+      "type": "c",
+      "definition": "CHECK ((validated_at <= recorded_at))"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_version_valid",
+      "type": "c",
+      "definition": "CHECK (((observed_version IS NULL) OR vulntrack.valid_text(observed_version, 120)))"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "name": "asset_registration_requests_asset_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (asset_id) REFERENCES vulntrack.assets(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "name": "asset_registration_requests_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (user_id, method, route, idempotency_key)"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "name": "asset_registration_requests_user_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (user_id) REFERENCES vulntrack.users(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "name": "registration_expiry",
+      "type": "c",
+      "definition": "CHECK ((expires_at > created_at))"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "name": "registration_hash_valid",
+      "type": "c",
+      "definition": "CHECK ((request_hash ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "name": "registration_response_status",
+      "type": "c",
+      "definition": "CHECK ((response_status = 201))"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "name": "registration_response_valid",
+      "type": "c",
+      "definition": "CHECK (((jsonb_typeof(response_body) = 'object'::text) AND (response_body ? 'id'::text) AND ((response_body ->> 'id'::text) IS NOT NULL) AND ((response_body ->> 'id'::text) = (asset_id)::text)))"
+    },
+    {
+      "table_name": "asset_registration_requests",
+      "name": "registration_scope",
+      "type": "c",
+      "definition": "CHECK (((method = 'POST'::text) AND (route = '/assets'::text)))"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_created_by_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (created_by) REFERENCES vulntrack.users(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_device_type_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(device_type, 80))"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_inventory_label_valid",
+      "type": "c",
+      "definition": "CHECK (((inventory_label IS NULL) OR vulntrack.valid_text(inventory_label, 120)))"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_manufacturer_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(manufacturer, 120))"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_model_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(model, 120))"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_notes_valid",
+      "type": "c",
+      "definition": "CHECK (((notes IS NULL) OR vulntrack.valid_text(notes, 1000)))"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_site_label_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(site_label, 120))"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_version_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(version, 120))"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_analysis_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (analysis_id) REFERENCES vulntrack.analysis_runs(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_applicability_v1",
+      "type": "c",
+      "definition": "CHECK ((applicability = 'potential'::text))"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_cve_valid",
+      "type": "c",
+      "definition": "CHECK ((external_id ~ '^CVE-[0-9]{4}-[0-9]{4,}$'::text))"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_cvss_object",
+      "type": "c",
+      "definition": "CHECK (((cvss IS NULL) OR (jsonb_typeof(cvss) = 'object'::text)))"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_source_v1",
+      "type": "c",
+      "definition": "CHECK ((source = 'NVD'::text))"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_status_valid",
+      "type": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['open'::text, 'reviewed'::text])))"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_title_valid",
+      "type": "c",
+      "definition": "CHECK (((title IS NULL) OR vulntrack.valid_text(title, 500)))"
+    },
+    {
+      "table_name": "users",
+      "name": "users_hash_not_plaintext",
+      "type": "c",
+      "definition": "CHECK (((password_hash IS NULL) OR (password_hash ~ '^\\$argon2id\\$v=19\\$m=[0-9]+,t=[0-9]+,p=[0-9]+\\$[A-Za-z0-9+/]+\\$[A-Za-z0-9+/]+$'::text)))"
+    },
+    {
+      "table_name": "users",
+      "name": "users_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "users",
+      "name": "users_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "users",
+      "name": "users_username_key",
+      "type": "u",
+      "definition": "UNIQUE (username)"
+    },
+    {
+      "table_name": "users",
+      "name": "users_username_valid",
+      "type": "c",
+      "definition": "CHECK ((username ~ '^[a-z0-9][a-z0-9_.-]{0,79}$'::text))"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "analysis_runs",
+      "indexname": "analysis_runs_asset_started_idx",
+      "indexdef": "CREATE INDEX analysis_runs_asset_started_idx ON vulntrack.analysis_runs USING btree (asset_id, started_at DESC, id)"
+    },
+    {
+      "tablename": "analysis_runs",
+      "indexname": "analysis_runs_initiated_by_idx",
+      "indexdef": "CREATE INDEX analysis_runs_initiated_by_idx ON vulntrack.analysis_runs USING btree (initiated_by)"
+    },
+    {
+      "tablename": "analysis_runs",
+      "indexname": "analysis_runs_pkey",
+      "indexdef": "CREATE UNIQUE INDEX analysis_runs_pkey ON vulntrack.analysis_runs USING btree (id)"
+    },
+    {
+      "tablename": "asset_cpe_identifications",
+      "indexname": "asset_cpe_identifications_pkey",
+      "indexdef": "CREATE UNIQUE INDEX asset_cpe_identifications_pkey ON vulntrack.asset_cpe_identifications USING btree (id)"
+    },
+    {
+      "tablename": "asset_cpe_identifications",
+      "indexname": "cpe_asset_id_unique",
+      "indexdef": "CREATE UNIQUE INDEX cpe_asset_id_unique ON vulntrack.asset_cpe_identifications USING btree (asset_id, id)"
+    },
+    {
+      "tablename": "asset_cpe_identifications",
+      "indexname": "cpe_current_unique",
+      "indexdef": "CREATE UNIQUE INDEX cpe_current_unique ON vulntrack.asset_cpe_identifications USING btree (asset_id) WHERE (valid_to IS NULL)"
+    },
+    {
+      "tablename": "asset_cpe_identifications",
+      "indexname": "cpe_history_idx",
+      "indexdef": "CREATE INDEX cpe_history_idx ON vulntrack.asset_cpe_identifications USING btree (asset_id, recorded_at, id)"
+    },
+    {
+      "tablename": "asset_cpe_identifications",
+      "indexname": "cpe_idempotency_unique",
+      "indexdef": "CREATE UNIQUE INDEX cpe_idempotency_unique ON vulntrack.asset_cpe_identifications USING btree (asset_id, recorded_by, idempotency_key)"
+    },
+    {
+      "tablename": "asset_cpe_identifications",
+      "indexname": "cpe_replaces_unique",
+      "indexdef": "CREATE UNIQUE INDEX cpe_replaces_unique ON vulntrack.asset_cpe_identifications USING btree (replaces_id) WHERE (replaces_id IS NOT NULL)"
+    },
+    {
+      "tablename": "asset_registration_requests",
+      "indexname": "asset_registration_requests_pkey",
+      "indexdef": "CREATE UNIQUE INDEX asset_registration_requests_pkey ON vulntrack.asset_registration_requests USING btree (user_id, method, route, idempotency_key)"
+    },
+    {
+      "tablename": "asset_registration_requests",
+      "indexname": "registration_asset_id_idx",
+      "indexdef": "CREATE INDEX registration_asset_id_idx ON vulntrack.asset_registration_requests USING btree (asset_id)"
+    },
+    {
+      "tablename": "assets",
+      "indexname": "assets_created_id_idx",
+      "indexdef": "CREATE INDEX assets_created_id_idx ON vulntrack.assets USING btree (created_at, id)"
+    },
+    {
+      "tablename": "assets",
+      "indexname": "assets_owner_created_id_idx",
+      "indexdef": "CREATE INDEX assets_owner_created_id_idx ON vulntrack.assets USING btree (created_by, created_at, id)"
+    },
+    {
+      "tablename": "assets",
+      "indexname": "assets_pkey",
+      "indexdef": "CREATE UNIQUE INDEX assets_pkey ON vulntrack.assets USING btree (id)"
+    },
+    {
+      "tablename": "findings",
+      "indexname": "findings_analysis_id_idx",
+      "indexdef": "CREATE INDEX findings_analysis_id_idx ON vulntrack.findings USING btree (analysis_id, id)"
+    },
+    {
+      "tablename": "findings",
+      "indexname": "findings_pkey",
+      "indexdef": "CREATE UNIQUE INDEX findings_pkey ON vulntrack.findings USING btree (id)"
+    },
+    {
+      "tablename": "users",
+      "indexname": "users_pkey",
+      "indexdef": "CREATE UNIQUE INDEX users_pkey ON vulntrack.users USING btree (id)"
+    },
+    {
+      "tablename": "users",
+      "indexname": "users_username_key",
+      "indexdef": "CREATE UNIQUE INDEX users_username_key ON vulntrack.users USING btree (username)"
+    }
+  ],
+  "triggers": [
+    {
+      "table_name": "analysis_runs",
+      "name": "analysis_runs_touch",
+      "definition": "CREATE TRIGGER analysis_runs_touch BEFORE UPDATE ON vulntrack.analysis_runs FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_chain_complete",
+      "definition": "CREATE CONSTRAINT TRIGGER cpe_chain_complete AFTER INSERT OR UPDATE ON vulntrack.asset_cpe_identifications DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION vulntrack.check_cpe_chain()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "asset_cpe_identifications",
+      "name": "cpe_event_guard",
+      "definition": "CREATE TRIGGER cpe_event_guard BEFORE INSERT OR DELETE OR UPDATE ON vulntrack.asset_cpe_identifications FOR EACH ROW EXECUTE FUNCTION vulntrack.guard_cpe_event()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "assets",
+      "name": "assets_touch",
+      "definition": "CREATE TRIGGER assets_touch BEFORE UPDATE ON vulntrack.assets FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "findings",
+      "name": "findings_touch",
+      "definition": "CREATE TRIGGER findings_touch BEFORE UPDATE ON vulntrack.findings FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "users",
+      "name": "users_touch",
+      "definition": "CREATE TRIGGER users_touch BEFORE UPDATE ON vulntrack.users FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    }
+  ],
+  "functions": [
+    {
+      "name": "check_cpe_chain",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.check_cpe_chain()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF (SELECT count(*) FROM vulntrack.asset_cpe_identifications\n        WHERE asset_id = NEW.asset_id AND valid_to IS NULL) <> 1\n       OR EXISTS (\n        SELECT 1 FROM vulntrack.asset_cpe_identifications e\n        WHERE e.asset_id = NEW.asset_id AND e.valid_to IS NOT NULL AND NOT EXISTS (\n            SELECT 1 FROM vulntrack.asset_cpe_identifications n\n            WHERE n.asset_id = e.asset_id AND n.replaces_id = e.id AND n.recorded_at = e.valid_to\n        )\n    ) THEN\n        RAISE EXCEPTION 'Incomplete CPE history chain' USING ERRCODE = '23514';\n    END IF;\n    RETURN NULL;\nEND $function$\n"
+    },
+    {
+      "name": "guard_cpe_event",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.guard_cpe_event()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nDECLARE prior vulntrack.asset_cpe_identifications; owner_id uuid;\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        RAISE EXCEPTION 'CPE history is immutable' USING ERRCODE = '23514';\n    END IF;\n    IF TG_OP = 'UPDATE' THEN\n        IF (to_jsonb(NEW) - 'valid_to') IS DISTINCT FROM (to_jsonb(OLD) - 'valid_to')\n           OR OLD.valid_to IS NOT NULL OR NEW.valid_to IS NULL THEN\n            RAISE EXCEPTION 'Only current event closure is allowed' USING ERRCODE = '23514';\n        END IF;\n        RETURN NEW;\n    END IF;\n    SELECT created_by INTO owner_id FROM vulntrack.assets WHERE id = NEW.asset_id FOR UPDATE;\n    IF owner_id IS NULL OR owner_id IS DISTINCT FROM NEW.recorded_by THEN\n        RAISE EXCEPTION 'Event actor must own asset' USING ERRCODE = '23514';\n    END IF;\n    IF NEW.valid_to IS NOT NULL THEN\n        RAISE EXCEPTION 'New event must be current' USING ERRCODE = '23514';\n    END IF;\n    IF NEW.replaces_id IS NULL THEN\n        IF NEW.state <> 'confirmed' OR EXISTS (\n            SELECT 1 FROM vulntrack.asset_cpe_identifications WHERE asset_id = NEW.asset_id\n        ) THEN\n            RAISE EXCEPTION 'Invalid first event' USING ERRCODE = '23514';\n        END IF;\n    ELSE\n        SELECT * INTO prior FROM vulntrack.asset_cpe_identifications\n        WHERE asset_id = NEW.asset_id AND id = NEW.replaces_id;\n        IF prior.id IS NULL OR prior.valid_to IS DISTINCT FROM NEW.recorded_at THEN\n            RAISE EXCEPTION 'Predecessor must close at new event time' USING ERRCODE = '23514';\n        END IF;\n        IF NEW.state = 'needs_review' AND (\n            prior.state <> 'confirmed' OR\n            ROW(NEW.cpe_name, NEW.cpe_name_id, NEW.component_kind, NEW.observed_version,\n                NEW.source, NEW.validated_at) IS DISTINCT FROM\n            ROW(prior.cpe_name, prior.cpe_name_id, prior.component_kind, prior.observed_version,\n                prior.source, prior.validated_at)\n        ) THEN\n            RAISE EXCEPTION 'Invalid review snapshot' USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND $function$\n"
+    },
+    {
+      "name": "touch_updated_at",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.touch_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    IF NEW.id IS DISTINCT FROM OLD.id OR NEW.created_at IS DISTINCT FROM OLD.created_at THEN\n        RAISE EXCEPTION 'id y created_at son inmutables' USING ERRCODE = '23514';\n    END IF;\n    NEW.updated_at := greatest(clock_timestamp(), OLD.updated_at);\n    RETURN NEW;\nEND $function$\n"
+    },
+    {
+      "name": "valid_text",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.valid_text(value text, maximum integer)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE PARALLEL SAFE STRICT\nAS $function$ SELECT char_length(value) BETWEEN 1 AND maximum\n       AND value !~ '^[[:space:]]|[[:space:]]$' $function$\n"
+    }
+  ],
+  "tables": [
+    {
+      "name": "analysis_runs",
+      "row_security": false,
+      "force_row_security": false
+    },
+    {
+      "name": "asset_cpe_identifications",
+      "row_security": false,
+      "force_row_security": false
+    },
+    {
+      "name": "asset_registration_requests",
+      "row_security": false,
+      "force_row_security": false
+    },
+    {
+      "name": "assets",
+      "row_security": false,
+      "force_row_security": false
+    },
+    {
+      "name": "findings",
+      "row_security": false,
+      "force_row_security": false
+    },
+    {
+      "name": "users",
+      "row_security": false,
+      "force_row_security": false
+    }
+  ]
+}

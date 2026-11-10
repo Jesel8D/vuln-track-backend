@@ -1,0 +1,14 @@
+{
+  "revision": "0003_mvp_cpe",
+  "database_base": "b493fd17e9290ca94fa085d49230073ed1837e1a",
+  "database_branch": "feat/mvp-cpe-database",
+  "database_files": {
+    "sql/bootstrap_mvp_a.sql": "1fb50d3aa8702e4a2afb010fa0d254bcf50b38e416f412207a97d8ec2e0f9ae9",
+    "tests/002_mvp_cpe.sql": "47a433ca9fc1c2b7692017cc1802af17bef20bf38a65486cb9c2f916cd2d05e2"
+  },
+  "backend_files": {
+    "app/db/cpe_table.sql": "af1eb4e4e97e41c2eb692eafe3dbef88d3ff0ab1813824dccf7d20915908b0ce",
+    "app/db/cpe_guards.sql": "b5cff3c39c83052ef4555728e0c5803bfe7a5b706fcb80b9099dd4d3ab729b4f",
+    "app/db/mvp_cpe_catalog.json": "0370d907d8a9ebf84d19a3f1cb1ab9cbfdb540f206db7eb6ef37f99f67ce5c27"
+  }
+}
