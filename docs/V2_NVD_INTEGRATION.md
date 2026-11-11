@@ -13,8 +13,9 @@
 - `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses?limit=&offset=` lista las consultas NVD de una aplicación, paginadas y ordenadas de más recientes a más antiguas. Incluye producto, versión, estado, cobertura, conteos, avisos y marcas de tiempo.
 - `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}` devuelve el estado de una consulta.
 - `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}/findings` devuelve hallazgos paginados.
+- `PATCH /api/v2/workspaces/{workspace_id}/applications/{application_id}/findings/{finding_id}` registra una sola revisión humana de un hallazgo abierto y terminado. Exige `expected_updated_at`, limita el resultado a `potential`, `undetermined` o `not_applicable`, y agrega un evento de auditoría; la base impide reescribir la evidencia fuente.
 
-El historial usa el mismo contexto HMAC, RLS y autorización de lectura del workspace. La revisión/seguimiento de hallazgos aún no tiene endpoints V2.
+El historial usa el mismo contexto HMAC, RLS y autorización de lectura del workspace. La revisión usa autorización de escritura, control optimista de concurrencia y las restricciones de transición de Database V2. La gestión de recomendaciones y sus estados todavía no tiene endpoints V2.
 
 ## Aislamiento de workspace
 
