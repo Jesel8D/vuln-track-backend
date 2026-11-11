@@ -12,6 +12,7 @@ from app.api.analyses import router as analyses_router
 from app.api.cpe import router as cpe_router
 from app.api.router import router
 from app.api.v2_nvd import router as v2_nvd_router
+from app.api.v2_dashboard import router as v2_dashboard_router
 from app.api.v2_resources import router as v2_resources_router
 from app.api.v2_targets import (
     router as v2_targets_router,
@@ -179,6 +180,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(analyses_router)
     app.include_router(v2_resources_router)
     app.include_router(v2_nvd_router)
+    app.include_router(v2_dashboard_router)
     app.include_router(v2_targets_router)
     app.include_router(v2_workspace_targets_router)
     return app
