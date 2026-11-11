@@ -10,6 +10,12 @@
 
 ## Rutas V2 disponibles
 
+- `GET /api/v2/workspaces/{workspace_id}/dashboard` devuelve los agregados del
+  workspace, tendencia semestral de consultas NVD, consultas recientes y
+  hallazgos prioritarios. Para métricas de hallazgos usa el análisis completado
+  más reciente por tecnología y cuenta cada CVE una vez por tecnología; la misma
+  CVE en tecnologías distintas cuenta una vez en cada una. Las ejecuciones en
+  curso y fallidas se informan separadamente y no se mezclan con esos hallazgos.
 - `GET/POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets` consulta y registra URLs de aplicación en estado inicialmente pendiente.
 - `GET /api/v2/workspaces/{workspace_id}/targets?limit=&offset=` lista destinos del workspace con su aplicación y autorización efectiva.
 - `PATCH /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets/{target_id}/authorization` registra una declaración de autorización con referencia y vencimiento de hasta 365 días. Esto no habilita escaneos: ZAP permanece deshabilitado.
