@@ -8,7 +8,7 @@ from typing import Annotated
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Header, Query, Request
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import text
 
 from app.api.router import Identity
@@ -34,6 +34,19 @@ class CPESelection(BaseModel):
     model_config = ConfigDict(extra="forbid")
     cpe_name_id: UUID
     expected_selected_cpe: str | None = Field(default=None, max_length=1024)
+
+
+class FindingReview(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    applicability: str = Field(pattern=r"^(potential|undetermined|not_applicable)$")
+    expected_updated_at: datetime
+
+    @field_validator("expected_updated_at")
+    @classmethod
+    def timezone_required(cls, value):
+        if value.tzinfo is None:
+            raise ValueError("expected_updated_at requiere zona horaria")
+        return value
 
 
 def _authorize(session, workspace_id, application_id, role="owner", actor_id=None):
@@ -407,7 +420,7 @@ def get_findings(
             raise APIError(404, "ANALYSIS_NOT_FOUND", "Consulta no encontrada")
         rows = session.execute(
             text("""SELECT id,external_id,title,severity,cvss,applicability,status,evidence,
-                published_at,last_modified_at,observed_at FROM vulntrack.application_findings
+                published_at,last_modified_at,observed_at,updated_at FROM vulntrack.application_findings
                 WHERE workspace_id=:workspace AND analysis_id=:id
                 ORDER BY external_id LIMIT :limit OFFSET :offset"""),
             {"workspace": workspace_id, "id": run_id, "limit": limit, "offset": offset},
@@ -418,3 +431,54 @@ def get_findings(
         )
         return {"items": [dict(row) for row in rows], "page": {"limit": limit, "offset": offset, "total": total},
                 "run_status": run["status"], "coverage": run["coverage"]}
+
+
+@router.patch("/findings/{finding_id}")
+def review_finding(
+    workspace_id: UUID,
+    application_id: UUID,
+    finding_id: UUID,
+    payload: FindingReview,
+    user: Identity,
+    request: Request,
+):
+    with workspace_session(
+        request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
+    ) as session:
+        _authorize(session, workspace_id, application_id, "writer")
+        row = session.execute(
+            text("""SELECT f.id,f.analysis_id,f.external_id,f.title,f.severity,f.cvss,
+                f.applicability,f.status,f.evidence,f.published_at,f.last_modified_at,
+                f.observed_at,f.updated_at,r.status AS run_status
+                FROM vulntrack.application_findings f
+                JOIN vulntrack.application_analysis_runs r
+                  ON r.workspace_id=f.workspace_id AND r.id=f.analysis_id
+                WHERE f.workspace_id=:workspace AND r.application_id=:application
+                  AND f.id=:finding FOR UPDATE OF f"""),
+            {"workspace": workspace_id, "application": application_id, "finding": finding_id},
+        ).mappings().first()
+        if row is None:
+            raise APIError(404, "FINDING_NOT_FOUND", "Hallazgo no disponible")
+        if (row["status"] != "open" or row["run_status"] not in {"completed", "failed"}
+                or row["updated_at"] != payload.expected_updated_at):
+            raise APIError(409, "FINDING_REVIEW_CONFLICT", "El hallazgo ya cambió o no puede revisarse")
+        session.execute(
+            text("""UPDATE vulntrack.application_findings
+                SET status='reviewed',applicability=:applicability
+                WHERE workspace_id=:workspace AND id=:finding AND status='open'"""),
+            {"applicability": payload.applicability, "workspace": workspace_id, "finding": finding_id},
+        )
+        session.execute(
+            text("""INSERT INTO vulntrack.audit_events
+                (workspace_id,actor_id,action,object_type,object_id)
+                VALUES (:workspace,:actor,:action,'finding',:finding)"""),
+            {"workspace": workspace_id, "actor": user.id,
+             "action": f"finding.reviewed.{payload.applicability}", "finding": finding_id},
+        )
+        updated = session.execute(
+            text("""SELECT id,external_id,title,severity,cvss,applicability,status,evidence,
+                published_at,last_modified_at,observed_at,updated_at
+                FROM vulntrack.application_findings WHERE workspace_id=:workspace AND id=:finding"""),
+            {"workspace": workspace_id, "finding": finding_id},
+        ).mappings().one()
+        return dict(updated)
