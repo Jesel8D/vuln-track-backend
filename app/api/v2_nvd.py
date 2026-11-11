@@ -348,6 +348,42 @@ def get_analysis(workspace_id: UUID, application_id: UUID, run_id: UUID, user: I
         return dict(row)
 
 
+@router.get("/analyses")
+def list_analyses(
+    workspace_id: UUID,
+    application_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0, le=1000000)] = 0,
+):
+    """List NVD runs for this application without exposing other workspaces."""
+    with workspace_session(
+        request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
+    ) as session:
+        _authorize(session, workspace_id, application_id)
+        rows = session.execute(
+            text("""SELECT r.id,r.technology_id,t.product,t.version,r.status,r.coverage,
+                r.total_results,r.retrieved_count,r.stored_count,r.page_count,r.warning_codes,
+                r.failure_code,r.source_timestamp,r.created_at,r.started_at,r.completed_at
+                FROM vulntrack.application_analysis_runs r
+                JOIN vulntrack.technologies t
+                  ON t.workspace_id=r.workspace_id AND t.application_id=r.application_id
+                 AND t.id=r.technology_id
+                WHERE r.workspace_id=:workspace AND r.application_id=:application
+                ORDER BY r.created_at DESC,r.id DESC LIMIT :limit OFFSET :offset"""),
+            {"workspace": workspace_id, "application": application_id,
+             "limit": limit, "offset": offset},
+        ).mappings().all()
+        total = session.scalar(
+            text("""SELECT count(*) FROM vulntrack.application_analysis_runs
+                WHERE workspace_id=:workspace AND application_id=:application"""),
+            {"workspace": workspace_id, "application": application_id},
+        )
+        return {"items": [dict(row) for row in rows],
+                "page": {"limit": limit, "offset": offset, "total": total}}
+
+
 @router.get("/analyses/{run_id}/findings")
 def get_findings(
     workspace_id: UUID,
