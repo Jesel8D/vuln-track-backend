@@ -10,6 +10,8 @@
 
 ## Rutas V2 disponibles
 
+- `GET/POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets` consulta y registra URLs de aplicación en estado inicialmente pendiente.
+- `PATCH /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets/{target_id}/authorization` registra una declaración de autorización con referencia y vencimiento de hasta 365 días. Esto no habilita escaneos: ZAP permanece deshabilitado.
 - `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses?limit=&offset=` lista las consultas NVD de una aplicación, paginadas y ordenadas de más recientes a más antiguas. Incluye producto, versión, estado, cobertura, conteos, avisos y marcas de tiempo.
 - `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}` devuelve el estado de una consulta.
 - `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}/findings` devuelve hallazgos paginados.
