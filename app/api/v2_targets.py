@@ -5,7 +5,7 @@ from typing import Annotated, Literal
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import text
 
@@ -16,6 +16,7 @@ from app.db.workspace_context import workspace_session
 router = APIRouter(
     prefix="/api/v2/workspaces/{workspace_id}/applications/{application_id}/targets"
 )
+workspace_router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/targets")
 
 
 def _authorize(session, workspace_id, application_id, write=False):
@@ -102,6 +103,45 @@ class TargetAuthorization(BaseModel):
         if not result or any(ord(char) < 32 for char in result):
             raise ValueError("Referencia inválida")
         return result
+
+
+@workspace_router.get("")
+def list_workspace_targets(
+    workspace_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Annotated[int, Query(ge=1, le=1000)] = 100,
+    offset: Annotated[int, Query(ge=0, le=1000000)] = 0,
+):
+    with workspace_session(
+        request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
+    ) as session:
+        if not session.scalar(
+            text("SELECT vulntrack.has_workspace_role(:workspace, ARRAY['owner','editor','viewer'])"),
+            {"workspace": workspace_id},
+        ):
+            raise APIError(404, "WORKSPACE_NOT_FOUND", "Workspace no disponible")
+        rows = session.execute(
+            text("""SELECT t.id,t.application_id,a.name AS application_name,a.status AS application_status,
+                t.url,t.label,
+                CASE WHEN t.authorization_status='approved'
+                          AND t.authorization_expires_at <= clock_timestamp()
+                     THEN 'expired' ELSE t.authorization_status END AS authorization_status,
+                t.authorization_expires_at,t.authorization_reference,t.created_at,t.updated_at
+                FROM vulntrack.application_targets t
+                JOIN vulntrack.applications a
+                  ON a.workspace_id=t.workspace_id AND a.id=t.application_id
+                WHERE t.workspace_id=:workspace
+                ORDER BY a.created_at DESC,a.id,t.created_at,t.id
+                LIMIT :limit OFFSET :offset"""),
+            {"workspace": workspace_id, "limit": limit, "offset": offset},
+        ).mappings().all()
+        total = session.scalar(
+            text("SELECT count(*) FROM vulntrack.application_targets WHERE workspace_id=:workspace"),
+            {"workspace": workspace_id},
+        )
+        return {"items": [dict(row) for row in rows],
+                "page": {"limit": limit, "offset": offset, "total": total}}
 
 
 @router.get("")
