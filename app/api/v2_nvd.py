@@ -6,6 +6,7 @@ import logging
 from datetime import UTC, datetime
 from typing import Annotated
 from uuid import UUID, uuid4
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -44,6 +45,54 @@ class FindingReview(BaseModel):
     @field_validator("expected_updated_at")
     @classmethod
     def timezone_required(cls, value):
+        if value.tzinfo is None:
+            raise ValueError("expected_updated_at requiere zona horaria")
+        return value
+
+
+class RecommendationCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    recommendation: str = Field(min_length=1, max_length=4000)
+    source_url: str | None = Field(default=None, max_length=2048)
+    assigned_to: UUID | None = None
+    due_at: datetime | None = None
+
+    @field_validator("recommendation", mode="before")
+    @classmethod
+    def clean_recommendation(cls, value):
+        if not isinstance(value, str):
+            return value
+        value = " ".join(value.split())
+        if not value or any(ord(char) < 32 for char in value):
+            raise ValueError("Texto inválido")
+        return value
+
+    @field_validator("source_url")
+    @classmethod
+    def safe_source_url(cls, value):
+        if value is None:
+            return value
+        parsed = urlsplit(value)
+        if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password:
+            raise ValueError("source_url debe ser HTTPS y no incluir credenciales")
+        return value
+
+    @field_validator("due_at")
+    @classmethod
+    def due_date_aware(cls, value):
+        if value is not None and value.tzinfo is None:
+            raise ValueError("due_at requiere zona horaria")
+        return value
+
+
+class RecommendationUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    status: str = Field(pattern=r"^(pending|in_progress|fixed|accepted_risk)$")
+    expected_updated_at: datetime
+
+    @field_validator("expected_updated_at")
+    @classmethod
+    def expected_time_aware(cls, value):
         if value.tzinfo is None:
             raise ValueError("expected_updated_at requiere zona horaria")
         return value
@@ -482,3 +531,135 @@ def review_finding(
             {"workspace": workspace_id, "finding": finding_id},
         ).mappings().one()
         return dict(updated)
+
+
+@router.get("/findings/{finding_id}/recommendations")
+def list_recommendations(
+    workspace_id: UUID,
+    application_id: UUID,
+    finding_id: UUID,
+    user: Identity,
+    request: Request,
+):
+    with workspace_session(
+        request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
+    ) as session:
+        _authorize(session, workspace_id, application_id)
+        found = session.scalar(
+            text("""SELECT 1 FROM vulntrack.application_findings f
+                JOIN vulntrack.application_analysis_runs r
+                  ON r.workspace_id=f.workspace_id AND r.id=f.analysis_id
+                WHERE f.workspace_id=:workspace AND f.id=:finding
+                  AND r.application_id=:application"""),
+            {"workspace": workspace_id, "finding": finding_id, "application": application_id},
+        )
+        if not found:
+            raise APIError(404, "FINDING_NOT_FOUND", "Hallazgo no disponible")
+        rows = session.execute(
+            text("""SELECT id,finding_id,recommendation,source_url,status,assigned_to,
+                created_by,due_at,completed_at,created_at,updated_at
+                FROM vulntrack.recommendations WHERE workspace_id=:workspace AND finding_id=:finding
+                ORDER BY created_at,id LIMIT 100"""),
+            {"workspace": workspace_id, "finding": finding_id},
+        ).mappings().all()
+        return {"items": [dict(row) for row in rows]}
+
+
+@router.post("/findings/{finding_id}/recommendations", status_code=201)
+def create_recommendation(
+    workspace_id: UUID,
+    application_id: UUID,
+    finding_id: UUID,
+    payload: RecommendationCreate,
+    user: Identity,
+    request: Request,
+):
+    recommendation_id = uuid4()
+    with workspace_session(
+        request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
+    ) as session:
+        _authorize(session, workspace_id, application_id, "writer")
+        found = session.scalar(
+            text("""SELECT 1 FROM vulntrack.application_findings f
+                JOIN vulntrack.application_analysis_runs r
+                  ON r.workspace_id=f.workspace_id AND r.id=f.analysis_id
+                WHERE f.workspace_id=:workspace AND f.id=:finding
+                  AND r.application_id=:application FOR UPDATE OF f"""),
+            {"workspace": workspace_id, "finding": finding_id, "application": application_id},
+        )
+        if not found:
+            raise APIError(404, "FINDING_NOT_FOUND", "Hallazgo no disponible")
+        recommendation_count = session.scalar(
+            text("""SELECT count(*) FROM vulntrack.recommendations
+                WHERE workspace_id=:workspace AND finding_id=:finding"""),
+            {"workspace": workspace_id, "finding": finding_id},
+        )
+        if recommendation_count >= 50:
+            raise APIError(409, "RECOMMENDATION_LIMIT", "Este hallazgo alcanzó el límite de 50 medidas")
+        if payload.assigned_to and not session.scalar(
+            text("SELECT 1 FROM vulntrack.workspace_members WHERE workspace_id=:workspace AND user_id=:assignee"),
+            {"workspace": workspace_id, "assignee": payload.assigned_to},
+        ):
+            raise APIError(404, "ASSIGNEE_NOT_FOUND", "Miembro no disponible en este workspace")
+        row = session.execute(
+            text("""INSERT INTO vulntrack.recommendations
+                (id,workspace_id,finding_id,recommendation,source_url,assigned_to,created_by,due_at)
+                VALUES (:id,:workspace,:finding,:recommendation,:source,:assignee,:actor,:due)
+                RETURNING id,finding_id,recommendation,source_url,status,assigned_to,
+                    created_by,due_at,completed_at,created_at,updated_at"""),
+            {"id": recommendation_id, "workspace": workspace_id, "finding": finding_id,
+             "recommendation": payload.recommendation, "source": payload.source_url,
+             "assignee": payload.assigned_to, "actor": user.id, "due": payload.due_at},
+        ).mappings().one()
+        session.execute(
+            text("""INSERT INTO vulntrack.audit_events
+                (workspace_id,actor_id,action,object_type,object_id)
+                VALUES (:workspace,:actor,'recommendation.created','recommendation',:object)"""),
+            {"workspace": workspace_id, "actor": user.id, "object": recommendation_id},
+        )
+        return dict(row)
+
+
+@router.patch("/recommendations/{recommendation_id}")
+def update_recommendation(
+    workspace_id: UUID,
+    application_id: UUID,
+    recommendation_id: UUID,
+    payload: RecommendationUpdate,
+    user: Identity,
+    request: Request,
+):
+    with workspace_session(
+        request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
+    ) as session:
+        _authorize(session, workspace_id, application_id, "writer")
+        current = session.execute(
+            text("""SELECT r.updated_at FROM vulntrack.recommendations r
+                JOIN vulntrack.application_findings f
+                  ON f.workspace_id=r.workspace_id AND f.id=r.finding_id
+                JOIN vulntrack.application_analysis_runs a
+                  ON a.workspace_id=f.workspace_id AND a.id=f.analysis_id
+                WHERE r.workspace_id=:workspace AND r.id=:id
+                  AND a.application_id=:application FOR UPDATE OF r"""),
+            {"workspace": workspace_id, "id": recommendation_id, "application": application_id},
+        ).mappings().first()
+        if current is None:
+            raise APIError(404, "RECOMMENDATION_NOT_FOUND", "Recomendación no disponible")
+        if current["updated_at"] != payload.expected_updated_at:
+            raise APIError(409, "RECOMMENDATION_CONFLICT", "La recomendación cambió; actualiza la lista")
+        row = session.execute(
+            text("""UPDATE vulntrack.recommendations SET status=:status,
+                completed_at=CASE WHEN :status='fixed' THEN clock_timestamp() ELSE NULL END
+                WHERE workspace_id=:workspace AND id=:id
+                RETURNING id,finding_id,recommendation,source_url,status,assigned_to,
+                    created_by,due_at,completed_at,created_at,updated_at"""),
+            {"status": payload.status, "workspace": workspace_id, "id": recommendation_id},
+        ).mappings().one()
+        session.execute(
+            text("""INSERT INTO vulntrack.audit_events
+                (workspace_id,actor_id,action,object_type,object_id)
+                VALUES (:workspace,:actor,:action,'recommendation',:object)"""),
+            {"workspace": workspace_id, "actor": user.id,
+             "action": f"recommendation.status.{payload.status}", "object": recommendation_id},
+        )
+        return dict(row)
