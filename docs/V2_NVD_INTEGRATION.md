@@ -8,6 +8,14 @@
 4. Una consulta CVE requiere ese CPE confirmado. Se crea una ejecución con clave idempotente y snapshot; la llamada externa se realiza sin una transacción SQL abierta.
 5. Se guarda la página validada, evidencia NVD limitada, cobertura (`complete` solo cuando los resultados caben en el presupuesto de 100; de otro modo `partial`) y timestamp de fuente. Los errores quedan tipados y la ejecución terminal no se reescribe.
 
+## Rutas V2 disponibles
+
+- `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses?limit=&offset=` lista las consultas NVD de una aplicación, paginadas y ordenadas de más recientes a más antiguas. Incluye producto, versión, estado, cobertura, conteos, avisos y marcas de tiempo.
+- `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}` devuelve el estado de una consulta.
+- `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}/findings` devuelve hallazgos paginados.
+
+El historial usa el mismo contexto HMAC, RLS y autorización de lectura del workspace. La revisión/seguimiento de hallazgos aún no tiene endpoints V2.
+
 ## Aislamiento de workspace
 
 `app/db/workspace_context.py` firma `v1|user|workspace|expires|nonce` con HMAC-SHA256 y ejecuta `vulntrack.establish_context` parametrizado dentro de cada transacción V2. El vencimiento es a 30 segundos, por debajo del máximo SQL de 60; se usa un nonce aleatorio nuevo. La transacción termina al salir del contexto, para que `SET LOCAL` no se filtre a una conexión reutilizada. Los roles de escritura se comprueban con `has_workspace_role` y RLS vuelve a filtrar las filas.
