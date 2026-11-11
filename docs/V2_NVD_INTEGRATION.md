@@ -14,8 +14,10 @@
 - `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}` devuelve el estado de una consulta.
 - `GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}/findings` devuelve hallazgos paginados.
 - `PATCH /api/v2/workspaces/{workspace_id}/applications/{application_id}/findings/{finding_id}` registra una sola revisión humana de un hallazgo abierto y terminado. Exige `expected_updated_at`, limita el resultado a `potential`, `undetermined` o `not_applicable`, y agrega un evento de auditoría; la base impide reescribir la evidencia fuente.
+- `GET/POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/findings/{finding_id}/recommendations` consulta y agrega medidas manuales. El alta limita cada hallazgo a 50 medidas y solo acepta enlaces fuente HTTPS sin credenciales.
+- `PATCH /api/v2/workspaces/{workspace_id}/applications/{application_id}/recommendations/{recommendation_id}` actualiza el estado con `expected_updated_at`; `fixed` guarda automáticamente la fecha de finalización.
 
-El historial usa el mismo contexto HMAC, RLS y autorización de lectura del workspace. La revisión usa autorización de escritura, control optimista de concurrencia y las restricciones de transición de Database V2. La gestión de recomendaciones y sus estados todavía no tiene endpoints V2.
+El historial y las medidas usan el mismo contexto HMAC, RLS y autorización del workspace. La revisión y actualización de medidas requieren rol de escritura y usan control optimista de concurrencia. Los eventos de alta, revisión y cambio de estado se guardan en auditoría.
 
 ## Aislamiento de workspace
 
