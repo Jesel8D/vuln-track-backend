@@ -125,6 +125,7 @@ def test_preflight_is_explicit_and_does_not_authenticate_or_query_db(
         "GET",
         "POST",
         "PATCH",
+        "PUT",
     }
     allowed = {
         header.strip().lower()

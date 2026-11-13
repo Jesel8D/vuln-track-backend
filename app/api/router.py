@@ -9,9 +9,11 @@ from sqlalchemy.orm import undefer
 
 from app.api.dependencies import current_user
 from app.core.errors import unauthorized
+from app.core.registration import registration_access
 from app.core.security import issue_token, verify_password
 from app.models.database_v1 import User
 from app.schemas.assets import AssetCreate, AssetList, AssetRead
+from app.schemas.registration import Registration
 
 router = APIRouter(prefix="/api/v1")
 Identity = Annotated[User, Depends(current_user)]
@@ -32,6 +34,16 @@ class Token(BaseModel):
 class UserRead(BaseModel):
     id: UUID
     username: str
+
+
+@router.post(
+    "/auth/register",
+    status_code=201,
+    response_model=UserRead,
+    dependencies=[Depends(registration_access)],
+)
+def register_account(payload: Registration, request: Request):
+    return request.app.state.registration.register(payload)
 
 
 @router.post("/auth/login", response_model=Token)

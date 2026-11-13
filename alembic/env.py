@@ -29,7 +29,13 @@ try:
             version_table_schema="public",
             compare_type=True,
             include_name=lambda name, type_, parent: (
-                name == "vulntrack" if type_ == "schema" else True
+                name == "vulntrack"
+                if type_ == "schema"
+                else (
+                    name in {table.name for table in Base.metadata.sorted_tables}
+                    if type_ == "table"
+                    else True
+                )
             ),
         )
         with context.begin_transaction():

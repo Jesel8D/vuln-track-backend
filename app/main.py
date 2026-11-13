@@ -11,17 +11,20 @@ from starlette.exceptions import HTTPException
 from app.api.analyses import router as analyses_router
 from app.api.cpe import router as cpe_router
 from app.api.router import router
-from app.api.v2_nvd import router as v2_nvd_router
 from app.api.v2_dashboard import router as v2_dashboard_router
+from app.api.v2_nvd import router as v2_nvd_router
 from app.api.v2_resources import router as v2_resources_router
 from app.api.v2_targets import (
     router as v2_targets_router,
+)
+from app.api.v2_targets import (
     workspace_router as v2_workspace_targets_router,
 )
 from app.core.config import Settings, get_settings
 from app.core.cors import BrowserCORSMiddleware
 from app.core.errors import APIError
 from app.core.http import RequestBoundary, error_body
+from app.core.registration import RegistrationGate
 from app.core.security import LoginLimiter
 from app.db.session import build_engine, build_session_factory
 from app.integrations.nvd import NVDClient
@@ -31,6 +34,7 @@ from app.services.assets import AssetService
 from app.services.authorization import AssetAuthorization
 from app.services.cpe import IdentificationService
 from app.services.cve_worker import CVEWorker
+from app.services.registration import RegistrationService
 
 logger = logging.getLogger("vulntrack")
 
@@ -67,6 +71,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.cve_worker = CVEWorker(engine, app.state.session_factory, app.state.cve)
     app.state.analyses.worker_ready = lambda: app.state.cve_worker.available
     app.state.login_limiter = LoginLimiter(settings.login_attempts_per_minute)
+    app.state.registration_gate = RegistrationGate(
+        settings.registration_attempts_per_minute, settings.registration_total_per_minute
+    )
+    app.state.registration = RegistrationService(
+        app.state.session_factory, settings, app.state.registration_gate
+    )
     app.add_middleware(RequestBoundary, max_body_bytes=settings.max_body_bytes)
     # Outside RequestBoundary: CORS also wraps its 413 and sanitized 500 responses.
     app.add_middleware(
@@ -103,13 +113,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             state,
         )
         if state == "23505":
-            return response(request, 409, "CONCURRENT_CONFLICT", "La solicitud entra en conflicto con un cambio concurrente")
+            return response(
+                request,
+                409,
+                "CONCURRENT_CONFLICT",
+                "La solicitud entra en conflicto con un cambio concurrente",
+            )
         if state == "23514":
-            return response(request, 409, "INTEGRITY_CONFLICT", "La operación no cumple una transición permitida")
+            return response(
+                request,
+                409,
+                "INTEGRITY_CONFLICT",
+                "La operación no cumple una transición permitida",
+            )
         if state == "42501":
             return response(request, 404, "RESOURCE_NOT_FOUND", "Recurso no disponible")
         if state == "28000":
-            return response(request, 503, "DATABASE_CONTEXT_INVALID", "Contexto de workspace no disponible")
+            return response(
+                request, 503, "DATABASE_CONTEXT_INVALID", "Contexto de workspace no disponible"
+            )
         if state in {"42703", "42P01", "42883"}:
             return response(
                 request, 503, "DATABASE_SCHEMA_NOT_READY", "Esquema requerido no disponible"
@@ -128,8 +150,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/ready")
     def ready():
-        if settings.workspace_hmac_key is None:
-            raise APIError(503, "WORKSPACE_CONTEXT_UNAVAILABLE", "Contexto de workspace no configurado")
         with engine.connect() as connection:
             safe_role = connection.scalar(
                 text(
@@ -151,20 +171,38 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 text("SELECT identification_id, page_count FROM vulntrack.analysis_runs LIMIT 0")
             )
             connection.execute(text("SELECT evidence, reviewed_by FROM vulntrack.findings LIMIT 0"))
-            connection.execute(text("SELECT request_key, page_manifest FROM vulntrack.application_analysis_runs LIMIT 0"))
-            connection.execute(text("SELECT evidence, published_at FROM vulntrack.application_findings LIMIT 0"))
-            if not connection.scalar(
+            if settings.registration_enabled and not connection.scalar(
                 text(
-                    "SELECT to_regprocedure("
-                    "'vulntrack.establish_new_workspace_context(uuid,uuid,bigint,uuid,text)'"
-                    ") IS NOT NULL AND to_regprocedure("
-                    "'vulntrack.establish_context(uuid,uuid,bigint,uuid,text)'"
-                    ") IS NOT NULL AND to_regprocedure("
-                    "'vulntrack.list_user_workspaces(uuid,bigint,uuid,text)'"
-                    ") IS NOT NULL"
+                    "SELECT bool_and(has_column_privilege("
+                    "current_user,'vulntrack.users',c,'INSERT')) "
+                    "FROM unnest(ARRAY['id','username','password_hash','active']) AS c"
                 )
             ):
-                raise APIError(503, "DATABASE_SCHEMA_NOT_READY", "Esquema requerido no disponible")
+                raise APIError(503, "REGISTRATION_NOT_READY", "Registro no disponible")
+            if settings.workspace_hmac_key is not None:
+                connection.execute(
+                    text(
+                        "SELECT request_key,page_manifest "
+                        "FROM vulntrack.application_analysis_runs LIMIT 0"
+                    )
+                )
+                connection.execute(
+                    text("SELECT evidence,published_at FROM vulntrack.application_findings LIMIT 0")
+                )
+                if not connection.scalar(
+                    text(
+                        "SELECT to_regprocedure("
+                        "'vulntrack.establish_new_workspace_context(uuid,uuid,bigint,uuid,text)'"
+                        ") IS NOT NULL AND to_regprocedure("
+                        "'vulntrack.establish_context(uuid,uuid,bigint,uuid,text)'"
+                        ") IS NOT NULL AND to_regprocedure("
+                        "'vulntrack.list_user_workspaces(uuid,bigint,uuid,text)'"
+                        ") IS NOT NULL"
+                    )
+                ):
+                    raise APIError(
+                        503, "DATABASE_SCHEMA_NOT_READY", "Esquema requerido no disponible"
+                    )
             nullable = connection.scalar(
                 text(
                     "SELECT NOT attnotnull FROM pg_attribute "

@@ -41,9 +41,9 @@ class ApplicationCreate(BaseModel):
 class TechnologyCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     product: Name
-    vendor: (
-        Annotated[str, StringConstraints(strict=True, min_length=1, max_length=160)] | None
-    ) = None
+    vendor: Annotated[str, StringConstraints(strict=True, min_length=1, max_length=160)] | None = (
+        None
+    )
     version: Version
     detection_method: Literal["manual", "http_fingerprint", "manifest_import"] = "manual"
 
@@ -88,10 +88,14 @@ def create_workspace(
         workspace_id,
         bootstrap=True,
     ) as session:
-        existing = session.execute(
-            text("SELECT id,name,created_by FROM vulntrack.workspaces WHERE id=:id"),
-            {"id": workspace_id},
-        ).mappings().first()
+        existing = (
+            session.execute(
+                text("SELECT id,name,created_by FROM vulntrack.workspaces WHERE id=:id"),
+                {"id": workspace_id},
+            )
+            .mappings()
+            .first()
+        )
         if existing:
             if existing["created_by"] != user.id or existing["name"] != name:
                 raise APIError(409, "IDEMPOTENCY_CONFLICT", "Clave utilizada con otro workspace")
@@ -102,18 +106,22 @@ def create_workspace(
             {"id": workspace_id, "name": name, "actor": user.id},
         ).first()
         if created is None:
-            existing = session.execute(
-                text("SELECT id,name,created_by FROM vulntrack.workspaces WHERE id=:id"),
-                {"id": workspace_id},
-            ).mappings().first()
+            existing = (
+                session.execute(
+                    text("SELECT id,name,created_by FROM vulntrack.workspaces WHERE id=:id"),
+                    {"id": workspace_id},
+                )
+                .mappings()
+                .first()
+            )
             if existing and existing["created_by"] == user.id and existing["name"] == name:
                 return {"id": str(existing["id"]), "name": existing["name"]}
             raise APIError(409, "IDEMPOTENCY_CONFLICT", "Clave utilizada con otro workspace")
         session.execute(
-        text(
-            "INSERT INTO vulntrack.workspace_members(workspace_id,user_id,role) "
-            "VALUES (:id,:actor,'owner')"
-        ),
+            text(
+                "INSERT INTO vulntrack.workspace_members(workspace_id,user_id,role) "
+                "VALUES (:id,:actor,'owner')"
+            ),
             {"id": workspace_id, "actor": user.id},
         )
         session.execute(
@@ -127,9 +135,11 @@ def create_workspace(
 
 @router.get("/workspaces")
 def get_my_workspaces(user: Identity, request: Request):
-    return {"items": list_user_workspaces(
-        request.app.state.session_factory, request.app.state.settings, user.id
-    )}
+    return {
+        "items": list_user_workspaces(
+            request.app.state.session_factory, request.app.state.settings, user.id
+        )
+    }
 
 
 @router.get("/workspaces/{workspace_id}")
@@ -137,13 +147,17 @@ def get_workspace(workspace_id: UUID, user: Identity, request: Request):
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        row = session.execute(
-            text(
-                "SELECT id,name,created_by,created_at,updated_at "
-                "FROM vulntrack.workspaces WHERE id=:id"
-            ),
-            {"id": workspace_id},
-        ).mappings().first()
+        row = (
+            session.execute(
+                text(
+                    "SELECT id,name,created_by,created_at,updated_at "
+                    "FROM vulntrack.workspaces WHERE id=:id"
+                ),
+                {"id": workspace_id},
+            )
+            .mappings()
+            .first()
+        )
         if row is None:
             raise APIError(404, "WORKSPACE_NOT_FOUND", "Workspace no encontrado")
         return dict(row)
@@ -162,20 +176,25 @@ def create_application(
         ):
             raise APIError(404, "WORKSPACE_NOT_FOUND", "Workspace no encontrado")
         application_id = uuid4()
-        row = session.execute(
-            text(
-                """INSERT INTO vulntrack.applications(id,workspace_id,name,description,created_by)
+        row = (
+            session.execute(
+                text(
+                    """INSERT INTO
+                    vulntrack.applications(id,workspace_id,name,description,created_by)
                 VALUES (:id,:workspace,:name,:description,:actor)
                 RETURNING id,name,description,status,created_at,updated_at"""
-            ),
-            {
-                "id": application_id,
-                "workspace": workspace_id,
-                "name": payload.name,
-                "description": payload.description,
-                "actor": user.id,
-            },
-        ).mappings().one()
+                ),
+                {
+                    "id": application_id,
+                    "workspace": workspace_id,
+                    "name": payload.name,
+                    "description": payload.description,
+                    "actor": user.id,
+                },
+            )
+            .mappings()
+            .one()
+        )
         session.execute(
             text("""INSERT INTO vulntrack.audit_events
                 (workspace_id,actor_id,action,object_type,object_id)
@@ -190,12 +209,16 @@ def list_applications(workspace_id: UUID, user: Identity, request: Request):
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        rows = session.execute(
-            text("""SELECT id,name,description,status,created_at,updated_at
+        rows = (
+            session.execute(
+                text("""SELECT id,name,description,status,created_at,updated_at
                 FROM vulntrack.applications WHERE workspace_id=:workspace
                 ORDER BY created_at DESC,id LIMIT 100"""),
-            {"workspace": workspace_id},
-        ).mappings().all()
+                {"workspace": workspace_id},
+            )
+            .mappings()
+            .all()
+        )
         return {"items": [dict(row) for row in rows]}
 
 
@@ -226,24 +249,29 @@ def create_technology(
         ):
             raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
         technology_id = uuid4()
-        row = session.execute(
-            text(
-                """INSERT INTO vulntrack.technologies
+        row = (
+            session.execute(
+                text(
+                    """INSERT INTO vulntrack.technologies
                 (id,workspace_id,application_id,product,vendor,version,detection_method,created_by)
                 VALUES (:id,:workspace,:application,:product,:vendor,:version,:method,:actor)
-                RETURNING id,product,vendor,version,selected_cpe,detection_method,confidence,observed_at"""
-            ),
-            {
-                "id": technology_id,
-                "workspace": workspace_id,
-                "application": application_id,
-                "product": payload.product,
-                "vendor": payload.vendor,
-                "version": payload.version,
-                "method": payload.detection_method,
-                "actor": user.id,
-            },
-        ).mappings().first()
+                RETURNING
+                id,product,vendor,version,selected_cpe,detection_method,confidence,observed_at"""
+                ),
+                {
+                    "id": technology_id,
+                    "workspace": workspace_id,
+                    "application": application_id,
+                    "product": payload.product,
+                    "vendor": payload.vendor,
+                    "version": payload.version,
+                    "method": payload.detection_method,
+                    "actor": user.id,
+                },
+            )
+            .mappings()
+            .first()
+        )
         if row is None:
             raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
         session.execute(
@@ -260,12 +288,18 @@ def list_technologies(workspace_id: UUID, application_id: UUID, user: Identity, 
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        rows = session.execute(
-            text(
-                """SELECT id,product,vendor,version,selected_cpe,detection_method,confidence,observed_at
-                FROM vulntrack.technologies WHERE workspace_id=:workspace AND application_id=:application
+        rows = (
+            session.execute(
+                text(
+                    """SELECT
+                    id,product,vendor,version,selected_cpe,detection_method,confidence,observed_at
+                FROM vulntrack.technologies WHERE workspace_id=:workspace AND
+                application_id=:application
                 ORDER BY created_at DESC,id LIMIT 100"""
-            ),
-            {"workspace": workspace_id, "application": application_id},
-        ).mappings().all()
+                ),
+                {"workspace": workspace_id, "application": application_id},
+            )
+            .mappings()
+            .all()
+        )
         return {"items": [dict(row) for row in rows]}

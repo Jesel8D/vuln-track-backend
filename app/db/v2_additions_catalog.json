@@ -1,0 +1,2023 @@
+{
+  "columns": [
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "application_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "completed_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "coverage",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "failure_code",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "initiated_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "kind",
+      "type": "text",
+      "not_null": true,
+      "default": "'nvd_cve'::text"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "next_index",
+      "type": "integer",
+      "not_null": true,
+      "default": "0"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "page_count",
+      "type": "integer",
+      "not_null": true,
+      "default": "0"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "page_manifest",
+      "type": "jsonb",
+      "not_null": true,
+      "default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "query_parameters",
+      "type": "jsonb",
+      "not_null": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "request_hash",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "request_key",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "retrieved_count",
+      "type": "integer",
+      "not_null": true,
+      "default": "0"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "selected_cpe",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "source_timestamp",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "source_timestamps",
+      "type": "jsonb",
+      "not_null": true,
+      "default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "started_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default": "'queued'::text"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "stored_count",
+      "type": "integer",
+      "not_null": true,
+      "default": "0"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "target_id",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "technology_id",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "total_results",
+      "type": "integer",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "warning_codes",
+      "type": "jsonb",
+      "not_null": true,
+      "default": "'[]'::jsonb"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "analysis_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "applicability",
+      "type": "text",
+      "not_null": true,
+      "default": "'potential'::text"
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "cvss",
+      "type": "jsonb",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "evidence",
+      "type": "jsonb",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "external_id",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "last_modified_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "observed_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "published_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "severity",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "source",
+      "type": "text",
+      "not_null": true,
+      "default": "'NVD'::text"
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default": "'open'::text"
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "title",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "application_findings",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "application_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "authorization_expires_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "authorization_reference",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "authorization_status",
+      "type": "text",
+      "not_null": true,
+      "default": "'pending'::text"
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "created_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "label",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "url",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "application_targets",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "applications",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "applications",
+      "column_name": "created_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "applications",
+      "column_name": "description",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "applications",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "applications",
+      "column_name": "name",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "applications",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default": "'active'::text"
+    },
+    {
+      "table_name": "applications",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "applications",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "audit_events",
+      "column_name": "action",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "audit_events",
+      "column_name": "actor_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "audit_events",
+      "column_name": "id",
+      "type": "bigint",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "audit_events",
+      "column_name": "object_id",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "audit_events",
+      "column_name": "object_type",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "audit_events",
+      "column_name": "occurred_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "audit_events",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "application_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "content_sha256",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "dependency_count",
+      "type": "integer",
+      "not_null": true,
+      "default": "0"
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "format",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "imported_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default": "'completed'::text"
+    },
+    {
+      "table_name": "dependency_imports",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "assigned_to",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "completed_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "created_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "due_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "finding_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "recommendation",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "source_url",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "status",
+      "type": "text",
+      "not_null": true,
+      "default": "'pending'::text"
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "recommendations",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "application_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "confidence",
+      "type": "text",
+      "not_null": true,
+      "default": "'unconfirmed'::text"
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "created_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "detection_method",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "observed_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "product",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "selected_cpe",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "vendor",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "version",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "technologies",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "workspace_members",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "workspace_members",
+      "column_name": "role",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "workspace_members",
+      "column_name": "user_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "workspace_members",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "workspaces",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    },
+    {
+      "table_name": "workspaces",
+      "column_name": "created_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "workspaces",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "workspaces",
+      "column_name": "name",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "workspaces",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "statement_timestamp()"
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_application_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, application_id) REFERENCES vulntrack.applications(workspace_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_coverage_valid",
+      "type": "c",
+      "definition": "CHECK ((coverage = ANY (ARRAY['complete'::text, 'partial'::text])))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_failure_code_valid",
+      "type": "c",
+      "definition": "CHECK (((failure_code IS NULL) OR (failure_code ~ '^[A-Z][A-Z0-9_]{0,79}$'::text)))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_idempotency_pair",
+      "type": "c",
+      "definition": "CHECK ((((request_key IS NULL) AND (request_hash IS NULL)) OR ((request_key IS NOT NULL) AND (request_hash IS NOT NULL))))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_idempotency_unique",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, initiated_by, request_key)"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_initiator_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, initiated_by) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_kind_v2",
+      "type": "c",
+      "definition": "CHECK ((kind = 'nvd_cve'::text))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_lifecycle",
+      "type": "c",
+      "definition": "CHECK ((((status = 'queued'::text) AND (started_at IS NULL) AND (completed_at IS NULL) AND (coverage IS NULL)) OR ((status = 'running'::text) AND (started_at IS NOT NULL) AND (completed_at IS NULL) AND (coverage IS NULL)) OR ((status = 'completed'::text) AND (started_at IS NOT NULL) AND (completed_at IS NOT NULL) AND (coverage IS NOT NULL)) OR ((status = 'failed'::text) AND (completed_at IS NOT NULL))))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_nvd_counts_valid",
+      "type": "c",
+      "definition": "CHECK (((retrieved_count >= 0) AND (stored_count >= 0) AND (stored_count <= retrieved_count) AND ((page_count >= 0) AND (page_count <= 5)) AND (next_index >= 0) AND ((total_results IS NULL) OR (total_results >= 0))))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_nvd_cpe",
+      "type": "c",
+      "definition": "CHECK (((selected_cpe IS NOT NULL) AND (\"left\"(selected_cpe, 8) = 'cpe:2.3:'::text) AND vulntrack.valid_text(selected_cpe, 1024)))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_nvd_metadata_valid",
+      "type": "c",
+      "definition": "CHECK (((jsonb_typeof(query_parameters) = 'object'::text) AND (octet_length((query_parameters)::text) <= 4096) AND (jsonb_typeof(warning_codes) = 'array'::text) AND (jsonb_array_length(warning_codes) <= 20) AND (jsonb_typeof(source_timestamps) = 'array'::text) AND (jsonb_array_length(source_timestamps) <= 5) AND (jsonb_typeof(page_manifest) = 'array'::text) AND (jsonb_array_length(page_manifest) <= 5) AND (octet_length((page_manifest)::text) <= 8192)))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_nvd_outcome_valid",
+      "type": "c",
+      "definition": "CHECK (((request_key IS NULL) OR (((status = ANY (ARRAY['queued'::text, 'running'::text])) AND (coverage IS NULL) AND (failure_code IS NULL)) OR ((status = 'completed'::text) AND (page_count > 0) AND (coverage IS NOT NULL) AND ((coverage = 'partial'::text) OR ((failure_code IS NULL) AND (next_index = total_results) AND (stored_count = total_results)))) OR ((status = 'failed'::text) AND (coverage IS NULL) AND (failure_code IS NOT NULL)))))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_request_hash_valid",
+      "type": "c",
+      "definition": "CHECK (((request_hash IS NULL) OR (request_hash ~ '^[0-9a-f]{64}$'::text)))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_status_valid",
+      "type": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'completed'::text, 'failed'::text])))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_target_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, application_id, target_id) REFERENCES vulntrack.application_targets(workspace_id, application_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_technology_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, application_id, technology_id) REFERENCES vulntrack.technologies(workspace_id, application_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_time_order",
+      "type": "c",
+      "definition": "CHECK (((completed_at >= started_at) AND (updated_at >= created_at)))"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "application_analysis_runs_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "application_analysis_runs_workspace_id_id_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, id)"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_applicability_valid",
+      "type": "c",
+      "definition": "CHECK ((applicability = ANY (ARRAY['potential'::text, 'confirmed'::text, 'not_applicable'::text])))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_cvss_object",
+      "type": "c",
+      "definition": "CHECK (((cvss IS NULL) OR (jsonb_typeof(cvss) = 'object'::text)))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_evidence_valid",
+      "type": "c",
+      "definition": "CHECK (((evidence IS NULL) OR ((jsonb_typeof(evidence) = 'object'::text) AND (octet_length((evidence)::text) <= 65536))))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_external_id_valid",
+      "type": "c",
+      "definition": "CHECK ((external_id ~ '^CVE-[0-9]{4}-[0-9]{4,}$'::text))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_run_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, analysis_id) REFERENCES vulntrack.application_analysis_runs(workspace_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_severity_valid",
+      "type": "c",
+      "definition": "CHECK (((severity IS NULL) OR (severity = ANY (ARRAY['critical'::text, 'high'::text, 'medium'::text, 'low'::text, 'none'::text, 'unknown'::text]))))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_source_valid",
+      "type": "c",
+      "definition": "CHECK ((source = 'NVD'::text))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_status_valid",
+      "type": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['open'::text, 'reviewed'::text, 'resolved'::text, 'accepted_risk'::text])))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_title_valid",
+      "type": "c",
+      "definition": "CHECK (((title IS NULL) OR vulntrack.valid_text(title, 500)))"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "application_findings_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "application_findings_workspace_id_analysis_id_source_extern_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, analysis_id, source, external_id)"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "application_findings_workspace_id_id_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, id)"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "application_targets_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "application_targets_workspace_id_application_id_id_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, application_id, id)"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_application_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, application_id) REFERENCES vulntrack.applications(workspace_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_approval_has_expiry",
+      "type": "c",
+      "definition": "CHECK (((authorization_status <> 'approved'::text) OR (authorization_expires_at IS NOT NULL)))"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_authorization_valid",
+      "type": "c",
+      "definition": "CHECK ((authorization_status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text, 'expired'::text])))"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_creator_member_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, created_by) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_label_valid",
+      "type": "c",
+      "definition": "CHECK (((label IS NULL) OR vulntrack.valid_text(label, 120)))"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_reference_valid",
+      "type": "c",
+      "definition": "CHECK (((authorization_reference IS NULL) OR vulntrack.valid_text(authorization_reference, 500)))"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_url_valid",
+      "type": "c",
+      "definition": "CHECK ((vulntrack.valid_text(url, 2048) AND (url ~* '^https?://[^/@[:space:]]+(:[0-9]{1,5})?(/[^[:space:]]*)?$'::text) AND (url !~ '[#[:cntrl:]]'::text)))"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_creator_member_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, created_by) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_description_valid",
+      "type": "c",
+      "definition": "CHECK (((description IS NULL) OR vulntrack.valid_text(description, 2000)))"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_name_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(name, 160))"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_status_valid",
+      "type": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['active'::text, 'archived'::text])))"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_workspace_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id) REFERENCES vulntrack.workspaces(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_workspace_id_id_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, id)"
+    },
+    {
+      "table_name": "audit_events",
+      "name": "audit_action_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(action, 80))"
+    },
+    {
+      "table_name": "audit_events",
+      "name": "audit_actor_member_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, actor_id) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "audit_events",
+      "name": "audit_events_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "audit_events",
+      "name": "audit_events_workspace_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id) REFERENCES vulntrack.workspaces(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "audit_events",
+      "name": "audit_object_type_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(object_type, 80))"
+    },
+    {
+      "table_name": "dependency_imports",
+      "name": "dependency_imports_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "dependency_imports",
+      "name": "imports_actor_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, imported_by) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "dependency_imports",
+      "name": "imports_application_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, application_id) REFERENCES vulntrack.applications(workspace_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "dependency_imports",
+      "name": "imports_count_valid",
+      "type": "c",
+      "definition": "CHECK (((dependency_count >= 0) AND (dependency_count <= 100000)))"
+    },
+    {
+      "table_name": "dependency_imports",
+      "name": "imports_format_valid",
+      "type": "c",
+      "definition": "CHECK ((format = ANY (ARRAY['package_json'::text, 'requirements_txt'::text, 'pom_xml'::text, 'composer_json'::text])))"
+    },
+    {
+      "table_name": "dependency_imports",
+      "name": "imports_hash_valid",
+      "type": "c",
+      "definition": "CHECK ((content_sha256 ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "table_name": "dependency_imports",
+      "name": "imports_status_valid",
+      "type": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['completed'::text, 'failed'::text])))"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_assignee_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, assigned_to) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_creator_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, created_by) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_finding_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, finding_id) REFERENCES vulntrack.application_findings(workspace_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_fixed_has_time",
+      "type": "c",
+      "definition": "CHECK (((status <> 'fixed'::text) OR (completed_at IS NOT NULL)))"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_source_url_valid",
+      "type": "c",
+      "definition": "CHECK (((source_url IS NULL) OR (vulntrack.valid_text(source_url, 2048) AND (source_url ~* '^https?://[^/@[:space:]]+(/[^[:space:]]*)?$'::text))))"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_status_valid",
+      "type": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'in_progress'::text, 'fixed'::text, 'accepted_risk'::text])))"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_text_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(recommendation, 4000))"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_workspace_id_id_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, id)"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_application_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, application_id) REFERENCES vulntrack.applications(workspace_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_confidence_valid",
+      "type": "c",
+      "definition": "CHECK ((confidence = ANY (ARRAY['unconfirmed'::text, 'user_confirmed'::text, 'high'::text, 'medium'::text, 'low'::text])))"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_cpe_valid",
+      "type": "c",
+      "definition": "CHECK (((selected_cpe IS NULL) OR ((\"left\"(selected_cpe, 8) = 'cpe:2.3:'::text) AND vulntrack.valid_text(selected_cpe, 1024))))"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_creator_member_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, created_by) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_method_valid",
+      "type": "c",
+      "definition": "CHECK ((detection_method = ANY (ARRAY['manual'::text, 'http_fingerprint'::text, 'manifest_import'::text])))"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_product_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(product, 160))"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_vendor_valid",
+      "type": "c",
+      "definition": "CHECK (((vendor IS NULL) OR vulntrack.valid_text(vendor, 160)))"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_version_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(version, 120))"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_workspace_id_application_id_id_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, application_id, id)"
+    },
+    {
+      "table_name": "workspace_members",
+      "name": "workspace_members_owner_guard",
+      "type": "t",
+      "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED"
+    },
+    {
+      "table_name": "workspace_members",
+      "name": "workspace_members_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (workspace_id, user_id)"
+    },
+    {
+      "table_name": "workspace_members",
+      "name": "workspace_members_role",
+      "type": "c",
+      "definition": "CHECK ((role = ANY (ARRAY['owner'::text, 'editor'::text, 'viewer'::text])))"
+    },
+    {
+      "table_name": "workspace_members",
+      "name": "workspace_members_user_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (user_id) REFERENCES vulntrack.users(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "workspace_members",
+      "name": "workspace_members_workspace_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id) REFERENCES vulntrack.workspaces(id) ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_created_by_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (created_by) REFERENCES vulntrack.users(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_creator_membership_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (id, created_by) REFERENCES vulntrack.workspace_members(workspace_id, user_id) DEFERRABLE INITIALLY DEFERRED"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_id_created_by_key",
+      "type": "u",
+      "definition": "UNIQUE (id, created_by)"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_name_valid",
+      "type": "c",
+      "definition": "CHECK (vulntrack.valid_text(name, 120))"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_require_owner",
+      "type": "t",
+      "definition": "TRIGGER DEFERRABLE INITIALLY DEFERRED"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_time_order",
+      "type": "c",
+      "definition": "CHECK ((updated_at >= created_at))"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "app_runs_application_created_idx",
+      "indexdef": "CREATE INDEX app_runs_application_created_idx ON vulntrack.application_analysis_runs USING btree (workspace_id, application_id, created_at DESC, id)"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "app_runs_idempotency_lookup_idx",
+      "indexdef": "CREATE INDEX app_runs_idempotency_lookup_idx ON vulntrack.application_analysis_runs USING btree (workspace_id, initiated_by, request_key) WHERE (request_key IS NOT NULL)"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "app_runs_idempotency_unique",
+      "indexdef": "CREATE UNIQUE INDEX app_runs_idempotency_unique ON vulntrack.application_analysis_runs USING btree (workspace_id, initiated_by, request_key)"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "app_runs_one_active_technology_idx",
+      "indexdef": "CREATE UNIQUE INDEX app_runs_one_active_technology_idx ON vulntrack.application_analysis_runs USING btree (workspace_id, technology_id) WHERE ((request_key IS NOT NULL) AND (status = ANY (ARRAY['queued'::text, 'running'::text])))"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "app_runs_queue_idx",
+      "indexdef": "CREATE INDEX app_runs_queue_idx ON vulntrack.application_analysis_runs USING btree (created_at, id) WHERE (status = 'queued'::text)"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "app_runs_target_idx",
+      "indexdef": "CREATE INDEX app_runs_target_idx ON vulntrack.application_analysis_runs USING btree (workspace_id, application_id, target_id)"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "app_runs_technology_idx",
+      "indexdef": "CREATE INDEX app_runs_technology_idx ON vulntrack.application_analysis_runs USING btree (workspace_id, application_id, technology_id)"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "application_analysis_runs_pkey",
+      "indexdef": "CREATE UNIQUE INDEX application_analysis_runs_pkey ON vulntrack.application_analysis_runs USING btree (id)"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "indexname": "application_analysis_runs_workspace_id_id_key",
+      "indexdef": "CREATE UNIQUE INDEX application_analysis_runs_workspace_id_id_key ON vulntrack.application_analysis_runs USING btree (workspace_id, id)"
+    },
+    {
+      "tablename": "application_findings",
+      "indexname": "app_findings_run_idx",
+      "indexdef": "CREATE INDEX app_findings_run_idx ON vulntrack.application_findings USING btree (workspace_id, analysis_id, id)"
+    },
+    {
+      "tablename": "application_findings",
+      "indexname": "application_findings_pkey",
+      "indexdef": "CREATE UNIQUE INDEX application_findings_pkey ON vulntrack.application_findings USING btree (id)"
+    },
+    {
+      "tablename": "application_findings",
+      "indexname": "application_findings_workspace_id_analysis_id_source_extern_key",
+      "indexdef": "CREATE UNIQUE INDEX application_findings_workspace_id_analysis_id_source_extern_key ON vulntrack.application_findings USING btree (workspace_id, analysis_id, source, external_id)"
+    },
+    {
+      "tablename": "application_findings",
+      "indexname": "application_findings_workspace_id_id_key",
+      "indexdef": "CREATE UNIQUE INDEX application_findings_workspace_id_id_key ON vulntrack.application_findings USING btree (workspace_id, id)"
+    },
+    {
+      "tablename": "application_targets",
+      "indexname": "application_targets_pkey",
+      "indexdef": "CREATE UNIQUE INDEX application_targets_pkey ON vulntrack.application_targets USING btree (id)"
+    },
+    {
+      "tablename": "application_targets",
+      "indexname": "application_targets_workspace_id_application_id_id_key",
+      "indexdef": "CREATE UNIQUE INDEX application_targets_workspace_id_application_id_id_key ON vulntrack.application_targets USING btree (workspace_id, application_id, id)"
+    },
+    {
+      "tablename": "application_targets",
+      "indexname": "targets_application_idx",
+      "indexdef": "CREATE INDEX targets_application_idx ON vulntrack.application_targets USING btree (workspace_id, application_id, id)"
+    },
+    {
+      "tablename": "applications",
+      "indexname": "applications_pkey",
+      "indexdef": "CREATE UNIQUE INDEX applications_pkey ON vulntrack.applications USING btree (id)"
+    },
+    {
+      "tablename": "applications",
+      "indexname": "applications_workspace_created_idx",
+      "indexdef": "CREATE INDEX applications_workspace_created_idx ON vulntrack.applications USING btree (workspace_id, created_at DESC, id)"
+    },
+    {
+      "tablename": "applications",
+      "indexname": "applications_workspace_id_id_key",
+      "indexdef": "CREATE UNIQUE INDEX applications_workspace_id_id_key ON vulntrack.applications USING btree (workspace_id, id)"
+    },
+    {
+      "tablename": "audit_events",
+      "indexname": "audit_events_pkey",
+      "indexdef": "CREATE UNIQUE INDEX audit_events_pkey ON vulntrack.audit_events USING btree (id)"
+    },
+    {
+      "tablename": "audit_events",
+      "indexname": "audit_events_workspace_time_idx",
+      "indexdef": "CREATE INDEX audit_events_workspace_time_idx ON vulntrack.audit_events USING btree (workspace_id, occurred_at DESC, id)"
+    },
+    {
+      "tablename": "dependency_imports",
+      "indexname": "dependency_imports_pkey",
+      "indexdef": "CREATE UNIQUE INDEX dependency_imports_pkey ON vulntrack.dependency_imports USING btree (id)"
+    },
+    {
+      "tablename": "dependency_imports",
+      "indexname": "imports_application_idx",
+      "indexdef": "CREATE INDEX imports_application_idx ON vulntrack.dependency_imports USING btree (workspace_id, application_id, created_at DESC)"
+    },
+    {
+      "tablename": "recommendations",
+      "indexname": "recommendations_finding_idx",
+      "indexdef": "CREATE INDEX recommendations_finding_idx ON vulntrack.recommendations USING btree (workspace_id, finding_id, id)"
+    },
+    {
+      "tablename": "recommendations",
+      "indexname": "recommendations_pkey",
+      "indexdef": "CREATE UNIQUE INDEX recommendations_pkey ON vulntrack.recommendations USING btree (id)"
+    },
+    {
+      "tablename": "recommendations",
+      "indexname": "recommendations_workspace_id_id_key",
+      "indexdef": "CREATE UNIQUE INDEX recommendations_workspace_id_id_key ON vulntrack.recommendations USING btree (workspace_id, id)"
+    },
+    {
+      "tablename": "technologies",
+      "indexname": "technologies_application_idx",
+      "indexdef": "CREATE INDEX technologies_application_idx ON vulntrack.technologies USING btree (workspace_id, application_id, id)"
+    },
+    {
+      "tablename": "technologies",
+      "indexname": "technologies_pkey",
+      "indexdef": "CREATE UNIQUE INDEX technologies_pkey ON vulntrack.technologies USING btree (id)"
+    },
+    {
+      "tablename": "technologies",
+      "indexname": "technologies_workspace_id_application_id_id_key",
+      "indexdef": "CREATE UNIQUE INDEX technologies_workspace_id_application_id_id_key ON vulntrack.technologies USING btree (workspace_id, application_id, id)"
+    },
+    {
+      "tablename": "workspace_members",
+      "indexname": "workspace_members_pkey",
+      "indexdef": "CREATE UNIQUE INDEX workspace_members_pkey ON vulntrack.workspace_members USING btree (workspace_id, user_id)"
+    },
+    {
+      "tablename": "workspaces",
+      "indexname": "workspaces_id_created_by_key",
+      "indexdef": "CREATE UNIQUE INDEX workspaces_id_created_by_key ON vulntrack.workspaces USING btree (id, created_by)"
+    },
+    {
+      "tablename": "workspaces",
+      "indexname": "workspaces_pkey",
+      "indexdef": "CREATE UNIQUE INDEX workspaces_pkey ON vulntrack.workspaces USING btree (id)"
+    }
+  ],
+  "triggers": [
+    {
+      "table_name": "application_analysis_runs",
+      "name": "app_runs_touch",
+      "definition": "CREATE TRIGGER app_runs_touch BEFORE UPDATE ON vulntrack.application_analysis_runs FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "application_analysis_runs",
+      "name": "nvd_analysis_run_guard",
+      "definition": "CREATE TRIGGER nvd_analysis_run_guard BEFORE INSERT OR DELETE OR UPDATE ON vulntrack.application_analysis_runs FOR EACH ROW EXECUTE FUNCTION vulntrack.guard_nvd_analysis_run()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "app_findings_touch",
+      "definition": "CREATE TRIGGER app_findings_touch BEFORE UPDATE ON vulntrack.application_findings FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "application_findings",
+      "name": "nvd_finding_guard",
+      "definition": "CREATE TRIGGER nvd_finding_guard BEFORE INSERT OR DELETE OR UPDATE ON vulntrack.application_findings FOR EACH ROW EXECUTE FUNCTION vulntrack.guard_nvd_finding()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "application_targets",
+      "name": "targets_touch",
+      "definition": "CREATE TRIGGER targets_touch BEFORE UPDATE ON vulntrack.application_targets FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "applications",
+      "name": "applications_touch",
+      "definition": "CREATE TRIGGER applications_touch BEFORE UPDATE ON vulntrack.applications FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "audit_events",
+      "name": "audit_events_immutable",
+      "definition": "CREATE TRIGGER audit_events_immutable BEFORE DELETE OR UPDATE ON vulntrack.audit_events FOR EACH ROW EXECUTE FUNCTION vulntrack.reject_audit_mutation()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "recommendations",
+      "name": "recommendations_touch",
+      "definition": "CREATE TRIGGER recommendations_touch BEFORE UPDATE ON vulntrack.recommendations FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "technologies",
+      "name": "technologies_touch",
+      "definition": "CREATE TRIGGER technologies_touch BEFORE UPDATE ON vulntrack.technologies FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "workspace_members",
+      "name": "workspace_members_owner_guard",
+      "definition": "CREATE CONSTRAINT TRIGGER workspace_members_owner_guard AFTER INSERT OR DELETE OR UPDATE ON vulntrack.workspace_members DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION vulntrack.require_workspace_owner_membership()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_require_owner",
+      "definition": "CREATE CONSTRAINT TRIGGER workspaces_require_owner AFTER INSERT OR UPDATE ON vulntrack.workspaces DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION vulntrack.require_workspace_owner()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "workspaces",
+      "name": "workspaces_touch",
+      "definition": "CREATE TRIGGER workspaces_touch BEFORE UPDATE ON vulntrack.workspaces FOR EACH ROW EXECUTE FUNCTION vulntrack.touch_updated_at()",
+      "enabled": "O"
+    }
+  ],
+  "functions": [
+    {
+      "name": "context_is_valid",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.context_is_valid()\n RETURNS boolean\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'vulntrack', 'vulntrack_private'\nAS $function$\nDECLARE\n    user_text text := current_setting('vulntrack.context_user', true);\n    workspace_text text := current_setting('vulntrack.context_workspace', true);\n    expiry_text text := current_setting('vulntrack.context_expiry', true);\n    nonce_text text := current_setting('vulntrack.context_nonce', true);\n    signature_text text := current_setting('vulntrack.context_signature', true);\n    user_value uuid;\n    workspace_value uuid;\n    expiry_value bigint;\n    nonce_value uuid;\n    context_key bytea;\n    expected_signature bytea;\n    signed_payload text;\nBEGIN\n    IF user_text IS NULL OR workspace_text IS NULL OR expiry_text IS NULL\n       OR nonce_text IS NULL OR signature_text IS NULL\n       OR signature_text !~ '^[0-9a-f]{64}$' THEN\n        RETURN false;\n    END IF;\n    user_value := user_text::uuid;\n    workspace_value := workspace_text::uuid;\n    expiry_value := expiry_text::bigint;\n    nonce_value := nonce_text::uuid;\n    IF expiry_value <= floor(extract(epoch FROM clock_timestamp()))::bigint\n       OR expiry_value > floor(extract(epoch FROM clock_timestamp()))::bigint + 60 THEN\n        RETURN false;\n    END IF;\n    SELECT hmac_key INTO STRICT context_key\n    FROM vulntrack_private.context_keys WHERE singleton;\n    signed_payload := 'v1|' || user_value::text || '|' || workspace_value::text || '|'\n        || expiry_value::text || '|' || nonce_value::text;\n    expected_signature := public.hmac(convert_to(signed_payload, 'UTF8'), context_key, 'sha256');\n    RETURN expected_signature = decode(signature_text, 'hex');\nEXCEPTION WHEN OTHERS THEN\n    RETURN false;\nEND $function$\n"
+    },
+    {
+      "name": "current_user_id",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.current_user_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE PARALLEL SAFE\nAS $function$ SELECT CASE WHEN vulntrack.context_is_valid()\n    THEN nullif(current_setting('vulntrack.context_user', true), '')::uuid END $function$\n"
+    },
+    {
+      "name": "current_workspace_id",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.current_workspace_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE PARALLEL SAFE\nAS $function$ SELECT CASE WHEN vulntrack.context_is_valid()\n    THEN nullif(current_setting('vulntrack.context_workspace', true), '')::uuid END $function$\n"
+    },
+    {
+      "name": "establish_context",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.establish_context(requested_user uuid, requested_workspace uuid, expires_epoch bigint, request_nonce uuid, request_signature text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'vulntrack', 'vulntrack_private'\nAS $function$\nDECLARE\n    context_key bytea;\n    signed_payload text;\nBEGIN\n    IF requested_user IS NULL OR requested_workspace IS NULL OR expires_epoch IS NULL\n       OR request_nonce IS NULL OR request_signature IS NULL\n       OR expires_epoch <= floor(extract(epoch FROM clock_timestamp()))::bigint\n       OR expires_epoch > floor(extract(epoch FROM clock_timestamp()))::bigint + 60\n       OR request_signature !~ '^[0-9a-f]{64}$' THEN\n        RAISE EXCEPTION 'contexto firmado inválido o expirado' USING ERRCODE = '28000';\n    END IF;\n    SELECT hmac_key INTO STRICT context_key\n    FROM vulntrack_private.context_keys WHERE singleton;\n    signed_payload := 'v1|' || requested_user::text || '|' || requested_workspace::text || '|'\n        || expires_epoch::text || '|' || request_nonce::text;\n    IF public.hmac(convert_to(signed_payload, 'UTF8'), context_key, 'sha256')\n       <> decode(request_signature, 'hex') THEN\n        RAISE EXCEPTION 'firma de contexto inválida' USING ERRCODE = '28000';\n    END IF;\n    IF NOT EXISTS (\n        SELECT 1 FROM vulntrack.workspace_members wm\n        JOIN vulntrack.users u ON u.id = wm.user_id\n        WHERE wm.workspace_id = requested_workspace AND wm.user_id = requested_user AND u.active\n    ) THEN\n        RAISE EXCEPTION 'usuario inactivo o fuera del workspace' USING ERRCODE = '42501';\n    END IF;\n    PERFORM set_config('vulntrack.context_user', requested_user::text, true);\n    PERFORM set_config('vulntrack.context_workspace', requested_workspace::text, true);\n    PERFORM set_config('vulntrack.context_expiry', expires_epoch::text, true);\n    PERFORM set_config('vulntrack.context_nonce', request_nonce::text, true);\n    PERFORM set_config('vulntrack.context_signature', request_signature, true);\nEND $function$\n"
+    },
+    {
+      "name": "establish_new_workspace_context",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.establish_new_workspace_context(requested_user uuid, requested_workspace uuid, expires_epoch bigint, request_nonce uuid, request_signature text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'vulntrack', 'vulntrack_private'\nAS $function$\nDECLARE context_key bytea; signed_payload text;\nBEGIN\n    IF requested_user IS NULL OR requested_workspace IS NULL OR expires_epoch IS NULL\n       OR request_nonce IS NULL OR request_signature IS NULL\n       OR expires_epoch <= floor(extract(epoch FROM clock_timestamp()))::bigint\n       OR expires_epoch > floor(extract(epoch FROM clock_timestamp()))::bigint + 60\n       OR request_signature !~ '^[0-9a-f]{64}$' THEN\n        RAISE EXCEPTION 'contexto firmado inválido o expirado' USING ERRCODE = '28000';\n    END IF;\n    SELECT hmac_key INTO STRICT context_key\n      FROM vulntrack_private.context_keys WHERE singleton;\n    signed_payload := 'v1|' || requested_user::text || '|' || requested_workspace::text || '|'\n        || expires_epoch::text || '|' || request_nonce::text;\n    IF public.hmac(convert_to(signed_payload, 'UTF8'), context_key, 'sha256')\n       <> decode(request_signature, 'hex') THEN\n        RAISE EXCEPTION 'firma de contexto inválida' USING ERRCODE = '28000';\n    END IF;\n    IF NOT EXISTS (SELECT 1 FROM vulntrack.users u\n                   WHERE u.id=requested_user AND u.active) THEN\n        RAISE EXCEPTION 'usuario inactivo' USING ERRCODE = '42501';\n    END IF;\n    PERFORM set_config('vulntrack.context_user', requested_user::text, true);\n    PERFORM set_config('vulntrack.context_workspace', requested_workspace::text, true);\n    PERFORM set_config('vulntrack.context_expiry', expires_epoch::text, true);\n    PERFORM set_config('vulntrack.context_nonce', request_nonce::text, true);\n    PERFORM set_config('vulntrack.context_signature', request_signature, true);\nEND $function$\n"
+    },
+    {
+      "name": "guard_nvd_analysis_run",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.guard_nvd_analysis_run()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'vulntrack'\nAS $function$\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        RAISE EXCEPTION 'El historial de análisis es inmutable' USING ERRCODE = '23514';\n    ELSIF TG_OP = 'INSERT' THEN\n        IF NEW.kind <> 'nvd_cve' OR NEW.status <> 'queued' OR NEW.page_count <> 0\n           OR NEW.retrieved_count <> 0 OR NEW.stored_count <> 0 OR NEW.next_index <> 0\n           OR NEW.started_at IS NOT NULL OR NEW.completed_at IS NOT NULL THEN\n            RAISE EXCEPTION 'La consulta NVD debe iniciar en queued' USING ERRCODE = '23514';\n        END IF;\n    ELSE\n        IF ROW(NEW.id,NEW.workspace_id,NEW.application_id,NEW.target_id,NEW.technology_id,\n               NEW.kind,NEW.initiated_by,NEW.selected_cpe,NEW.request_key,NEW.request_hash,\n               NEW.query_parameters,NEW.created_at)\n           IS DISTINCT FROM\n           ROW(OLD.id,OLD.workspace_id,OLD.application_id,OLD.target_id,OLD.technology_id,\n               OLD.kind,OLD.initiated_by,OLD.selected_cpe,OLD.request_key,OLD.request_hash,\n               OLD.query_parameters,OLD.created_at)\n           OR OLD.status IN ('completed','failed')\n           OR NOT ((OLD.status='queued' AND NEW.status IN ('running','failed'))\n                OR (OLD.status='running' AND NEW.status IN ('running','completed','failed')))\n           OR NEW.retrieved_count < OLD.retrieved_count\n           OR NEW.stored_count < OLD.stored_count\n           OR NEW.page_count < OLD.page_count\n           OR NEW.next_index < OLD.next_index\n           OR (OLD.total_results IS NOT NULL AND NEW.total_results IS DISTINCT FROM OLD.total_results)\n           OR NOT (NEW.warning_codes @> OLD.warning_codes)\n           OR NOT (NEW.source_timestamps @> OLD.source_timestamps)\n           OR NOT (NEW.page_manifest @> OLD.page_manifest)\n           OR (OLD.started_at IS NOT NULL AND NEW.started_at IS DISTINCT FROM OLD.started_at) THEN\n            RAISE EXCEPTION 'Transición o snapshot NVD inválido' USING ERRCODE = '23514';\n        END IF;\n    END IF;\n    RETURN NEW;\nEND $function$\n"
+    },
+    {
+      "name": "guard_nvd_finding",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.guard_nvd_finding()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'vulntrack'\nAS $function$\nDECLARE analysis_status text;\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        RAISE EXCEPTION 'Los hallazgos NVD son inmutables' USING ERRCODE = '23514';\n    END IF;\n    SELECT status INTO analysis_status FROM vulntrack.application_analysis_runs\n      WHERE workspace_id=NEW.workspace_id AND id=NEW.analysis_id FOR UPDATE;\n    IF TG_OP = 'INSERT' THEN\n        IF analysis_status <> 'running' OR NEW.evidence IS NULL\n           OR NEW.applicability NOT IN ('potential','undetermined') OR NEW.status <> 'open' THEN\n            RAISE EXCEPTION 'Hallazgo NVD debe provenir de una consulta activa y evidencia' USING ERRCODE = '23514';\n        END IF;\n    ELSIF ROW(NEW.id,NEW.workspace_id,NEW.analysis_id,NEW.source,NEW.external_id,NEW.title,\n              NEW.severity,NEW.cvss,NEW.evidence,NEW.published_at,NEW.last_modified_at,\n              NEW.observed_at,NEW.created_at)\n          IS DISTINCT FROM\n          ROW(OLD.id,OLD.workspace_id,OLD.analysis_id,OLD.source,OLD.external_id,OLD.title,\n              OLD.severity,OLD.cvss,OLD.evidence,OLD.published_at,OLD.last_modified_at,\n              OLD.observed_at,OLD.created_at)\n          OR OLD.status <> 'open' OR analysis_status NOT IN ('completed','failed')\n          OR NEW.status <> 'reviewed' THEN\n        RAISE EXCEPTION 'Solo se permite revisión humana de un hallazgo NVD terminado' USING ERRCODE = '23514';\n    END IF;\n    RETURN NEW;\nEND $function$\n"
+    },
+    {
+      "name": "has_workspace_role",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.has_workspace_role(target_workspace uuid, allowed_roles text[])\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'vulntrack'\nAS $function$\n    SELECT EXISTS (\n        SELECT 1 FROM vulntrack.workspace_members wm\n        JOIN vulntrack.users u ON u.id = wm.user_id\n        WHERE wm.workspace_id = target_workspace AND wm.user_id = vulntrack.current_user_id()\n          AND wm.role = ANY(allowed_roles) AND u.active\n    )\n$function$\n"
+    },
+    {
+      "name": "is_workspace_creator",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.is_workspace_creator(target_workspace uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'vulntrack'\nAS $function$\n    SELECT EXISTS (\n        SELECT 1 FROM vulntrack.workspaces w\n        WHERE w.id = target_workspace AND w.created_by = vulntrack.current_user_id()\n    )\n$function$\n"
+    },
+    {
+      "name": "list_user_workspaces",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.list_user_workspaces(requested_user uuid, expires_epoch bigint, request_nonce uuid, request_signature text)\n RETURNS TABLE(workspace_id uuid, name text, role text, created_at timestamp with time zone)\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'vulntrack', 'vulntrack_private'\nAS $function$\nDECLARE context_key bytea; signed_payload text;\nBEGIN\n    IF requested_user IS NULL OR expires_epoch IS NULL\n       OR request_nonce IS NULL OR request_signature IS NULL\n       OR expires_epoch <= floor(extract(epoch FROM clock_timestamp()))::bigint\n       OR expires_epoch > floor(extract(epoch FROM clock_timestamp()))::bigint + 60\n       OR request_signature !~ '^[0-9a-f]{64}$' THEN\n        RAISE EXCEPTION 'contexto firmado inválido o expirado' USING ERRCODE = '28000';\n    END IF;\n    SELECT hmac_key INTO STRICT context_key\n      FROM vulntrack_private.context_keys WHERE singleton;\n    signed_payload := 'v1-directory|' || requested_user::text || '|'\n        || expires_epoch::text || '|' || request_nonce::text;\n    IF public.hmac(convert_to(signed_payload, 'UTF8'), context_key, 'sha256')\n       <> decode(request_signature, 'hex') THEN\n        RAISE EXCEPTION 'firma de contexto inválida' USING ERRCODE = '28000';\n    END IF;\n    IF NOT EXISTS (SELECT 1 FROM vulntrack.users u\n                   WHERE u.id=requested_user AND u.active) THEN\n        RAISE EXCEPTION 'usuario inactivo' USING ERRCODE = '42501';\n    END IF;\n    RETURN QUERY SELECT w.id,w.name,wm.role,w.created_at\n        FROM vulntrack.workspace_members wm\n        JOIN vulntrack.workspaces w ON w.id=wm.workspace_id\n        WHERE wm.user_id=requested_user ORDER BY w.created_at DESC,w.id;\nEND $function$\n"
+    },
+    {
+      "name": "reject_audit_mutation",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.reject_audit_mutation()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\nBEGIN\n    RAISE EXCEPTION 'los eventos de auditoría son inmutables' USING ERRCODE = '23514';\nEND $function$\n"
+    },
+    {
+      "name": "require_workspace_owner",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.require_workspace_owner()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'vulntrack'\nAS $function$\nBEGIN\n    IF NOT EXISTS (\n        SELECT 1 FROM vulntrack.workspace_members wm\n        WHERE wm.workspace_id = NEW.id AND wm.user_id = NEW.created_by AND wm.role = 'owner'\n    ) THEN\n        RAISE EXCEPTION 'el creador debe ser owner del workspace' USING ERRCODE = '23514';\n    END IF;\n    RETURN NULL;\nEND $function$\n"
+    },
+    {
+      "name": "require_workspace_owner_membership",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack.require_workspace_owner_membership()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'vulntrack'\nAS $function$\nDECLARE target_workspace uuid;\nBEGIN\n    IF TG_OP = 'DELETE' THEN\n        target_workspace := OLD.workspace_id;\n    ELSE\n        target_workspace := NEW.workspace_id;\n    END IF;\n    IF EXISTS (\n        SELECT 1 FROM vulntrack.workspaces w\n        WHERE w.id = target_workspace AND NOT EXISTS (\n            SELECT 1 FROM vulntrack.workspace_members wm\n            WHERE wm.workspace_id = w.id AND wm.user_id = w.created_by AND wm.role = 'owner'\n        )\n    ) OR NOT EXISTS (\n        SELECT 1 FROM vulntrack.workspace_members wm\n        WHERE wm.workspace_id = target_workspace AND wm.role = 'owner'\n    ) THEN\n        RAISE EXCEPTION 'workspace debe conservar al creador y al menos un owner' USING ERRCODE = '23514';\n    END IF;\n    RETURN NULL;\nEND $function$\n"
+    }
+  ],
+  "tables": [
+    {
+      "name": "application_analysis_runs",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "application_findings",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "application_targets",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "applications",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "audit_events",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "dependency_imports",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "recommendations",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "technologies",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "workspace_members",
+      "row_security": true,
+      "force_row_security": false
+    },
+    {
+      "name": "workspaces",
+      "row_security": true,
+      "force_row_security": false
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "application_analysis_runs",
+      "policyname": "application_analysis_runs_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (initiated_by = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "policyname": "application_analysis_runs_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "application_analysis_runs",
+      "policyname": "application_analysis_runs_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "application_findings",
+      "policyname": "application_findings_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "application_findings",
+      "policyname": "application_findings_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "application_findings",
+      "policyname": "application_findings_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "application_targets",
+      "policyname": "application_targets_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (created_by = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "application_targets",
+      "policyname": "application_targets_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "application_targets",
+      "policyname": "application_targets_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "applications",
+      "policyname": "applications_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (created_by = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "applications",
+      "policyname": "applications_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "applications",
+      "policyname": "applications_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "audit_events",
+      "policyname": "audit_events_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (actor_id = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "dependency_imports",
+      "policyname": "dependency_imports_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (imported_by = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "dependency_imports",
+      "policyname": "dependency_imports_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "dependency_imports",
+      "policyname": "dependency_imports_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "recommendations",
+      "policyname": "recommendations_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (created_by = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "recommendations",
+      "policyname": "recommendations_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "recommendations",
+      "policyname": "recommendations_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "technologies",
+      "policyname": "technologies_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (created_by = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "technologies",
+      "policyname": "technologies_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "technologies",
+      "policyname": "technologies_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "workspace_members",
+      "policyname": "members_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (((user_id = vulntrack.current_user_id()) AND (role = 'owner'::text) AND vulntrack.is_workspace_creator(workspace_id)) OR vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text])))"
+    },
+    {
+      "tablename": "workspace_members",
+      "policyname": "members_manage_delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "DELETE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "workspace_members",
+      "policyname": "members_manage_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text]))"
+    },
+    {
+      "tablename": "workspace_members",
+      "policyname": "members_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "workspaces",
+      "policyname": "workspace_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((id = vulntrack.current_workspace_id()) AND (created_by = vulntrack.current_user_id()))"
+    },
+    {
+      "tablename": "workspaces",
+      "policyname": "workspace_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "workspaces",
+      "policyname": "workspace_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(id, ARRAY['owner'::text, 'editor'::text]))"
+    }
+  ]
+}

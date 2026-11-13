@@ -1,0 +1,9 @@
+{
+  "database_commit": "6fa928105d9157fbd78b66a17f8b86f9353857e0",
+  "sources": {
+    "sql/001_schema.sql": "fd2984a80911cd094283d9c9b1f503a7a0db87b921f9169c2a8362a8941b9297",
+    "sql/002_privileges.sql": "46f0b4f0093fa579ee27e4e8e348d97d8fe5db515b6bbbef1aa7a479f67a3f2e",
+    "sql/004_v2_application_model.sql": "bc0d78fe5a2e0d08a897bad06401e5a744f431505bd90408522403710ecd71a7",
+    "sql/005_v2_nvd_evidence.sql": "361195f0f4ca117aba00d8fd1c1989069d94bc0677a8b90fd428e4c765b27a57"
+  }
+}

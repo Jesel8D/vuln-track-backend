@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse
 
 from app.core.http import error_body
 
-CORS_METHODS = ["GET", "POST", "PATCH"]
+CORS_METHODS = ["GET", "POST", "PUT", "PATCH"]
 CORS_HEADERS = ["Accept", "Content-Type", "Authorization", "Idempotency-Key"]
 CORS_EXPOSE_HEADERS = ["Location", "X-Request-ID", "Retry-After", "WWW-Authenticate"]
 

@@ -3,10 +3,10 @@
 import hashlib
 import json
 import logging
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Annotated
-from uuid import UUID, uuid4
 from urllib.parse import urlsplit
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -106,7 +106,9 @@ def _authorize(session, workspace_id, application_id, role="owner", actor_id=Non
         )
     else:
         allowed = session.scalar(
-            text("SELECT vulntrack.has_workspace_role(:workspace, ARRAY['owner','editor','viewer'])"),
+            text(
+                "SELECT vulntrack.has_workspace_role(:workspace, ARRAY['owner','editor','viewer'])"
+            ),
             {"workspace": workspace_id},
         )
     if not allowed:
@@ -172,12 +174,20 @@ def confirm_cpe(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id, "writer")
-        current = session.execute(
-            text("""SELECT selected_cpe, version FROM vulntrack.technologies
+        current = (
+            session.execute(
+                text("""SELECT selected_cpe, version FROM vulntrack.technologies
                 WHERE workspace_id=:workspace AND application_id=:application
                   AND id=:technology"""),
-            {"workspace": workspace_id, "application": application_id, "technology": technology_id},
-        ).mappings().first()
+                {
+                    "workspace": workspace_id,
+                    "application": application_id,
+                    "technology": technology_id,
+                },
+            )
+            .mappings()
+            .first()
+        )
         if current is None:
             raise APIError(404, "TECHNOLOGY_NOT_FOUND", "Tecnología no encontrada")
         if current["selected_cpe"] != payload.expected_selected_cpe:
@@ -185,8 +195,13 @@ def confirm_cpe(
 
     candidate, _ = request.app.state.nvd.resolve(user.id, payload.cpe_name_id)
     candidate_version = unbind_component(parse_cpe(candidate.cpe_name)[3])
-    if candidate_version in {"*", "-"} or candidate_version.casefold() != current["version"].casefold():
-        raise APIError(409, "CPE_VERSION_MISMATCH", "El CPE NVD debe coincidir con la versión observada")
+    if (
+        candidate_version in {"*", "-"}
+        or candidate_version.casefold() != current["version"].casefold()
+    ):
+        raise APIError(
+            409, "CPE_VERSION_MISMATCH", "El CPE NVD debe coincidir con la versión observada"
+        )
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
@@ -241,21 +256,36 @@ def analyze_technology(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id, "writer")
-        technology = session.execute(
-            text("""SELECT selected_cpe, version, confidence FROM vulntrack.technologies
-                WHERE workspace_id=:workspace AND application_id=:application AND id=:technology"""),
-            {"workspace": workspace_id, "application": application_id, "technology": technology_id},
-        ).mappings().first()
+        technology = (
+            session.execute(
+                text("""SELECT selected_cpe, version, confidence FROM vulntrack.technologies
+                WHERE workspace_id=:workspace AND application_id=:application AND
+                id=:technology"""),
+                {
+                    "workspace": workspace_id,
+                    "application": application_id,
+                    "technology": technology_id,
+                },
+            )
+            .mappings()
+            .first()
+        )
         if technology is None:
             raise APIError(404, "TECHNOLOGY_NOT_FOUND", "Tecnología no encontrada")
         if technology["confidence"] != "user_confirmed" or not technology["selected_cpe"]:
-            raise APIError(409, "CPE_CONFIRMATION_REQUIRED", "Confirma un CPE NVD antes de consultar CVE")
-        previous = session.execute(
-            text("""SELECT id, request_hash, status, coverage, total_results, stored_count
+            raise APIError(
+                409, "CPE_CONFIRMATION_REQUIRED", "Confirma un CPE NVD antes de consultar CVE"
+            )
+        previous = (
+            session.execute(
+                text("""SELECT id, request_hash, status, coverage, total_results, stored_count
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND initiated_by=:actor AND request_key=:key"""),
-            {"workspace": workspace_id, "actor": user.id, "key": key},
-        ).mappings().first()
+                {"workspace": workspace_id, "actor": user.id, "key": key},
+            )
+            .mappings()
+            .first()
+        )
         if previous:
             if previous["request_hash"] != request_hash:
                 raise APIError(409, "IDEMPOTENCY_CONFLICT", "Clave utilizada con otra solicitud")
@@ -267,7 +297,9 @@ def analyze_technology(
             {"workspace": workspace_id, "technology": technology_id},
         )
         if active:
-            raise APIError(409, "ANALYSIS_IN_PROGRESS", "Ya existe una consulta activa para esta tecnología")
+            raise APIError(
+                409, "ANALYSIS_IN_PROGRESS", "Ya existe una consulta activa para esta tecnología"
+            )
         request.app.state.nvd.quota.check_user(user.id, "cve")
         run_id = uuid4()
         session.execute(
@@ -285,7 +317,9 @@ def analyze_technology(
                 "cpe": technology["selected_cpe"],
                 "key": key,
                 "digest": request_hash,
-                "params": json.dumps({"cpeName": technology["selected_cpe"], "resultsPerPage": 100}),
+                "params": json.dumps(
+                    {"cpeName": technology["selected_cpe"], "resultsPerPage": 100}
+                ),
             },
         )
         session.execute(
@@ -301,36 +335,54 @@ def analyze_technology(
         ) as session:
             _authorize(session, workspace_id, application_id, "writer")
             session.execute(
-                text("UPDATE vulntrack.application_analysis_runs SET status='running', started_at=clock_timestamp() WHERE id=:id"),
+                text(
+                    "UPDATE vulntrack.application_analysis_runs SET status='running', "
+                    "started_at=clock_timestamp() WHERE id=:id"
+                ),
                 {"id": run_id},
             )
 
         # No SQL transaction/connection is held during the external request.
         page = request.app.state.cve.page(technology["selected_cpe"], 0, 100)
-        page_cves = [entry.cve.model_dump(mode="json", exclude_none=True) for entry in page.vulnerabilities]
+        page_cves = [
+            entry.cve.model_dump(mode="json", exclude_none=True) for entry in page.vulnerabilities
+        ]
         warnings = []
         rows = []
         for record in page_cves:
             if _contains_nul(record):
                 raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta CVE NVD no válida")
-            applicability, evidence = evidence_for(technology["selected_cpe"], technology["version"], record)
+            applicability, evidence = evidence_for(
+                technology["selected_cpe"], technology["version"], record
+            )
             if evidence.get("truncated"):
                 warnings.append("EVIDENCE_BUDGET_REACHED")
             descriptions = record.get("descriptions", [])
-            title = next((item.get("value") for item in descriptions if item.get("lang") == "en"), None)
+            title = next(
+                (item.get("value") for item in descriptions if item.get("lang") == "en"), None
+            )
             title = " ".join(title.split())[:500] if isinstance(title, str) else None
             metrics = record.get("metrics") or None
             if metrics and len(encoded(metrics)) > 24000:
                 warnings.append("METRICS_OMITTED")
                 metrics = None
-            rows.append({
-                "id": uuid4(), "workspace": workspace_id, "analysis": run_id,
-                "external_id": record["id"], "title": title or None,
-                "severity": _severity(record.get("metrics") or {}), "cvss": json.dumps(metrics) if metrics else None,
-                "applicability": applicability, "evidence": json.dumps(evidence),
-                "published": datetime.fromisoformat(record["published"].replace("Z", "+00:00")),
-                "modified": datetime.fromisoformat(record["lastModified"].replace("Z", "+00:00")),
-            })
+            rows.append(
+                {
+                    "id": uuid4(),
+                    "workspace": workspace_id,
+                    "analysis": run_id,
+                    "external_id": record["id"],
+                    "title": title or None,
+                    "severity": _severity(record.get("metrics") or {}),
+                    "cvss": json.dumps(metrics) if metrics else None,
+                    "applicability": applicability,
+                    "evidence": json.dumps(evidence),
+                    "published": datetime.fromisoformat(record["published"].replace("Z", "+00:00")),
+                    "modified": datetime.fromisoformat(
+                        record["lastModified"].replace("Z", "+00:00")
+                    ),
+                }
+            )
         complete = page.totalResults <= len(page_cves)
         if not complete:
             warnings.append("PAGE_BUDGET_REACHED")
@@ -343,24 +395,41 @@ def analyze_technology(
                     text("""INSERT INTO vulntrack.application_findings
                         (id,workspace_id,analysis_id,external_id,title,severity,cvss,applicability,evidence,published_at,last_modified_at)
                         VALUES (:id,:workspace,:analysis,:external_id,:title,:severity,
-                        CAST(:cvss AS jsonb),:applicability,CAST(:evidence AS jsonb),:published,:modified)"""), row,
+                        CAST(:cvss AS jsonb),:applicability,CAST(:evidence AS
+                        jsonb),:published,:modified)"""),
+                    row,
                 )
             ids = [record["id"] for record in page_cves]
-            manifest = [{"start_index": 0, "count": len(ids), "total": page.totalResults,
-                         "ids_sha256": hashlib.sha256(encoded(ids)).hexdigest(),
-                         "timestamp": page.timestamp.isoformat()}]
+            manifest = [
+                {
+                    "start_index": 0,
+                    "count": len(ids),
+                    "total": page.totalResults,
+                    "ids_sha256": hashlib.sha256(encoded(ids)).hexdigest(),
+                    "timestamp": page.timestamp.isoformat(),
+                }
+            ]
             session.execute(
                 text("""UPDATE vulntrack.application_analysis_runs SET
                     status='completed', coverage=:coverage, completed_at=clock_timestamp(),
                     total_results=:total, retrieved_count=:retrieved, stored_count=:stored,
                     page_count=1, next_index=:next, source_timestamp=:timestamp,
                     warning_codes=CAST(:warnings AS jsonb),
-                    source_timestamps=CAST(:timestamps AS jsonb), page_manifest=CAST(:manifest AS jsonb)
+                    source_timestamps=CAST(:timestamps AS jsonb), page_manifest=CAST(:manifest
+                    AS jsonb)
                     WHERE id=:id"""),
-                {"coverage": "complete" if complete else "partial", "total": page.totalResults,
-                 "retrieved": len(page_cves), "stored": len(rows), "next": len(page_cves),
-                 "timestamp": page.timestamp, "warnings": json.dumps(sorted(set(warnings))),
-                 "timestamps": json.dumps([page.timestamp.isoformat()]), "manifest": json.dumps(manifest), "id": run_id},
+                {
+                    "coverage": "complete" if complete else "partial",
+                    "total": page.totalResults,
+                    "retrieved": len(page_cves),
+                    "stored": len(rows),
+                    "next": len(page_cves),
+                    "timestamp": page.timestamp,
+                    "warnings": json.dumps(sorted(set(warnings))),
+                    "timestamps": json.dumps([page.timestamp.isoformat()]),
+                    "manifest": json.dumps(manifest),
+                    "id": run_id,
+                },
             )
     except APIError as exc:
         _fail_run(request, user.id, workspace_id, application_id, run_id, exc.code)
@@ -368,11 +437,20 @@ def analyze_technology(
     except Exception as exc:
         _fail_run(request, user.id, workspace_id, application_id, run_id, "PROCESSING_ERROR")
         logger.error("v2_nvd_processing_error run_id=%s type=%s", run_id, type(exc).__name__)
-        raise APIError(503, "NVD_PROCESSING_FAILED", "No se pudo completar la consulta NVD") from None
+        raise APIError(
+            503, "NVD_PROCESSING_FAILED", "No se pudo completar la consulta NVD"
+        ) from None
 
-    return {"id": str(run_id), "status": "completed", "coverage": "complete" if complete else "partial",
-            "total_results": page.totalResults, "retrieved_count": len(page_cves), "stored_count": len(rows),
-            "source_timestamp": page.timestamp.isoformat(), "warning_codes": sorted(set(warnings))}
+    return {
+        "id": str(run_id),
+        "status": "completed",
+        "coverage": "complete" if complete else "partial",
+        "total_results": page.totalResults,
+        "retrieved_count": len(page_cves),
+        "stored_count": len(rows),
+        "source_timestamp": page.timestamp.isoformat(),
+        "warning_codes": sorted(set(warnings)),
+    }
 
 
 def _fail_run(request, actor, workspace, application, run_id, code):
@@ -385,26 +463,39 @@ def _fail_run(request, actor, workspace, application, run_id, code):
             _authorize(session, workspace, application, "writer")
             session.execute(
                 text("""UPDATE vulntrack.application_analysis_runs SET status='failed',
-                    completed_at=clock_timestamp(), failure_code=:code WHERE id=:id AND status IN ('queued','running')"""),
-                {"code": code if code.isupper() and len(code) <= 80 else "PROCESSING_ERROR", "id": run_id},
+                    completed_at=clock_timestamp(), failure_code=:code WHERE id=:id AND status
+                    IN ('queued','running')"""),
+                {
+                    "code": code if code.isupper() and len(code) <= 80 else "PROCESSING_ERROR",
+                    "id": run_id,
+                },
             )
     except Exception as exc:
-        logger.error("v2_nvd_run_failure_persist_failed run_id=%s type=%s", run_id, type(exc).__name__)
+        logger.error(
+            "v2_nvd_run_failure_persist_failed run_id=%s type=%s", run_id, type(exc).__name__
+        )
 
 
 @router.get("/analyses/{run_id}")
-def get_analysis(workspace_id: UUID, application_id: UUID, run_id: UUID, user: Identity, request: Request):
+def get_analysis(
+    workspace_id: UUID, application_id: UUID, run_id: UUID, user: Identity, request: Request
+):
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id)
-        row = session.execute(
-            text("""SELECT id,status,coverage,total_results,retrieved_count,stored_count,page_count,
+        row = (
+            session.execute(
+                text("""SELECT
+                id,status,coverage,total_results,retrieved_count,stored_count,page_count,
                 warning_codes,failure_code,source_timestamp,created_at,started_at,completed_at
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id"""),
-            {"workspace": workspace_id, "application": application_id, "id": run_id},
-        ).mappings().first()
+                {"workspace": workspace_id, "application": application_id, "id": run_id},
+            )
+            .mappings()
+            .first()
+        )
         if row is None:
             raise APIError(404, "ANALYSIS_NOT_FOUND", "Consulta no encontrada")
         return dict(row)
@@ -424,8 +515,9 @@ def list_analyses(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id)
-        rows = session.execute(
-            text("""SELECT r.id,r.technology_id,t.product,t.version,r.status,r.coverage,
+        rows = (
+            session.execute(
+                text("""SELECT r.id,r.technology_id,t.product,t.version,r.status,r.coverage,
                 r.total_results,r.retrieved_count,r.stored_count,r.page_count,r.warning_codes,
                 r.failure_code,r.source_timestamp,r.created_at,r.started_at,r.completed_at
                 FROM vulntrack.application_analysis_runs r
@@ -434,16 +526,25 @@ def list_analyses(
                  AND t.id=r.technology_id
                 WHERE r.workspace_id=:workspace AND r.application_id=:application
                 ORDER BY r.created_at DESC,r.id DESC LIMIT :limit OFFSET :offset"""),
-            {"workspace": workspace_id, "application": application_id,
-             "limit": limit, "offset": offset},
-        ).mappings().all()
+                {
+                    "workspace": workspace_id,
+                    "application": application_id,
+                    "limit": limit,
+                    "offset": offset,
+                },
+            )
+            .mappings()
+            .all()
+        )
         total = session.scalar(
             text("""SELECT count(*) FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application"""),
             {"workspace": workspace_id, "application": application_id},
         )
-        return {"items": [dict(row) for row in rows],
-                "page": {"limit": limit, "offset": offset, "total": total}}
+        return {
+            "items": [dict(row) for row in rows],
+            "page": {"limit": limit, "offset": offset, "total": total},
+        }
 
 
 @router.get("/analyses/{run_id}/findings")
@@ -460,26 +561,42 @@ def get_findings(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id)
-        run = session.execute(
-            text("""SELECT status,coverage FROM vulntrack.application_analysis_runs
+        run = (
+            session.execute(
+                text("""SELECT status,coverage FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id"""),
-            {"workspace": workspace_id, "application": application_id, "id": run_id},
-        ).mappings().first()
+                {"workspace": workspace_id, "application": application_id, "id": run_id},
+            )
+            .mappings()
+            .first()
+        )
         if run is None:
             raise APIError(404, "ANALYSIS_NOT_FOUND", "Consulta no encontrada")
-        rows = session.execute(
-            text("""SELECT id,external_id,title,severity,cvss,applicability,status,evidence,
-                published_at,last_modified_at,observed_at,updated_at FROM vulntrack.application_findings
+        rows = (
+            session.execute(
+                text("""SELECT id,external_id,title,severity,cvss,applicability,status,evidence,
+                published_at,last_modified_at,observed_at,updated_at FROM
+                vulntrack.application_findings
                 WHERE workspace_id=:workspace AND analysis_id=:id
                 ORDER BY external_id LIMIT :limit OFFSET :offset"""),
-            {"workspace": workspace_id, "id": run_id, "limit": limit, "offset": offset},
-        ).mappings().all()
+                {"workspace": workspace_id, "id": run_id, "limit": limit, "offset": offset},
+            )
+            .mappings()
+            .all()
+        )
         total = session.scalar(
-            text("SELECT count(*) FROM vulntrack.application_findings WHERE workspace_id=:workspace AND analysis_id=:id"),
+            text(
+                "SELECT count(*) FROM vulntrack.application_findings WHERE "
+                "workspace_id=:workspace AND analysis_id=:id"
+            ),
             {"workspace": workspace_id, "id": run_id},
         )
-        return {"items": [dict(row) for row in rows], "page": {"limit": limit, "offset": offset, "total": total},
-                "run_status": run["status"], "coverage": run["coverage"]}
+        return {
+            "items": [dict(row) for row in rows],
+            "page": {"limit": limit, "offset": offset, "total": total},
+            "run_status": run["status"],
+            "coverage": run["coverage"],
+        }
 
 
 @router.patch("/findings/{finding_id}")
@@ -495,8 +612,9 @@ def review_finding(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id, "writer")
-        row = session.execute(
-            text("""SELECT f.id,f.analysis_id,f.external_id,f.title,f.severity,f.cvss,
+        row = (
+            session.execute(
+                text("""SELECT f.id,f.analysis_id,f.external_id,f.title,f.severity,f.cvss,
                 f.applicability,f.status,f.evidence,f.published_at,f.last_modified_at,
                 f.observed_at,f.updated_at,r.status AS run_status
                 FROM vulntrack.application_findings f
@@ -504,32 +622,53 @@ def review_finding(
                   ON r.workspace_id=f.workspace_id AND r.id=f.analysis_id
                 WHERE f.workspace_id=:workspace AND r.application_id=:application
                   AND f.id=:finding FOR UPDATE OF f"""),
-            {"workspace": workspace_id, "application": application_id, "finding": finding_id},
-        ).mappings().first()
+                {"workspace": workspace_id, "application": application_id, "finding": finding_id},
+            )
+            .mappings()
+            .first()
+        )
         if row is None:
             raise APIError(404, "FINDING_NOT_FOUND", "Hallazgo no disponible")
-        if (row["status"] != "open" or row["run_status"] not in {"completed", "failed"}
-                or row["updated_at"] != payload.expected_updated_at):
-            raise APIError(409, "FINDING_REVIEW_CONFLICT", "El hallazgo ya cambió o no puede revisarse")
+        if (
+            row["status"] != "open"
+            or row["run_status"] not in {"completed", "failed"}
+            or row["updated_at"] != payload.expected_updated_at
+        ):
+            raise APIError(
+                409, "FINDING_REVIEW_CONFLICT", "El hallazgo ya cambió o no puede revisarse"
+            )
         session.execute(
             text("""UPDATE vulntrack.application_findings
                 SET status='reviewed',applicability=:applicability
                 WHERE workspace_id=:workspace AND id=:finding AND status='open'"""),
-            {"applicability": payload.applicability, "workspace": workspace_id, "finding": finding_id},
+            {
+                "applicability": payload.applicability,
+                "workspace": workspace_id,
+                "finding": finding_id,
+            },
         )
         session.execute(
             text("""INSERT INTO vulntrack.audit_events
                 (workspace_id,actor_id,action,object_type,object_id)
                 VALUES (:workspace,:actor,:action,'finding',:finding)"""),
-            {"workspace": workspace_id, "actor": user.id,
-             "action": f"finding.reviewed.{payload.applicability}", "finding": finding_id},
+            {
+                "workspace": workspace_id,
+                "actor": user.id,
+                "action": f"finding.reviewed.{payload.applicability}",
+                "finding": finding_id,
+            },
         )
-        updated = session.execute(
-            text("""SELECT id,external_id,title,severity,cvss,applicability,status,evidence,
+        updated = (
+            session.execute(
+                text("""SELECT id,external_id,title,severity,cvss,applicability,status,evidence,
                 published_at,last_modified_at,observed_at,updated_at
-                FROM vulntrack.application_findings WHERE workspace_id=:workspace AND id=:finding"""),
-            {"workspace": workspace_id, "finding": finding_id},
-        ).mappings().one()
+                FROM vulntrack.application_findings WHERE workspace_id=:workspace AND
+                id=:finding"""),
+                {"workspace": workspace_id, "finding": finding_id},
+            )
+            .mappings()
+            .one()
+        )
         return dict(updated)
 
 
@@ -555,13 +694,17 @@ def list_recommendations(
         )
         if not found:
             raise APIError(404, "FINDING_NOT_FOUND", "Hallazgo no disponible")
-        rows = session.execute(
-            text("""SELECT id,finding_id,recommendation,source_url,status,assigned_to,
+        rows = (
+            session.execute(
+                text("""SELECT id,finding_id,recommendation,source_url,status,assigned_to,
                 created_by,due_at,completed_at,created_at,updated_at
                 FROM vulntrack.recommendations WHERE workspace_id=:workspace AND finding_id=:finding
                 ORDER BY created_at,id LIMIT 100"""),
-            {"workspace": workspace_id, "finding": finding_id},
-        ).mappings().all()
+                {"workspace": workspace_id, "finding": finding_id},
+            )
+            .mappings()
+            .all()
+        )
         return {"items": [dict(row) for row in rows]}
 
 
@@ -595,22 +738,38 @@ def create_recommendation(
             {"workspace": workspace_id, "finding": finding_id},
         )
         if recommendation_count >= 50:
-            raise APIError(409, "RECOMMENDATION_LIMIT", "Este hallazgo alcanzó el límite de 50 medidas")
+            raise APIError(
+                409, "RECOMMENDATION_LIMIT", "Este hallazgo alcanzó el límite de 50 medidas"
+            )
         if payload.assigned_to and not session.scalar(
-            text("SELECT 1 FROM vulntrack.workspace_members WHERE workspace_id=:workspace AND user_id=:assignee"),
+            text(
+                "SELECT 1 FROM vulntrack.workspace_members WHERE "
+                "workspace_id=:workspace AND user_id=:assignee"
+            ),
             {"workspace": workspace_id, "assignee": payload.assigned_to},
         ):
             raise APIError(404, "ASSIGNEE_NOT_FOUND", "Miembro no disponible en este workspace")
-        row = session.execute(
-            text("""INSERT INTO vulntrack.recommendations
+        row = (
+            session.execute(
+                text("""INSERT INTO vulntrack.recommendations
                 (id,workspace_id,finding_id,recommendation,source_url,assigned_to,created_by,due_at)
                 VALUES (:id,:workspace,:finding,:recommendation,:source,:assignee,:actor,:due)
                 RETURNING id,finding_id,recommendation,source_url,status,assigned_to,
                     created_by,due_at,completed_at,created_at,updated_at"""),
-            {"id": recommendation_id, "workspace": workspace_id, "finding": finding_id,
-             "recommendation": payload.recommendation, "source": payload.source_url,
-             "assignee": payload.assigned_to, "actor": user.id, "due": payload.due_at},
-        ).mappings().one()
+                {
+                    "id": recommendation_id,
+                    "workspace": workspace_id,
+                    "finding": finding_id,
+                    "recommendation": payload.recommendation,
+                    "source": payload.source_url,
+                    "assignee": payload.assigned_to,
+                    "actor": user.id,
+                    "due": payload.due_at,
+                },
+            )
+            .mappings()
+            .one()
+        )
         session.execute(
             text("""INSERT INTO vulntrack.audit_events
                 (workspace_id,actor_id,action,object_type,object_id)
@@ -633,33 +792,47 @@ def update_recommendation(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id, "writer")
-        current = session.execute(
-            text("""SELECT r.updated_at FROM vulntrack.recommendations r
+        current = (
+            session.execute(
+                text("""SELECT r.updated_at FROM vulntrack.recommendations r
                 JOIN vulntrack.application_findings f
                   ON f.workspace_id=r.workspace_id AND f.id=r.finding_id
                 JOIN vulntrack.application_analysis_runs a
                   ON a.workspace_id=f.workspace_id AND a.id=f.analysis_id
                 WHERE r.workspace_id=:workspace AND r.id=:id
                   AND a.application_id=:application FOR UPDATE OF r"""),
-            {"workspace": workspace_id, "id": recommendation_id, "application": application_id},
-        ).mappings().first()
+                {"workspace": workspace_id, "id": recommendation_id, "application": application_id},
+            )
+            .mappings()
+            .first()
+        )
         if current is None:
             raise APIError(404, "RECOMMENDATION_NOT_FOUND", "Recomendación no disponible")
         if current["updated_at"] != payload.expected_updated_at:
-            raise APIError(409, "RECOMMENDATION_CONFLICT", "La recomendación cambió; actualiza la lista")
-        row = session.execute(
-            text("""UPDATE vulntrack.recommendations SET status=:status,
+            raise APIError(
+                409, "RECOMMENDATION_CONFLICT", "La recomendación cambió; actualiza la lista"
+            )
+        row = (
+            session.execute(
+                text("""UPDATE vulntrack.recommendations SET status=:status,
                 completed_at=CASE WHEN :status='fixed' THEN clock_timestamp() ELSE NULL END
                 WHERE workspace_id=:workspace AND id=:id
                 RETURNING id,finding_id,recommendation,source_url,status,assigned_to,
                     created_by,due_at,completed_at,created_at,updated_at"""),
-            {"status": payload.status, "workspace": workspace_id, "id": recommendation_id},
-        ).mappings().one()
+                {"status": payload.status, "workspace": workspace_id, "id": recommendation_id},
+            )
+            .mappings()
+            .one()
+        )
         session.execute(
             text("""INSERT INTO vulntrack.audit_events
                 (workspace_id,actor_id,action,object_type,object_id)
                 VALUES (:workspace,:actor,:action,'recommendation',:object)"""),
-            {"workspace": workspace_id, "actor": user.id,
-             "action": f"recommendation.status.{payload.status}", "object": recommendation_id},
+            {
+                "workspace": workspace_id,
+                "actor": user.id,
+                "action": f"recommendation.status.{payload.status}",
+                "object": recommendation_id,
+            },
         )
         return dict(row)

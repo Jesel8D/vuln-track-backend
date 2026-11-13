@@ -1,5 +1,10 @@
 # Identidad mínima
 
+Actualización V2: [registro HTTP opt-in](SELF_SERVICE_REGISTRATION.md), reutilizando
+este hashing/JWT, con contraseñas de **15–128** caracteres para altas públicas y
+workspace personal atómico. El rango12–256 siguiente corresponde al helper de
+mantenimiento histórico. No se necesita aprovisionar cada cuenta normal por SQL.
+
 Implementado y probado con PostgreSQL: login JSON, Argon2id (64 MiB, t=3, p=1,
 sal individual), comparación mediante argon2-cffi; hash dummy para usuario ausente,
 usuario activo obligatorio y respuesta 401 genérica. No se trata el CHECK SQL de hash

@@ -10,6 +10,7 @@ from sqlalchemy import CheckConstraint, inspect, text
 from sqlalchemy.dialects import postgresql
 
 from app.db.base import Base
+from app.db.v2_compatibility import without_verified_v2
 from app.models import database_v1  # noqa: F401
 
 V1_REVISION = "0001_database_v1"
@@ -127,7 +128,7 @@ def installed_revision(connection):
 def verify_schema(connection, revision=None):
     revision = revision or installed_revision(connection) or OWNERSHIP_REVISION
     expected = expected_catalog(revision)
-    actual = catalog(connection)
+    actual = without_verified_v2(connection, catalog(connection))
     differences = [key for key in expected if actual[key] != expected[key]]
     if differences:
         raise RuntimeError("Baseline bloqueado: difiere catálogo " + ", ".join(differences))
@@ -193,7 +194,13 @@ def verify_schema(connection, revision=None):
             "compare_type": True,
             "compare_server_default": True,
             "include_name": lambda name, type_, parent: (
-                name == "vulntrack" if type_ == "schema" else True
+                name == "vulntrack"
+                if type_ == "schema"
+                else (
+                    name in {table.name for table in Base.metadata.sorted_tables}
+                    if type_ == "table"
+                    else True
+                )
             ),
         },
     )

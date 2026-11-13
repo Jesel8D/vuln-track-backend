@@ -1,5 +1,10 @@
 > **Rama MVP-A:** ver [contrato actualizado](MVP_A.md). Incluye versión nullable, CPE e historial y revisión 0003. Las secciones V1 siguientes conservan el antecedente.
 
+Actualización V2: `POST /api/v1/auth/register`, público solo con registro habilitado,
+devuelve201 `{id,username}` y crea workspace/membresía sin privilegios globales.
+Ver [contrato, errores y límites](SELF_SERVICE_REGISTRATION.md). Las rutas V2
+existentes se documentan en [V2_NVD_INTEGRATION.md](V2_NVD_INTEGRATION.md).
+
 # API V1.1 propuesta: activos propios
 
 Contrato adaptado de ASSET_CONTRACT_PROPOSAL, pendiente de aprobación formal.
