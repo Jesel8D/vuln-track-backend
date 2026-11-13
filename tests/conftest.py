@@ -20,6 +20,8 @@ def settings():
         _env_file=None,
         environment="test",
         cve_worker_enabled=False,
+        registration_enabled=False,
+        workspace_hmac_key=None,
         database_url="postgresql+psycopg://test_api@127.0.0.1:1/vulntrack_backend_test",
         token_secret=secrets.token_urlsafe(48),
         db_connect_timeout=1,

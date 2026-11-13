@@ -13,9 +13,7 @@ from app.api.router import Identity
 from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
 
-router = APIRouter(
-    prefix="/api/v2/workspaces/{workspace_id}/applications/{application_id}/targets"
-)
+router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/applications/{application_id}/targets")
 workspace_router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/targets")
 
 
@@ -117,12 +115,16 @@ def list_workspace_targets(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         if not session.scalar(
-            text("SELECT vulntrack.has_workspace_role(:workspace, ARRAY['owner','editor','viewer'])"),
+            text(
+                "SELECT vulntrack.has_workspace_role(:workspace, ARRAY['owner','editor','viewer'])"
+            ),
             {"workspace": workspace_id},
         ):
             raise APIError(404, "WORKSPACE_NOT_FOUND", "Workspace no disponible")
-        rows = session.execute(
-            text("""SELECT t.id,t.application_id,a.name AS application_name,a.status AS application_status,
+        rows = (
+            session.execute(
+                text("""SELECT t.id,t.application_id,a.name AS application_name,a.status AS
+                application_status,
                 t.url,t.label,
                 CASE WHEN t.authorization_status='approved'
                           AND t.authorization_expires_at <= clock_timestamp()
@@ -134,14 +136,21 @@ def list_workspace_targets(
                 WHERE t.workspace_id=:workspace
                 ORDER BY a.created_at DESC,a.id,t.created_at,t.id
                 LIMIT :limit OFFSET :offset"""),
-            {"workspace": workspace_id, "limit": limit, "offset": offset},
-        ).mappings().all()
+                {"workspace": workspace_id, "limit": limit, "offset": offset},
+            )
+            .mappings()
+            .all()
+        )
         total = session.scalar(
-            text("SELECT count(*) FROM vulntrack.application_targets WHERE workspace_id=:workspace"),
+            text(
+                "SELECT count(*) FROM vulntrack.application_targets WHERE workspace_id=:workspace"
+            ),
             {"workspace": workspace_id},
         )
-        return {"items": [dict(row) for row in rows],
-                "page": {"limit": limit, "offset": offset, "total": total}}
+        return {
+            "items": [dict(row) for row in rows],
+            "page": {"limit": limit, "offset": offset, "total": total},
+        }
 
 
 @router.get("")
@@ -150,8 +159,9 @@ def list_targets(workspace_id: UUID, application_id: UUID, user: Identity, reque
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id)
-        rows = session.execute(
-            text("""SELECT id,url,label,
+        rows = (
+            session.execute(
+                text("""SELECT id,url,label,
                 CASE WHEN authorization_status='approved'
                           AND authorization_expires_at <= clock_timestamp()
                      THEN 'expired' ELSE authorization_status END AS authorization_status,
@@ -160,8 +170,11 @@ def list_targets(workspace_id: UUID, application_id: UUID, user: Identity, reque
                 FROM vulntrack.application_targets
                 WHERE workspace_id=:workspace AND application_id=:application
                 ORDER BY created_at,id LIMIT 100"""),
-            {"workspace": workspace_id, "application": application_id},
-        ).mappings().all()
+                {"workspace": workspace_id, "application": application_id},
+            )
+            .mappings()
+            .all()
+        )
         return {"items": [dict(row) for row in rows]}
 
 
@@ -190,15 +203,25 @@ def create_target(
         )
         if count >= 100:
             raise APIError(409, "TARGET_LIMIT", "La aplicación alcanzó el límite de 100 destinos")
-        row = session.execute(
-            text("""INSERT INTO vulntrack.application_targets
+        row = (
+            session.execute(
+                text("""INSERT INTO vulntrack.application_targets
                 (id,workspace_id,application_id,url,label,created_by)
                 VALUES (:id,:workspace,:application,:url,:label,:actor)
                 RETURNING id,url,label,authorization_status,authorization_expires_at,
                     authorization_reference,created_at,updated_at"""),
-            {"id": target_id, "workspace": workspace_id, "application": application_id,
-             "url": payload.url, "label": payload.label, "actor": user.id},
-        ).mappings().one()
+                {
+                    "id": target_id,
+                    "workspace": workspace_id,
+                    "application": application_id,
+                    "url": payload.url,
+                    "label": payload.label,
+                    "actor": user.id,
+                },
+            )
+            .mappings()
+            .one()
+        )
         session.execute(
             text("""INSERT INTO vulntrack.audit_events
                 (workspace_id,actor_id,action,object_type,object_id)
@@ -219,44 +242,73 @@ def update_target_authorization(
 ):
     now = datetime.now(UTC)
     if payload.authorization_status == "approved":
-        if payload.authorization_expires_at is None or not now < payload.authorization_expires_at <= now + timedelta(days=365):
-            raise APIError(422, "AUTHORIZATION_EXPIRY_INVALID", "La autorización debe vencer dentro del próximo año")
+        if (
+            payload.authorization_expires_at is None
+            or not now < payload.authorization_expires_at <= now + timedelta(days=365)
+        ):
+            raise APIError(
+                422,
+                "AUTHORIZATION_EXPIRY_INVALID",
+                "La autorización debe vencer dentro del próximo año",
+            )
     elif payload.authorization_expires_at is not None:
-        raise APIError(422, "AUTHORIZATION_EXPIRY_INVALID", "Un destino rechazado no debe tener vigencia")
+        raise APIError(
+            422, "AUTHORIZATION_EXPIRY_INVALID", "Un destino rechazado no debe tener vigencia"
+        )
 
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id, write=True)
-        current = session.execute(
-            text("""SELECT updated_at FROM vulntrack.application_targets
+        current = (
+            session.execute(
+                text("""SELECT updated_at FROM vulntrack.application_targets
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id
                 FOR UPDATE"""),
-            {"workspace": workspace_id, "application": application_id, "id": target_id},
-        ).mappings().first()
+                {"workspace": workspace_id, "application": application_id, "id": target_id},
+            )
+            .mappings()
+            .first()
+        )
         if current is None:
             raise APIError(404, "TARGET_NOT_FOUND", "Destino no disponible")
         if current["updated_at"] != payload.expected_updated_at:
-            raise APIError(409, "TARGET_AUTHORIZATION_CONFLICT", "El destino cambió; actualiza la vista")
-        row = session.execute(
-            text("""UPDATE vulntrack.application_targets SET
+            raise APIError(
+                409, "TARGET_AUTHORIZATION_CONFLICT", "El destino cambió; actualiza la vista"
+            )
+        row = (
+            session.execute(
+                text("""UPDATE vulntrack.application_targets SET
                 authorization_status=:status,authorization_expires_at=:expires,
                 authorization_reference=:reference
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id
                 RETURNING id,url,label,authorization_status,authorization_expires_at,
                     authorization_reference,created_at,updated_at"""),
-            {"status": payload.authorization_status,
-             "expires": payload.authorization_expires_at if payload.authorization_status == "approved" else None,
-             "reference": payload.authorization_reference,
-             "workspace": workspace_id, "application": application_id, "id": target_id},
-        ).mappings().first()
+                {
+                    "status": payload.authorization_status,
+                    "expires": payload.authorization_expires_at
+                    if payload.authorization_status == "approved"
+                    else None,
+                    "reference": payload.authorization_reference,
+                    "workspace": workspace_id,
+                    "application": application_id,
+                    "id": target_id,
+                },
+            )
+            .mappings()
+            .first()
+        )
         if row is None:
             raise APIError(404, "TARGET_NOT_FOUND", "Destino no disponible")
         session.execute(
             text("""INSERT INTO vulntrack.audit_events
                 (workspace_id,actor_id,action,object_type,object_id)
                 VALUES (:workspace,:actor,:action,'application_target',:object)"""),
-            {"workspace": workspace_id, "actor": user.id,
-             "action": f"target.authorization.{payload.authorization_status}", "object": target_id},
+            {
+                "workspace": workspace_id,
+                "actor": user.id,
+                "action": f"target.authorization.{payload.authorization_status}",
+                "object": target_id,
+            },
         )
         return dict(row)

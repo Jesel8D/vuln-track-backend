@@ -19,7 +19,10 @@ def test_health_and_ready(client):
         ("get", f"/api/v1/assets/{uuid4()}"),
         ("post", "/api/v1/assets"),
         ("get", f"/api/v2/workspaces/{uuid4()}/applications/{uuid4()}/cpe-candidates?query=django"),
-        ("post", f"/api/v2/workspaces/{uuid4()}/applications/{uuid4()}/technologies/{uuid4()}/analyses"),
+        (
+            "post",
+            f"/api/v2/workspaces/{uuid4()}/applications/{uuid4()}/technologies/{uuid4()}/analyses",
+        ),
         ("post", "/api/v2/workspaces"),
         ("get", f"/api/v2/workspaces/{uuid4()}/applications"),
     ],

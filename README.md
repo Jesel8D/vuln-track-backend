@@ -1,5 +1,12 @@
 # VulnTrack Backend
 
+Registro público V2 opt-in y workspace personal transaccional preparados para
+revisión: [contrato y ejecución](docs/SELF_SERVICE_REGISTRATION.md),
+[compatibilidad MVP/V2](docs/MVP_V2_COMPATIBILITY.md) y
+[resultados reales](docs/SELF_SERVICE_REGISTRATION_RESULTS.md).
+Requiere SQL006 de Database y el permiso específico del login API; no cambia
+tablas ni añade roles administrativos globales. No habilita ZAP.
+
 API FastAPI para autenticar usuarios, consultar NVD y guardar resultados en PostgreSQL. La rama `rudi` conserva los flujos históricos V1/MVP-A/B y añade endpoints NVD para el modelo de aplicaciones V2. Los resultados nuevos usan `workspaces`, `applications`, `technologies`, `application_analysis_runs` y `application_findings`; cada operación V2 instala el contexto HMAC por transacción y PostgreSQL aplica RLS.
 
 ## Configuración

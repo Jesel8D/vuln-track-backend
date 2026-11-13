@@ -1,5 +1,9 @@
 # Revisión técnica de seguridad de integración V1.2
 
+Antecedente V1.2 conservado. La revisión de registro/RLS/JWT V2 y su evidencia
+actual está en [SELF_SERVICE_REGISTRATION.md](SELF_SERVICE_REGISTRATION.md) y
+[SELF_SERVICE_REGISTRATION_RESULTS.md](SELF_SERVICE_REGISTRATION_RESULTS.md).
+
 Alcance: herramientas de coordinación, SQL propuesto y contrato de clientes sobre la
 API V1.1. Estado **PROPUESTA**, no auditoría independiente ni aprobación de producción.
 No se cambian decisiones de Context. No se implementaron clientes, NVD, ZAP ni escaneos.

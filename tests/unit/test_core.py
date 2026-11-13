@@ -72,7 +72,9 @@ def test_settings(settings):
     assert Settings(_env_file=None, **configured).workspace_hmac_key.get_secret_value() == "a" * 64
     for invalid_key in ["a" * 63, "A" * 64, "g" * 64]:
         with pytest.raises(ValidationError):
-            Settings(_env_file=None, **(settings.model_dump() | {"workspace_hmac_key": invalid_key}))
+            Settings(
+                _env_file=None, **(settings.model_dump() | {"workspace_hmac_key": invalid_key})
+            )
 
 
 def test_passwords():

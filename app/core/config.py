@@ -82,6 +82,9 @@ class Settings(BaseSettings):
     nvd_timeout_seconds: int = Field(default=10, ge=1, le=20)
     login_attempts_per_minute: int = Field(default=10, ge=1, le=100)
     workspace_hmac_key: SecretStr | None = Field(default=None, repr=False)
+    registration_enabled: bool = False
+    registration_attempts_per_minute: int = Field(default=3, ge=1, le=10)
+    registration_total_per_minute: int = Field(default=20, ge=1, le=100)
 
     @field_validator("cors_origins")
     @classmethod
@@ -103,6 +106,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def secure_configuration(self):
+        if self.registration_enabled and self.workspace_hmac_key is None:
+            raise ValueError("Registro V2 requiere WORKSPACE_HMAC_KEY")
         try:
             url = make_url(self.database_url.get_secret_value())
         except Exception:
