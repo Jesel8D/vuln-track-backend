@@ -23,3 +23,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# API documentation/test dependencies and PRIVATE runtime artifacts
+api-tests/v2/node_modules/
+api-tests/v2/.artifacts/

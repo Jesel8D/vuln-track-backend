@@ -64,3 +64,7 @@ python -m pip check
 ```
 
 La suite existente documenta verificaciones previas para V1/MVP-A/B. La integración nueva con V2 requiere ejecutar las pruebas SQL V2 extendidas y pruebas de API contra una base desechable con la migración `005`; no se afirma certificación de producción. Consulta `docs/MVP_A.md`, `docs/MVP_B.md`, `docs/MVP_B_RESULTS.md`, `docs/INTEGRATION_SECURITY_REVIEW.md` y `../vuln-track-database/docs/DATABASE_V2_PLAN.md`.
+
+## Colección y documentación reproducible de API V2
+
+En la rama `test/v2-api-collection`, consultar [api-tests/v2/README.md](api-tests/v2/README.md): OpenAPI versionado, Postman v2.1, entornos sin secretos, runner PostgreSQL desechable y matriz de endpoints. Se distinguen los contratos de activos V1 y aplicaciones V2, y se documentan los defectos existentes sin cambiar funcionalidades ni RLS.

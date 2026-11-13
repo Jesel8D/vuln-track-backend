@@ -20,6 +20,7 @@ from app.api.v2_targets import (
 from app.api.v2_targets import (
     workspace_router as v2_workspace_targets_router,
 )
+from app.api_documentation import configure_api_documentation
 from app.core.config import Settings, get_settings
 from app.core.cors import BrowserCORSMiddleware
 from app.core.errors import APIError
@@ -221,4 +222,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(v2_dashboard_router)
     app.include_router(v2_targets_router)
     app.include_router(v2_workspace_targets_router)
+    configure_api_documentation(
+        app,
+        (
+            router,
+            cpe_router,
+            analyses_router,
+            v2_resources_router,
+            v2_nvd_router,
+            v2_dashboard_router,
+            v2_targets_router,
+            v2_workspace_targets_router,
+        ),
+    )
     return app

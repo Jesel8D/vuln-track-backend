@@ -1,0 +1,9 @@
+{
+  "name": "vulntrack-v2-api-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Newman local; sin instalación global",
+  "devDependencies": {
+    "newman": "6.2.3"
+  }
+}

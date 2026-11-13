@@ -1,0 +1,38 @@
+[
+  {
+    "issue": "workspace-create-rls",
+    "expected_contract": 201,
+    "observed": 404,
+    "code": "RESOURCE_NOT_FOUND",
+    "sqlstate": "42501",
+    "detail": "INSERT workspaces ON CONFLICT RETURNING antes de membresía inicial"
+  },
+  {
+    "issue": "undetermined-review",
+    "expected_schema": "Pydantic acepta undetermined",
+    "observed": 409,
+    "code": "INTEGRITY_CONFLICT",
+    "constraint": "app_findings_applicability_valid",
+    "rollback_verified": true
+  },
+  {
+    "issue": "original-and",
+    "expected_contract": 201,
+    "observed": 503,
+    "code": "NVD_PROCESSING_FAILED",
+    "constraint": "app_findings_applicability_valid",
+    "history_status": "failed",
+    "failure_code": "PROCESSING_ERROR",
+    "findings": 0
+  },
+  {
+    "issue": "or-original-title",
+    "expected_contract": 201,
+    "observed": 503,
+    "code": "NVD_PROCESSING_FAILED",
+    "constraint": "app_findings_title_valid",
+    "history_status": "failed",
+    "failure_code": "PROCESSING_ERROR",
+    "findings": 0
+  }
+]

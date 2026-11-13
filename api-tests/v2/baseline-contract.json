@@ -1,0 +1,3003 @@
+{
+  "operations": {
+    "GET /health": {
+      "parameters": [],
+      "security": [],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /ready": {
+      "parameters": [],
+      "security": [],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "POST /api/v1/auth/register": {
+      "parameters": [],
+      "security": [],
+      "request": {
+        "$ref": "#/components/schemas/Registration"
+      },
+      "required": true,
+      "success": {
+        "201": {
+          "$ref": "#/components/schemas/UserRead"
+        }
+      }
+    },
+    "POST /api/v1/auth/login": {
+      "parameters": [],
+      "security": [],
+      "request": {
+        "$ref": "#/components/schemas/Login"
+      },
+      "required": true,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/Token"
+        }
+      }
+    },
+    "GET /api/v1/auth/me": {
+      "parameters": [],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/UserRead"
+        }
+      }
+    },
+    "POST /api/v1/assets": {
+      "parameters": [
+        {
+          "name": "Idempotency-Key",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "title": "Idempotency-Key"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/AssetCreate"
+      },
+      "required": true,
+      "success": {
+        "201": {
+          "$ref": "#/components/schemas/AssetRead"
+        }
+      }
+    },
+    "GET /api/v1/assets": {
+      "parameters": [
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "default": 20,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/AssetList"
+        }
+      }
+    },
+    "GET /api/v1/assets/{asset_id}": {
+      "parameters": [
+        {
+          "name": "asset_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/AssetRead"
+        }
+      }
+    },
+    "GET /api/v1/cpe-candidates": {
+      "parameters": [
+        {
+          "name": "query",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200,
+            "title": "Query"
+          }
+        },
+        {
+          "name": "product_query",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Query"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 20,
+            "minimum": 1,
+            "default": 10,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 10000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/CandidateList"
+        }
+      }
+    },
+    "POST /api/v1/assets/{asset_id}/cpe-identifications": {
+      "parameters": [
+        {
+          "name": "asset_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          }
+        },
+        {
+          "name": "Idempotency-Key",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "title": "Idempotency-Key"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/Confirm"
+          },
+          {
+            "$ref": "#/components/schemas/NeedsReview"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "state",
+          "mapping": {
+            "confirmed": "#/components/schemas/Confirm",
+            "needs_review": "#/components/schemas/NeedsReview"
+          }
+        },
+        "title": "Payload"
+      },
+      "required": true,
+      "success": {
+        "201": {
+          "$ref": "#/components/schemas/EventRead"
+        }
+      }
+    },
+    "GET /api/v1/assets/{asset_id}/cpe-identifications": {
+      "parameters": [
+        {
+          "name": "asset_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          }
+        },
+        {
+          "name": "scope",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "current",
+              "history"
+            ],
+            "type": "string",
+            "default": "current",
+            "title": "Scope"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "default": 20,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/IdentificationList"
+        }
+      }
+    },
+    "POST /api/v1/assets/{asset_id}/analyses": {
+      "parameters": [
+        {
+          "name": "asset_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          }
+        },
+        {
+          "name": "Idempotency-Key",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "title": "Idempotency-Key"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/AnalysisInput"
+      },
+      "required": true,
+      "success": {
+        "202": {
+          "$ref": "#/components/schemas/Accepted"
+        }
+      }
+    },
+    "GET /api/v1/assets/{asset_id}/analyses": {
+      "parameters": [
+        {
+          "name": "asset_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "default": 20,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/AnalysisList"
+        }
+      }
+    },
+    "GET /api/v1/assets/{asset_id}/analyses/{run_id}": {
+      "parameters": [
+        {
+          "name": "asset_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          }
+        },
+        {
+          "name": "run_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/AnalysisRead"
+        }
+      }
+    },
+    "GET /api/v1/assets/{asset_id}/analyses/{run_id}/findings": {
+      "parameters": [
+        {
+          "name": "asset_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Asset Id"
+          }
+        },
+        {
+          "name": "run_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "default": 20,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/FindingList"
+        }
+      }
+    },
+    "GET /api/v1/findings/{finding_id}": {
+      "parameters": [
+        {
+          "name": "finding_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Finding Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/FindingRead"
+        }
+      }
+    },
+    "PATCH /api/v1/findings/{finding_id}": {
+      "parameters": [
+        {
+          "name": "finding_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Finding Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/ReviewInput"
+      },
+      "required": true,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/FindingRead"
+        }
+      }
+    },
+    "POST /api/v2/workspaces": {
+      "parameters": [
+        {
+          "name": "Idempotency-Key",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "title": "Idempotency-Key"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/WorkspaceCreate"
+      },
+      "required": true,
+      "success": {
+        "201": {}
+      }
+    },
+    "GET /api/v2/workspaces": {
+      "parameters": [],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/applications": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/ApplicationCreate"
+      },
+      "required": true,
+      "success": {
+        "201": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/TechnologyCreate"
+      },
+      "required": true,
+      "success": {
+        "201": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/cpe-candidates": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "query",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200,
+            "title": "Query"
+          }
+        },
+        {
+          "name": "product_query",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Query"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 20,
+            "minimum": 1,
+            "default": 10,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 10000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/CandidateList"
+        }
+      }
+    },
+    "PUT /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies/{technology_id}/cpe": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "technology_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Technology Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/CPESelection"
+      },
+      "required": true,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/Candidate"
+        }
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies/{technology_id}/analyses": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "technology_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Technology Id"
+          }
+        },
+        {
+          "name": "Idempotency-Key",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 36,
+            "maxLength": 36,
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "title": "Idempotency-Key"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "201": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "run_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "default": 20,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses/{run_id}/findings": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "run_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Run Id"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "default": 20,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "PATCH /api/v2/workspaces/{workspace_id}/applications/{application_id}/findings/{finding_id}": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "finding_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Finding Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/FindingReview"
+      },
+      "required": true,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/findings/{finding_id}/recommendations": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "finding_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Finding Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/findings/{finding_id}/recommendations": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "finding_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Finding Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/RecommendationCreate"
+      },
+      "required": true,
+      "success": {
+        "201": {}
+      }
+    },
+    "PATCH /api/v2/workspaces/{workspace_id}/applications/{application_id}/recommendations/{recommendation_id}": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "recommendation_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Recommendation Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/RecommendationUpdate"
+      },
+      "required": true,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/dashboard": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/TargetCreate"
+      },
+      "required": true,
+      "success": {
+        "201": {}
+      }
+    },
+    "PATCH /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets/{target_id}/authorization": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "target_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Target Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/TargetAuthorization"
+      },
+      "required": true,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/targets": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000,
+            "minimum": 1,
+            "default": 100,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    }
+  },
+  "schemas": {
+    "Accepted": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "accepted_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Accepted At"
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "accepted_at"
+      ],
+      "title": "Accepted"
+    },
+    "AnalysisInput": {
+      "properties": {
+        "identification_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Identification Id"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "identification_id"
+      ],
+      "title": "AnalysisInput"
+    },
+    "AnalysisList": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/AnalysisRead"
+          },
+          "type": "array",
+          "title": "Items"
+        },
+        "page": {
+          "$ref": "#/components/schemas/Page"
+        }
+      },
+      "type": "object",
+      "required": [
+        "items",
+        "page"
+      ],
+      "title": "AnalysisList"
+    },
+    "AnalysisRead": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "asset_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Asset Id"
+        },
+        "identification_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Identification Id"
+        },
+        "initiated_by": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Initiated By"
+        },
+        "selected_cpe": {
+          "type": "string",
+          "title": "Selected Cpe"
+        },
+        "observed_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Observed Version"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "running",
+            "completed",
+            "failed"
+          ],
+          "title": "Status"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "complete",
+                "partial"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Coverage"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Created At"
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Started At"
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Completed At"
+        },
+        "source_timestamp": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Timestamp"
+        },
+        "total_results": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Total Results"
+        },
+        "retrieved_count": {
+          "type": "integer",
+          "title": "Retrieved Count"
+        },
+        "stored_count": {
+          "type": "integer",
+          "title": "Stored Count"
+        },
+        "page_count": {
+          "type": "integer",
+          "title": "Page Count"
+        },
+        "next_index": {
+          "type": "integer",
+          "title": "Next Index"
+        },
+        "retry_count": {
+          "type": "integer",
+          "title": "Retry Count"
+        },
+        "query_parameters": {
+          "additionalProperties": true,
+          "type": "object",
+          "title": "Query Parameters"
+        },
+        "warning_codes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Warning Codes"
+        },
+        "source_timestamps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Source Timestamps"
+        },
+        "page_manifest": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "type": "array",
+          "title": "Page Manifest"
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Failure Code"
+        },
+        "nvd_cooldown_until": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Nvd Cooldown Until"
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "asset_id",
+        "identification_id",
+        "initiated_by",
+        "selected_cpe",
+        "observed_version",
+        "status",
+        "coverage",
+        "created_at",
+        "started_at",
+        "completed_at",
+        "source_timestamp",
+        "total_results",
+        "retrieved_count",
+        "stored_count",
+        "page_count",
+        "next_index",
+        "retry_count",
+        "query_parameters",
+        "warning_codes",
+        "source_timestamps",
+        "page_manifest",
+        "failure_code",
+        "nvd_cooldown_until"
+      ],
+      "title": "AnalysisRead"
+    },
+    "ApplicationCreate": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Name"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2000
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Description"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "title": "ApplicationCreate"
+    },
+    "AssetCreate": {
+      "properties": {
+        "device_type": {
+          "type": "string",
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Device Type"
+        },
+        "manufacturer": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Manufacturer"
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Model"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Version"
+        },
+        "site_label": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Site Label"
+        },
+        "inventory_label": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Inventory Label"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Notes"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "device_type",
+        "manufacturer",
+        "model",
+        "site_label"
+      ],
+      "title": "AssetCreate"
+    },
+    "AssetList": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/AssetRead"
+          },
+          "type": "array",
+          "title": "Items"
+        },
+        "page": {
+          "$ref": "#/components/schemas/Page"
+        }
+      },
+      "type": "object",
+      "required": [
+        "items",
+        "page"
+      ],
+      "title": "AssetList"
+    },
+    "AssetRead": {
+      "properties": {
+        "device_type": {
+          "type": "string",
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Device Type"
+        },
+        "manufacturer": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Manufacturer"
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Model"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Version"
+        },
+        "site_label": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Site Label"
+        },
+        "inventory_label": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Inventory Label"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Notes"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Created At"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "device_type",
+        "manufacturer",
+        "model",
+        "site_label",
+        "id",
+        "created_at"
+      ],
+      "title": "AssetRead"
+    },
+    "CPESelection": {
+      "properties": {
+        "cpe_name_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Cpe Name Id"
+        },
+        "expected_selected_cpe": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1024
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expected Selected Cpe"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "cpe_name_id"
+      ],
+      "title": "CPESelection"
+    },
+    "Candidate": {
+      "properties": {
+        "cpe_name_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Cpe Name Id"
+        },
+        "cpe_name": {
+          "type": "string",
+          "title": "Cpe Name"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Title"
+        },
+        "deprecated": {
+          "type": "boolean",
+          "title": "Deprecated"
+        }
+      },
+      "type": "object",
+      "required": [
+        "cpe_name_id",
+        "cpe_name",
+        "title",
+        "deprecated"
+      ],
+      "title": "Candidate"
+    },
+    "CandidateList": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/Candidate"
+          },
+          "type": "array",
+          "title": "Items"
+        },
+        "page": {
+          "$ref": "#/components/schemas/Page"
+        },
+        "source_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Source Timestamp"
+        }
+      },
+      "type": "object",
+      "required": [
+        "items",
+        "page",
+        "source_timestamp"
+      ],
+      "title": "CandidateList"
+    },
+    "Confirm": {
+      "properties": {
+        "expected_current_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expected Current Id"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reason"
+        },
+        "state": {
+          "type": "string",
+          "const": "confirmed",
+          "title": "State"
+        },
+        "cpe_name_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Cpe Name Id"
+        },
+        "component_kind": {
+          "type": "string",
+          "enum": [
+            "hardware",
+            "firmware",
+            "os",
+            "software"
+          ],
+          "title": "Component Kind"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "expected_current_id",
+        "reason",
+        "state",
+        "cpe_name_id",
+        "component_kind"
+      ],
+      "title": "Confirm"
+    },
+    "EventRead": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "asset_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Asset Id"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "needs_review"
+          ],
+          "title": "State"
+        },
+        "cpe_name_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Cpe Name Id"
+        },
+        "cpe_name": {
+          "type": "string",
+          "title": "Cpe Name"
+        },
+        "component_kind": {
+          "type": "string",
+          "title": "Component Kind"
+        },
+        "observed_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Observed Version"
+        },
+        "source": {
+          "type": "string",
+          "const": "NVD",
+          "title": "Source"
+        },
+        "validated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Validated At"
+        },
+        "recorded_by": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Recorded By"
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Recorded At"
+        },
+        "reason": {
+          "type": "string",
+          "title": "Reason"
+        },
+        "replaces_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Replaces Id"
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "asset_id",
+        "state",
+        "cpe_name_id",
+        "cpe_name",
+        "component_kind",
+        "observed_version",
+        "source",
+        "validated_at",
+        "recorded_by",
+        "recorded_at",
+        "reason",
+        "replaces_id"
+      ],
+      "title": "EventRead"
+    },
+    "FindingList": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/FindingRead"
+          },
+          "type": "array",
+          "title": "Items"
+        },
+        "page": {
+          "$ref": "#/components/schemas/Page"
+        },
+        "run_status": {
+          "type": "string",
+          "title": "Run Status"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Coverage"
+        }
+      },
+      "type": "object",
+      "required": [
+        "items",
+        "page",
+        "run_status",
+        "coverage"
+      ],
+      "title": "FindingList"
+    },
+    "FindingRead": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "analysis_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Analysis Id"
+        },
+        "external_id": {
+          "type": "string",
+          "title": "External Id"
+        },
+        "source": {
+          "type": "string",
+          "const": "NVD",
+          "title": "Source"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Title"
+        },
+        "applicability": {
+          "type": "string",
+          "enum": [
+            "potential",
+            "undetermined",
+            "not_applicable"
+          ],
+          "title": "Applicability"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "reviewed"
+          ],
+          "title": "Status"
+        },
+        "cvss": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Cvss"
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Evidence"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Observed At"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Created At"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Updated At"
+        },
+        "reviewed_by": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reviewed By"
+        },
+        "reviewed_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reviewed At"
+        },
+        "review_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Review Reason"
+        },
+        "review_evidence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Review Evidence"
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "analysis_id",
+        "external_id",
+        "source",
+        "title",
+        "applicability",
+        "status",
+        "cvss",
+        "evidence",
+        "observed_at",
+        "created_at",
+        "updated_at",
+        "reviewed_by",
+        "reviewed_at",
+        "review_reason",
+        "review_evidence"
+      ],
+      "title": "FindingRead"
+    },
+    "FindingReview": {
+      "properties": {
+        "applicability": {
+          "type": "string",
+          "pattern": "^(potential|undetermined|not_applicable)$",
+          "title": "Applicability"
+        },
+        "expected_updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expected Updated At"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "applicability",
+        "expected_updated_at"
+      ],
+      "title": "FindingReview"
+    },
+    "HistoryEvent": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "asset_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Asset Id"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "needs_review"
+          ],
+          "title": "State"
+        },
+        "cpe_name_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Cpe Name Id"
+        },
+        "cpe_name": {
+          "type": "string",
+          "title": "Cpe Name"
+        },
+        "component_kind": {
+          "type": "string",
+          "title": "Component Kind"
+        },
+        "observed_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Observed Version"
+        },
+        "source": {
+          "type": "string",
+          "const": "NVD",
+          "title": "Source"
+        },
+        "validated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Validated At"
+        },
+        "recorded_by": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Recorded By"
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Recorded At"
+        },
+        "reason": {
+          "type": "string",
+          "title": "Reason"
+        },
+        "replaces_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Replaces Id"
+        },
+        "valid_to": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Valid To"
+        },
+        "is_current": {
+          "type": "boolean",
+          "title": "Is Current"
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "asset_id",
+        "state",
+        "cpe_name_id",
+        "cpe_name",
+        "component_kind",
+        "observed_version",
+        "source",
+        "validated_at",
+        "recorded_by",
+        "recorded_at",
+        "reason",
+        "replaces_id",
+        "valid_to",
+        "is_current"
+      ],
+      "title": "HistoryEvent"
+    },
+    "IdentificationList": {
+      "properties": {
+        "current_state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "confirmed",
+            "needs_review"
+          ],
+          "title": "Current State"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/HistoryEvent"
+          },
+          "type": "array",
+          "title": "Items"
+        },
+        "page": {
+          "$ref": "#/components/schemas/Page"
+        }
+      },
+      "type": "object",
+      "required": [
+        "current_state",
+        "items",
+        "page"
+      ],
+      "title": "IdentificationList"
+    },
+    "Login": {
+      "properties": {
+        "username": {
+          "type": "string",
+          "maxLength": 80,
+          "pattern": "^[a-z0-9][a-z0-9_.-]{0,79}$",
+          "title": "Username"
+        },
+        "password": {
+          "type": "string",
+          "maxLength": 256,
+          "minLength": 1,
+          "format": "password",
+          "title": "Password",
+          "writeOnly": true
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "title": "Login"
+    },
+    "NeedsReview": {
+      "properties": {
+        "expected_current_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expected Current Id"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reason"
+        },
+        "state": {
+          "type": "string",
+          "const": "needs_review",
+          "title": "State"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "expected_current_id",
+        "reason",
+        "state"
+      ],
+      "title": "NeedsReview"
+    },
+    "Page": {
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "title": "Limit"
+        },
+        "offset": {
+          "type": "integer",
+          "title": "Offset"
+        },
+        "total": {
+          "type": "integer",
+          "title": "Total"
+        }
+      },
+      "type": "object",
+      "required": [
+        "limit",
+        "offset",
+        "total"
+      ],
+      "title": "Page"
+    },
+    "RecommendationCreate": {
+      "properties": {
+        "recommendation": {
+          "type": "string",
+          "maxLength": 4000,
+          "minLength": 1,
+          "title": "Recommendation"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2048
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Url"
+        },
+        "assigned_to": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Assigned To"
+        },
+        "due_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Due At"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "recommendation"
+      ],
+      "title": "RecommendationCreate"
+    },
+    "RecommendationUpdate": {
+      "properties": {
+        "status": {
+          "type": "string",
+          "pattern": "^(pending|in_progress|fixed|accepted_risk)$",
+          "title": "Status"
+        },
+        "expected_updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expected Updated At"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "status",
+        "expected_updated_at"
+      ],
+      "title": "RecommendationUpdate"
+    },
+    "Registration": {
+      "properties": {
+        "username": {
+          "type": "string",
+          "maxLength": 80,
+          "minLength": 3,
+          "title": "Username"
+        },
+        "password": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 15,
+          "format": "password",
+          "title": "Password",
+          "writeOnly": true
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "title": "Registration"
+    },
+    "ReviewInput": {
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "reviewed",
+          "title": "Status"
+        },
+        "applicability": {
+          "type": "string",
+          "enum": [
+            "potential",
+            "undetermined",
+            "not_applicable"
+          ],
+          "title": "Applicability"
+        },
+        "expected_updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expected Updated At"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reason"
+        },
+        "evidence": {
+          "type": "string",
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Evidence"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "status",
+        "applicability",
+        "expected_updated_at",
+        "reason",
+        "evidence"
+      ],
+      "title": "ReviewInput"
+    },
+    "TargetAuthorization": {
+      "properties": {
+        "authorization_status": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "rejected"
+          ],
+          "title": "Authorization Status"
+        },
+        "authorization_expires_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Authorization Expires At"
+        },
+        "authorization_reference": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Authorization Reference"
+        },
+        "expected_updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expected Updated At"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "authorization_status",
+        "authorization_reference",
+        "expected_updated_at"
+      ],
+      "title": "TargetAuthorization"
+    },
+    "TargetCreate": {
+      "properties": {
+        "url": {
+          "type": "string",
+          "maxLength": 2048,
+          "minLength": 8,
+          "title": "Url"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "url"
+      ],
+      "title": "TargetCreate"
+    },
+    "TechnologyCreate": {
+      "properties": {
+        "product": {
+          "type": "string",
+          "maxLength": 160,
+          "minLength": 1,
+          "title": "Product"
+        },
+        "vendor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Vendor"
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Version"
+        },
+        "detection_method": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "http_fingerprint",
+            "manifest_import"
+          ],
+          "title": "Detection Method",
+          "default": "manual"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "product",
+        "version"
+      ],
+      "title": "TechnologyCreate"
+    },
+    "Token": {
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "title": "Access Token"
+        },
+        "token_type": {
+          "type": "string",
+          "title": "Token Type",
+          "default": "bearer"
+        },
+        "expires_in": {
+          "type": "integer",
+          "title": "Expires In"
+        }
+      },
+      "type": "object",
+      "required": [
+        "access_token",
+        "expires_in"
+      ],
+      "title": "Token"
+    },
+    "UserRead": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "username": {
+          "type": "string",
+          "title": "Username"
+        }
+      },
+      "type": "object",
+      "required": [
+        "id",
+        "username"
+      ],
+      "title": "UserRead"
+    },
+    "WorkspaceCreate": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "title": "WorkspaceCreate"
+    }
+  },
+  "securitySchemes": {
+    "HTTPBearer": {
+      "type": "http",
+      "scheme": "bearer"
+    }
+  }
+}

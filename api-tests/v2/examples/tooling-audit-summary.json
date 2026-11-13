@@ -1,0 +1,15 @@
+{
+  "tool": "Newman",
+  "version": "6.2.3",
+  "scope": "development-only; local loopback fixtures",
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 6,
+    "high": 12,
+    "critical": 1,
+    "total": 19
+  },
+  "date": "2026-11-13",
+  "global_installation": false
+}
