@@ -1,0 +1,1679 @@
+{
+  "Health": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "status": "ok"
+    }
+  },
+  "Readiness": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "status": "ready"
+    }
+  },
+  "Registrar cuenta única A": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "username": "api_example"
+    }
+  },
+  "Login A y guardar token": {
+    "method": "POST",
+    "status": 200,
+    "body": {
+      "access_token": "",
+      "token_type": "bearer",
+      "expires_in": 900
+    }
+  },
+  "Identidad A": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "username": "api_example"
+    }
+  },
+  "Workspace personal A y membresía": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "workspace_id": "00000000-0000-4000-8000-000000000002",
+          "name": "Personal de api_example",
+          "role": "owner",
+          "created_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ]
+    }
+  },
+  "Detalle workspace A": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "name": "Personal de api_example",
+      "created_by": "00000000-0000-4000-8000-000000000001",
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Workspace adicional: bloqueo RLS conocido": {
+    "method": "POST",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "RESOURCE_NOT_FOUND",
+        "message": "Recurso no disponible",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Crear aplicación de laboratorio": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "name": "Laboratorio API V2",
+      "description": "Fixture aislado; no representa un sistema público",
+      "status": "active",
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Listar aplicaciones": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000003",
+          "name": "Laboratorio API V2",
+          "description": "Fixture aislado; no representa un sistema público",
+          "status": "active",
+          "created_at": "2026-11-13T12:00:00.000001Z",
+          "updated_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ]
+    }
+  },
+  "Dashboard": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "summary": {
+        "applications_total": 1,
+        "targets_total": 0,
+        "authorized_targets_total": 0,
+        "technologies_total": 0,
+        "confirmed_cpe_total": 0,
+        "analyses_total": 0,
+        "analyses_in_progress": 0,
+        "analyses_failed": 0,
+        "findings_total": 0,
+        "findings_open": 0,
+        "critical_open": 0,
+        "high_open": 0,
+        "medium_open": 0,
+        "low_open": 0,
+        "severity_unknown": 0,
+        "technologies_with_completed_analysis": 0
+      },
+      "recent_analyses": [],
+      "priority_findings": [],
+      "analysis_trend": [
+        {
+          "month": "2026-11-13T12:00:00.000001Z",
+          "analyses": 0
+        },
+        {
+          "month": "2026-11-13T12:00:00.000001Z",
+          "analyses": 0
+        },
+        {
+          "month": "2026-11-13T12:00:00.000001Z",
+          "analyses": 0
+        },
+        {
+          "month": "2026-11-13T12:00:00.000001Z",
+          "analyses": 0
+        },
+        {
+          "month": "2026-11-13T12:00:00.000001Z",
+          "analyses": 0
+        },
+        {
+          "month": "2026-11-13T12:00:00.000001Z",
+          "analyses": 0
+        }
+      ]
+    }
+  },
+  "Registrar destino local sin escanear": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000004",
+      "url": "http://127.0.0.1:8080",
+      "label": "Laboratorio local (solo inventario)",
+      "authorization_status": "pending",
+      "authorization_expires_at": null,
+      "authorization_reference": null,
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Listar destinos de aplicación": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000004",
+          "url": "http://127.0.0.1:8080",
+          "label": "Laboratorio local (solo inventario)",
+          "authorization_status": "pending",
+          "authorization_expires_at": null,
+          "authorization_reference": null,
+          "created_at": "2026-11-13T12:00:00.000001Z",
+          "updated_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ]
+    }
+  },
+  "Rechazar autorización de prueba": {
+    "method": "PATCH",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000004",
+      "url": "http://127.0.0.1:8080",
+      "label": "Laboratorio local (solo inventario)",
+      "authorization_status": "rejected",
+      "authorization_expires_at": null,
+      "authorization_reference": "Fixture: no autoriza escaneos",
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Listar destinos del workspace": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000004",
+          "application_id": "00000000-0000-4000-8000-000000000003",
+          "application_name": "Laboratorio API V2",
+          "application_status": "active",
+          "url": "http://127.0.0.1:8080",
+          "label": "Laboratorio local (solo inventario)",
+          "authorization_status": "rejected",
+          "authorization_expires_at": null,
+          "authorization_reference": "Fixture: no autoriza escaneos",
+          "created_at": "2026-11-13T12:00:00.000001Z",
+          "updated_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ],
+      "page": {
+        "limit": 100,
+        "offset": 0,
+        "total": 1
+      }
+    }
+  },
+  "Registrar tecnología de fixture": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000005",
+      "product": "small_business_rv340_firmware",
+      "vendor": "cisco",
+      "version": "1.0.0.33",
+      "selected_cpe": null,
+      "detection_method": "manual",
+      "confidence": "unconfirmed",
+      "observed_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Listar tecnologías": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000005",
+          "product": "small_business_rv340_firmware",
+          "vendor": "cisco",
+          "version": "1.0.0.33",
+          "selected_cpe": null,
+          "detection_method": "manual",
+          "confidence": "unconfirmed",
+          "observed_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ]
+    }
+  },
+  "Buscar candidatos CPE V2": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
+          "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+          "title": "Cisco Small Business RV340 Firmware 1.0.0.33",
+          "deprecated": false
+        }
+      ],
+      "page": {
+        "limit": 10,
+        "offset": 0,
+        "total": 1
+      },
+      "source_timestamp": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Confirmar CPE revisado": {
+    "method": "PUT",
+    "status": 200,
+    "body": {
+      "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
+      "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+      "title": "Cisco Small Business RV340 Firmware 1.0.0.33",
+      "deprecated": false
+    }
+  },
+  "Consultar CVE V2 (POST único)": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000006",
+      "status": "completed",
+      "coverage": "complete",
+      "total_results": 1,
+      "retrieved_count": 1,
+      "stored_count": 1,
+      "source_timestamp": "2026-11-13T12:00:00.000001Z",
+      "warning_codes": []
+    }
+  },
+  "Estado V2 (solo GET)": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000006",
+      "status": "completed",
+      "coverage": "complete",
+      "total_results": 1,
+      "retrieved_count": 1,
+      "stored_count": 1,
+      "page_count": 1,
+      "warning_codes": [],
+      "failure_code": null,
+      "source_timestamp": "2026-11-13T12:00:00.000001Z",
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "started_at": "2026-11-13T12:00:00.000001Z",
+      "completed_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Historial V2 (solo GET)": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000006",
+          "technology_id": "00000000-0000-4000-8000-000000000005",
+          "product": "small_business_rv340_firmware",
+          "version": "1.0.0.33",
+          "status": "completed",
+          "coverage": "complete",
+          "total_results": 1,
+          "retrieved_count": 1,
+          "stored_count": 1,
+          "page_count": 1,
+          "warning_codes": [],
+          "failure_code": null,
+          "source_timestamp": "2026-11-13T12:00:00.000001Z",
+          "created_at": "2026-11-13T12:00:00.000001Z",
+          "started_at": "2026-11-13T12:00:00.000001Z",
+          "completed_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ],
+      "page": {
+        "limit": 20,
+        "offset": 0,
+        "total": 1
+      }
+    }
+  },
+  "Resultados y hallazgos V2": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000007",
+          "external_id": "CVE-2017-6784",
+          "title": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real.",
+          "severity": "medium",
+          "cvss": {
+            "cvssMetricV2": [
+              {
+                "type": "Primary",
+                "source": "nvd@nist.gov",
+                "cvssData": {
+                  "version": "2.0",
+                  "baseScore": 5,
+                  "accessVector": "NETWORK",
+                  "vectorString": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
+                  "authentication": "NONE",
+                  "integrityImpact": "NONE",
+                  "accessComplexity": "LOW",
+                  "availabilityImpact": "NONE",
+                  "confidentialityImpact": "PARTIAL"
+                },
+                "acInsufInfo": false,
+                "impactScore": 2.9,
+                "baseSeverity": "MEDIUM",
+                "obtainAllPrivilege": false,
+                "exploitabilityScore": 10,
+                "obtainUserPrivilege": false,
+                "obtainOtherPrivilege": false,
+                "userInteractionRequired": false
+              }
+            ],
+            "cvssMetricV30": [
+              {
+                "type": "Primary",
+                "source": "nvd@nist.gov",
+                "cvssData": {
+                  "scope": "UNCHANGED",
+                  "version": "3.0",
+                  "baseScore": 5.3,
+                  "attackVector": "NETWORK",
+                  "baseSeverity": "MEDIUM",
+                  "vectorString": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+                  "integrityImpact": "NONE",
+                  "userInteraction": "NONE",
+                  "attackComplexity": "LOW",
+                  "availabilityImpact": "NONE",
+                  "privilegesRequired": "NONE",
+                  "confidentialityImpact": "LOW"
+                },
+                "impactScore": 1.4,
+                "exploitabilityScore": 3.9
+              }
+            ]
+          },
+          "applicability": "potential",
+          "status": "open",
+          "evidence": {
+            "cve_id": "CVE-2017-6784",
+            "source": "NVD",
+            "evaluator": "cpe-conservative-1",
+            "published": "2026-11-13T12:00:00.000001Z",
+            "truncated": false,
+            "references": [
+              {
+                "url": "http://www.securityfocus.com/bid/100402",
+                "tags": [
+                  "Third Party Advisory",
+                  "VDB Entry"
+                ],
+                "source": "psirt@cisco.com"
+              },
+              {
+                "url": "http://www.securitytracker.com/id/1039191",
+                "tags": [
+                  "Third Party Advisory",
+                  "VDB Entry"
+                ],
+                "source": "psirt@cisco.com"
+              },
+              {
+                "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+                "tags": [
+                  "Vendor Advisory"
+                ],
+                "source": "psirt@cisco.com"
+              },
+              {
+                "url": "http://www.securityfocus.com/bid/100402",
+                "tags": [
+                  "Third Party Advisory",
+                  "VDB Entry"
+                ],
+                "source": "00000000-0000-4000-8000-000000000008"
+              },
+              {
+                "url": "http://www.securitytracker.com/id/1039191",
+                "tags": [
+                  "Third Party Advisory",
+                  "VDB Entry"
+                ],
+                "source": "00000000-0000-4000-8000-000000000008"
+              },
+              {
+                "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+                "tags": [
+                  "Vendor Advisory"
+                ],
+                "source": "00000000-0000-4000-8000-000000000008"
+              }
+            ],
+            "rule_codes": [
+              "POSITIVE_OR_LITERAL_MATCH"
+            ],
+            "vulnStatus": "Modified",
+            "descriptions": [
+              {
+                "lang": "en",
+                "value": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real."
+              }
+            ],
+            "lastModified": "2026-11-13T12:00:00.000001Z",
+            "selected_cpe": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+            "configurations": [
+              {
+                "nodes": [
+                  {
+                    "negate": false,
+                    "cpeMatch": [
+                      {
+                        "criteria": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+                        "vulnerable": true,
+                        "matchCriteriaId": "00000000-0000-4000-8000-000000000009"
+                      }
+                    ],
+                    "operator": "OR"
+                  }
+                ]
+              }
+            ],
+            "observed_version": "1.0.0.33",
+            "source_record_sha256": "1c608c22f5709d1ff9a0b0292664f090eb2e52435115f98daed1c6d1cb6f6151",
+            "initial_applicability": "potential"
+          },
+          "published_at": "2026-11-13T12:00:00.000001Z",
+          "last_modified_at": "2026-11-13T12:00:00.000001Z",
+          "observed_at": "2026-11-13T12:00:00.000001Z",
+          "updated_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ],
+      "page": {
+        "limit": 20,
+        "offset": 0,
+        "total": 1
+      },
+      "run_status": "completed",
+      "coverage": "complete"
+    }
+  },
+  "Revisar hallazgo del fixture": {
+    "method": "PATCH",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000007",
+      "external_id": "CVE-2017-6784",
+      "title": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real.",
+      "severity": "medium",
+      "cvss": {
+        "cvssMetricV2": [
+          {
+            "type": "Primary",
+            "source": "nvd@nist.gov",
+            "cvssData": {
+              "version": "2.0",
+              "baseScore": 5,
+              "accessVector": "NETWORK",
+              "vectorString": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
+              "authentication": "NONE",
+              "integrityImpact": "NONE",
+              "accessComplexity": "LOW",
+              "availabilityImpact": "NONE",
+              "confidentialityImpact": "PARTIAL"
+            },
+            "acInsufInfo": false,
+            "impactScore": 2.9,
+            "baseSeverity": "MEDIUM",
+            "obtainAllPrivilege": false,
+            "exploitabilityScore": 10,
+            "obtainUserPrivilege": false,
+            "obtainOtherPrivilege": false,
+            "userInteractionRequired": false
+          }
+        ],
+        "cvssMetricV30": [
+          {
+            "type": "Primary",
+            "source": "nvd@nist.gov",
+            "cvssData": {
+              "scope": "UNCHANGED",
+              "version": "3.0",
+              "baseScore": 5.3,
+              "attackVector": "NETWORK",
+              "baseSeverity": "MEDIUM",
+              "vectorString": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+              "integrityImpact": "NONE",
+              "userInteraction": "NONE",
+              "attackComplexity": "LOW",
+              "availabilityImpact": "NONE",
+              "privilegesRequired": "NONE",
+              "confidentialityImpact": "LOW"
+            },
+            "impactScore": 1.4,
+            "exploitabilityScore": 3.9
+          }
+        ]
+      },
+      "applicability": "potential",
+      "status": "reviewed",
+      "evidence": {
+        "cve_id": "CVE-2017-6784",
+        "source": "NVD",
+        "evaluator": "cpe-conservative-1",
+        "published": "2026-11-13T12:00:00.000001Z",
+        "truncated": false,
+        "references": [
+          {
+            "url": "http://www.securityfocus.com/bid/100402",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "http://www.securitytracker.com/id/1039191",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+            "tags": [
+              "Vendor Advisory"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "http://www.securityfocus.com/bid/100402",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          },
+          {
+            "url": "http://www.securitytracker.com/id/1039191",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          },
+          {
+            "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+            "tags": [
+              "Vendor Advisory"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          }
+        ],
+        "rule_codes": [
+          "POSITIVE_OR_LITERAL_MATCH"
+        ],
+        "vulnStatus": "Modified",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real."
+          }
+        ],
+        "lastModified": "2026-11-13T12:00:00.000001Z",
+        "selected_cpe": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+        "configurations": [
+          {
+            "nodes": [
+              {
+                "negate": false,
+                "cpeMatch": [
+                  {
+                    "criteria": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+                    "vulnerable": true,
+                    "matchCriteriaId": "00000000-0000-4000-8000-000000000009"
+                  }
+                ],
+                "operator": "OR"
+              }
+            ]
+          }
+        ],
+        "observed_version": "1.0.0.33",
+        "source_record_sha256": "1c608c22f5709d1ff9a0b0292664f090eb2e52435115f98daed1c6d1cb6f6151",
+        "initial_applicability": "potential"
+      },
+      "published_at": "2026-11-13T12:00:00.000001Z",
+      "last_modified_at": "2026-11-13T12:00:00.000001Z",
+      "observed_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Crear recomendación de prueba": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000010",
+      "finding_id": "00000000-0000-4000-8000-000000000007",
+      "recommendation": "Revisar el aviso del fabricante y contrastar inventario antes de actuar.",
+      "source_url": null,
+      "status": "pending",
+      "assigned_to": null,
+      "created_by": "00000000-0000-4000-8000-000000000001",
+      "due_at": null,
+      "completed_at": null,
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Listar recomendaciones": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000010",
+          "finding_id": "00000000-0000-4000-8000-000000000007",
+          "recommendation": "Revisar el aviso del fabricante y contrastar inventario antes de actuar.",
+          "source_url": null,
+          "status": "pending",
+          "assigned_to": null,
+          "created_by": "00000000-0000-4000-8000-000000000001",
+          "due_at": null,
+          "completed_at": null,
+          "created_at": "2026-11-13T12:00:00.000001Z",
+          "updated_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ]
+    }
+  },
+  "Actualizar recomendación": {
+    "method": "PATCH",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000010",
+      "finding_id": "00000000-0000-4000-8000-000000000007",
+      "recommendation": "Revisar el aviso del fabricante y contrastar inventario antes de actuar.",
+      "source_url": null,
+      "status": "in_progress",
+      "assigned_to": null,
+      "created_by": "00000000-0000-4000-8000-000000000001",
+      "due_at": null,
+      "completed_at": null,
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Crear activo V1": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "device_type": "router",
+      "manufacturer": "Cisco",
+      "model": "RV340",
+      "version": "1.0.0.33",
+      "site_label": "Laboratorio local",
+      "inventory_label": null,
+      "notes": "Fixture heredado V1, separado de aplicaciones V2",
+      "id": "00000000-0000-4000-8000-000000000011",
+      "created_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Listar activos V1": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "device_type": "router",
+          "manufacturer": "Cisco",
+          "model": "RV340",
+          "version": "1.0.0.33",
+          "site_label": "Laboratorio local",
+          "inventory_label": null,
+          "notes": "Fixture heredado V1, separado de aplicaciones V2",
+          "id": "00000000-0000-4000-8000-000000000011",
+          "created_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ],
+      "page": {
+        "limit": 20,
+        "offset": 0,
+        "total": 1
+      }
+    }
+  },
+  "Detalle activo V1": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "device_type": "router",
+      "manufacturer": "Cisco",
+      "model": "RV340",
+      "version": "1.0.0.33",
+      "site_label": "Laboratorio local",
+      "inventory_label": null,
+      "notes": "Fixture heredado V1, separado de aplicaciones V2",
+      "id": "00000000-0000-4000-8000-000000000011",
+      "created_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Buscar candidatos CPE V1": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
+          "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+          "title": "Cisco Small Business RV340 Firmware 1.0.0.33",
+          "deprecated": false
+        }
+      ],
+      "page": {
+        "limit": 10,
+        "offset": 0,
+        "total": 1
+      },
+      "source_timestamp": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Identificar CPE del activo V1": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000012",
+      "asset_id": "00000000-0000-4000-8000-000000000011",
+      "state": "confirmed",
+      "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
+      "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+      "component_kind": "firmware",
+      "observed_version": "1.0.0.33",
+      "source": "NVD",
+      "validated_at": "2026-11-13T12:00:00.000001Z",
+      "recorded_by": "00000000-0000-4000-8000-000000000001",
+      "recorded_at": "2026-11-13T12:00:00.000001Z",
+      "reason": "Fixture de firmware documentado; no selección automática de candidato real",
+      "replaces_id": null
+    }
+  },
+  "Historial CPE del activo V1": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "current_state": "confirmed",
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000012",
+          "asset_id": "00000000-0000-4000-8000-000000000011",
+          "state": "confirmed",
+          "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
+          "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+          "component_kind": "firmware",
+          "observed_version": "1.0.0.33",
+          "source": "NVD",
+          "validated_at": "2026-11-13T12:00:00.000001Z",
+          "recorded_by": "00000000-0000-4000-8000-000000000001",
+          "recorded_at": "2026-11-13T12:00:00.000001Z",
+          "reason": "Fixture de firmware documentado; no selección automática de candidato real",
+          "replaces_id": null,
+          "valid_to": null,
+          "is_current": true
+        }
+      ],
+      "page": {
+        "limit": 20,
+        "offset": 0,
+        "total": 1
+      }
+    }
+  },
+  "Aceptar análisis asíncrono V1": {
+    "method": "POST",
+    "status": 202,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000013",
+      "accepted_at": "2026-11-13T12:00:00.000001Z"
+    }
+  },
+  "Progreso V1 (polling GET limitado)": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000013",
+      "asset_id": "00000000-0000-4000-8000-000000000011",
+      "identification_id": "00000000-0000-4000-8000-000000000012",
+      "initiated_by": "00000000-0000-4000-8000-000000000001",
+      "selected_cpe": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+      "observed_version": "1.0.0.33",
+      "status": "completed",
+      "coverage": "complete",
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "started_at": "2026-11-13T12:00:00.000001Z",
+      "completed_at": "2026-11-13T12:00:00.000001Z",
+      "source_timestamp": "2026-11-13T12:00:00.000001Z",
+      "total_results": 1,
+      "retrieved_count": 1,
+      "stored_count": 1,
+      "page_count": 1,
+      "next_index": 1,
+      "retry_count": 0,
+      "query_parameters": {
+        "cpeName": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+        "max_pages": 5,
+        "max_retries": 2,
+        "max_seconds": 300,
+        "resultsPerPage": 100
+      },
+      "warning_codes": [],
+      "source_timestamps": [
+        "2026-11-13T12:00:00.000001Z"
+      ],
+      "page_manifest": [
+        {
+          "count": 1,
+          "total": 1,
+          "timestamp": "2026-11-13T12:00:00.000001Z",
+          "ids_sha256": "fb98de1a91ca0921f0bb86c5e6433978cdbe6ae387f7200a5489b5c5a7cb1d5e",
+          "start_index": 0,
+          "last_published": "2026-11-13T12:00:00.000001Z"
+        }
+      ],
+      "failure_code": null,
+      "nvd_cooldown_until": null
+    }
+  },
+  "Historial análisis V1": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000013",
+          "asset_id": "00000000-0000-4000-8000-000000000011",
+          "identification_id": "00000000-0000-4000-8000-000000000012",
+          "initiated_by": "00000000-0000-4000-8000-000000000001",
+          "selected_cpe": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+          "observed_version": "1.0.0.33",
+          "status": "completed",
+          "coverage": "complete",
+          "created_at": "2026-11-13T12:00:00.000001Z",
+          "started_at": "2026-11-13T12:00:00.000001Z",
+          "completed_at": "2026-11-13T12:00:00.000001Z",
+          "source_timestamp": "2026-11-13T12:00:00.000001Z",
+          "total_results": 1,
+          "retrieved_count": 1,
+          "stored_count": 1,
+          "page_count": 1,
+          "next_index": 1,
+          "retry_count": 0,
+          "query_parameters": {
+            "cpeName": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+            "max_pages": 5,
+            "max_retries": 2,
+            "max_seconds": 300,
+            "resultsPerPage": 100
+          },
+          "warning_codes": [],
+          "source_timestamps": [
+            "2026-11-13T12:00:00.000001Z"
+          ],
+          "page_manifest": [
+            {
+              "count": 1,
+              "total": 1,
+              "timestamp": "2026-11-13T12:00:00.000001Z",
+              "ids_sha256": "fb98de1a91ca0921f0bb86c5e6433978cdbe6ae387f7200a5489b5c5a7cb1d5e",
+              "start_index": 0,
+              "last_published": "2026-11-13T12:00:00.000001Z"
+            }
+          ],
+          "failure_code": null,
+          "nvd_cooldown_until": null
+        }
+      ],
+      "page": {
+        "limit": 20,
+        "offset": 0,
+        "total": 1
+      }
+    }
+  },
+  "Resultados V1": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "id": "00000000-0000-4000-8000-000000000014",
+          "analysis_id": "00000000-0000-4000-8000-000000000013",
+          "external_id": "CVE-2017-6784",
+          "source": "NVD",
+          "title": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real.",
+          "applicability": "potential",
+          "status": "open",
+          "cvss": {
+            "cvssMetricV2": [
+              {
+                "type": "Primary",
+                "source": "nvd@nist.gov",
+                "cvssData": {
+                  "version": "2.0",
+                  "baseScore": 5,
+                  "accessVector": "NETWORK",
+                  "vectorString": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
+                  "authentication": "NONE",
+                  "integrityImpact": "NONE",
+                  "accessComplexity": "LOW",
+                  "availabilityImpact": "NONE",
+                  "confidentialityImpact": "PARTIAL"
+                },
+                "acInsufInfo": false,
+                "impactScore": 2.9,
+                "baseSeverity": "MEDIUM",
+                "obtainAllPrivilege": false,
+                "exploitabilityScore": 10,
+                "obtainUserPrivilege": false,
+                "obtainOtherPrivilege": false,
+                "userInteractionRequired": false
+              }
+            ],
+            "cvssMetricV30": [
+              {
+                "type": "Primary",
+                "source": "nvd@nist.gov",
+                "cvssData": {
+                  "scope": "UNCHANGED",
+                  "version": "3.0",
+                  "baseScore": 5.3,
+                  "attackVector": "NETWORK",
+                  "baseSeverity": "MEDIUM",
+                  "vectorString": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+                  "integrityImpact": "NONE",
+                  "userInteraction": "NONE",
+                  "attackComplexity": "LOW",
+                  "availabilityImpact": "NONE",
+                  "privilegesRequired": "NONE",
+                  "confidentialityImpact": "LOW"
+                },
+                "impactScore": 1.4,
+                "exploitabilityScore": 3.9
+              }
+            ]
+          },
+          "evidence": {
+            "cve_id": "CVE-2017-6784",
+            "source": "NVD",
+            "evaluator": "cpe-conservative-1",
+            "published": "2026-11-13T12:00:00.000001Z",
+            "truncated": false,
+            "references": [
+              {
+                "url": "http://www.securityfocus.com/bid/100402",
+                "tags": [
+                  "Third Party Advisory",
+                  "VDB Entry"
+                ],
+                "source": "psirt@cisco.com"
+              },
+              {
+                "url": "http://www.securitytracker.com/id/1039191",
+                "tags": [
+                  "Third Party Advisory",
+                  "VDB Entry"
+                ],
+                "source": "psirt@cisco.com"
+              },
+              {
+                "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+                "tags": [
+                  "Vendor Advisory"
+                ],
+                "source": "psirt@cisco.com"
+              },
+              {
+                "url": "http://www.securityfocus.com/bid/100402",
+                "tags": [
+                  "Third Party Advisory",
+                  "VDB Entry"
+                ],
+                "source": "00000000-0000-4000-8000-000000000008"
+              },
+              {
+                "url": "http://www.securitytracker.com/id/1039191",
+                "tags": [
+                  "Third Party Advisory",
+                  "VDB Entry"
+                ],
+                "source": "00000000-0000-4000-8000-000000000008"
+              },
+              {
+                "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+                "tags": [
+                  "Vendor Advisory"
+                ],
+                "source": "00000000-0000-4000-8000-000000000008"
+              }
+            ],
+            "rule_codes": [
+              "POSITIVE_OR_LITERAL_MATCH"
+            ],
+            "vulnStatus": "Modified",
+            "descriptions": [
+              {
+                "lang": "en",
+                "value": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real."
+              }
+            ],
+            "lastModified": "2026-11-13T12:00:00.000001Z",
+            "selected_cpe": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+            "configurations": [
+              {
+                "nodes": [
+                  {
+                    "negate": false,
+                    "cpeMatch": [
+                      {
+                        "criteria": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+                        "vulnerable": true,
+                        "matchCriteriaId": "00000000-0000-4000-8000-000000000009"
+                      }
+                    ],
+                    "operator": "OR"
+                  }
+                ]
+              }
+            ],
+            "observed_version": "1.0.0.33",
+            "source_record_sha256": "1c608c22f5709d1ff9a0b0292664f090eb2e52435115f98daed1c6d1cb6f6151",
+            "initial_applicability": "potential"
+          },
+          "observed_at": "2026-11-13T12:00:00.000001Z",
+          "created_at": "2026-11-13T12:00:00.000001Z",
+          "updated_at": "2026-11-13T12:00:00.000001Z",
+          "reviewed_by": null,
+          "reviewed_at": null,
+          "review_reason": null,
+          "review_evidence": null
+        }
+      ],
+      "page": {
+        "limit": 20,
+        "offset": 0,
+        "total": 1
+      },
+      "run_status": "completed",
+      "coverage": "complete"
+    }
+  },
+  "Detalle hallazgo V1": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000014",
+      "analysis_id": "00000000-0000-4000-8000-000000000013",
+      "external_id": "CVE-2017-6784",
+      "source": "NVD",
+      "title": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real.",
+      "applicability": "potential",
+      "status": "open",
+      "cvss": {
+        "cvssMetricV2": [
+          {
+            "type": "Primary",
+            "source": "nvd@nist.gov",
+            "cvssData": {
+              "version": "2.0",
+              "baseScore": 5,
+              "accessVector": "NETWORK",
+              "vectorString": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
+              "authentication": "NONE",
+              "integrityImpact": "NONE",
+              "accessComplexity": "LOW",
+              "availabilityImpact": "NONE",
+              "confidentialityImpact": "PARTIAL"
+            },
+            "acInsufInfo": false,
+            "impactScore": 2.9,
+            "baseSeverity": "MEDIUM",
+            "obtainAllPrivilege": false,
+            "exploitabilityScore": 10,
+            "obtainUserPrivilege": false,
+            "obtainOtherPrivilege": false,
+            "userInteractionRequired": false
+          }
+        ],
+        "cvssMetricV30": [
+          {
+            "type": "Primary",
+            "source": "nvd@nist.gov",
+            "cvssData": {
+              "scope": "UNCHANGED",
+              "version": "3.0",
+              "baseScore": 5.3,
+              "attackVector": "NETWORK",
+              "baseSeverity": "MEDIUM",
+              "vectorString": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+              "integrityImpact": "NONE",
+              "userInteraction": "NONE",
+              "attackComplexity": "LOW",
+              "availabilityImpact": "NONE",
+              "privilegesRequired": "NONE",
+              "confidentialityImpact": "LOW"
+            },
+            "impactScore": 1.4,
+            "exploitabilityScore": 3.9
+          }
+        ]
+      },
+      "evidence": {
+        "cve_id": "CVE-2017-6784",
+        "source": "NVD",
+        "evaluator": "cpe-conservative-1",
+        "published": "2026-11-13T12:00:00.000001Z",
+        "truncated": false,
+        "references": [
+          {
+            "url": "http://www.securityfocus.com/bid/100402",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "http://www.securitytracker.com/id/1039191",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+            "tags": [
+              "Vendor Advisory"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "http://www.securityfocus.com/bid/100402",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          },
+          {
+            "url": "http://www.securitytracker.com/id/1039191",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          },
+          {
+            "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+            "tags": [
+              "Vendor Advisory"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          }
+        ],
+        "rule_codes": [
+          "POSITIVE_OR_LITERAL_MATCH"
+        ],
+        "vulnStatus": "Modified",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real."
+          }
+        ],
+        "lastModified": "2026-11-13T12:00:00.000001Z",
+        "selected_cpe": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+        "configurations": [
+          {
+            "nodes": [
+              {
+                "negate": false,
+                "cpeMatch": [
+                  {
+                    "criteria": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+                    "vulnerable": true,
+                    "matchCriteriaId": "00000000-0000-4000-8000-000000000009"
+                  }
+                ],
+                "operator": "OR"
+              }
+            ]
+          }
+        ],
+        "observed_version": "1.0.0.33",
+        "source_record_sha256": "1c608c22f5709d1ff9a0b0292664f090eb2e52435115f98daed1c6d1cb6f6151",
+        "initial_applicability": "potential"
+      },
+      "observed_at": "2026-11-13T12:00:00.000001Z",
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z",
+      "reviewed_by": null,
+      "reviewed_at": null,
+      "review_reason": null,
+      "review_evidence": null
+    }
+  },
+  "Revisar hallazgo V1": {
+    "method": "PATCH",
+    "status": 200,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000014",
+      "analysis_id": "00000000-0000-4000-8000-000000000013",
+      "external_id": "CVE-2017-6784",
+      "source": "NVD",
+      "title": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real.",
+      "applicability": "undetermined",
+      "status": "reviewed",
+      "cvss": {
+        "cvssMetricV2": [
+          {
+            "type": "Primary",
+            "source": "nvd@nist.gov",
+            "cvssData": {
+              "version": "2.0",
+              "baseScore": 5,
+              "accessVector": "NETWORK",
+              "vectorString": "AV:N/AC:L/Au:N/C:P/I:N/A:N",
+              "authentication": "NONE",
+              "integrityImpact": "NONE",
+              "accessComplexity": "LOW",
+              "availabilityImpact": "NONE",
+              "confidentialityImpact": "PARTIAL"
+            },
+            "acInsufInfo": false,
+            "impactScore": 2.9,
+            "baseSeverity": "MEDIUM",
+            "obtainAllPrivilege": false,
+            "exploitabilityScore": 10,
+            "obtainUserPrivilege": false,
+            "obtainOtherPrivilege": false,
+            "userInteractionRequired": false
+          }
+        ],
+        "cvssMetricV30": [
+          {
+            "type": "Primary",
+            "source": "nvd@nist.gov",
+            "cvssData": {
+              "scope": "UNCHANGED",
+              "version": "3.0",
+              "baseScore": 5.3,
+              "attackVector": "NETWORK",
+              "baseSeverity": "MEDIUM",
+              "vectorString": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+              "integrityImpact": "NONE",
+              "userInteraction": "NONE",
+              "attackComplexity": "LOW",
+              "availabilityImpact": "NONE",
+              "privilegesRequired": "NONE",
+              "confidentialityImpact": "LOW"
+            },
+            "impactScore": 1.4,
+            "exploitabilityScore": 3.9
+          }
+        ]
+      },
+      "evidence": {
+        "cve_id": "CVE-2017-6784",
+        "source": "NVD",
+        "evaluator": "cpe-conservative-1",
+        "published": "2026-11-13T12:00:00.000001Z",
+        "truncated": false,
+        "references": [
+          {
+            "url": "http://www.securityfocus.com/bid/100402",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "http://www.securitytracker.com/id/1039191",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+            "tags": [
+              "Vendor Advisory"
+            ],
+            "source": "psirt@cisco.com"
+          },
+          {
+            "url": "http://www.securityfocus.com/bid/100402",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          },
+          {
+            "url": "http://www.securitytracker.com/id/1039191",
+            "tags": [
+              "Third Party Advisory",
+              "VDB Entry"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          },
+          {
+            "url": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170816-crr",
+            "tags": [
+              "Vendor Advisory"
+            ],
+            "source": "00000000-0000-4000-8000-000000000008"
+          }
+        ],
+        "rule_codes": [
+          "POSITIVE_OR_LITERAL_MATCH"
+        ],
+        "vulnStatus": "Modified",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Fixture SIMULADO OR de documentación; no afirma vulnerabilidad de un sistema real."
+          }
+        ],
+        "lastModified": "2026-11-13T12:00:00.000001Z",
+        "selected_cpe": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+        "configurations": [
+          {
+            "nodes": [
+              {
+                "negate": false,
+                "cpeMatch": [
+                  {
+                    "criteria": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+                    "vulnerable": true,
+                    "matchCriteriaId": "00000000-0000-4000-8000-000000000009"
+                  }
+                ],
+                "operator": "OR"
+              }
+            ]
+          }
+        ],
+        "observed_version": "1.0.0.33",
+        "source_record_sha256": "1c608c22f5709d1ff9a0b0292664f090eb2e52435115f98daed1c6d1cb6f6151",
+        "initial_applicability": "potential"
+      },
+      "observed_at": "2026-11-13T12:00:00.000001Z",
+      "created_at": "2026-11-13T12:00:00.000001Z",
+      "updated_at": "2026-11-13T12:00:00.000001Z",
+      "reviewed_by": "00000000-0000-4000-8000-000000000001",
+      "reviewed_at": "2026-11-13T12:00:00.000001Z",
+      "review_reason": "Revisión del fixture documentado",
+      "review_evidence": "El firmware no basta para establecer la condición hardware del fixture AND."
+    }
+  },
+  "Registrar cuenta única B": {
+    "method": "POST",
+    "status": 201,
+    "body": {
+      "id": "00000000-0000-4000-8000-000000000015",
+      "username": "api_example"
+    }
+  },
+  "Login B": {
+    "method": "POST",
+    "status": 200,
+    "body": {
+      "access_token": "",
+      "token_type": "bearer",
+      "expires_in": 900
+    }
+  },
+  "Workspace personal B": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "workspace_id": "00000000-0000-4000-8000-000000000016",
+          "name": "Personal de api_example",
+          "role": "owner",
+          "created_at": "2026-11-13T12:00:00.000001Z"
+        }
+      ]
+    }
+  },
+  "Sin token": {
+    "method": "GET",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "INVALID_CREDENTIALS",
+        "message": "Credenciales inválidas o expiradas",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Token inválido": {
+    "method": "GET",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "INVALID_CREDENTIALS",
+        "message": "Credenciales inválidas o expiradas",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Token expirado firmado localmente": {
+    "method": "GET",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "INVALID_CREDENTIALS",
+        "message": "Credenciales inválidas o expiradas",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Usuario inexistente": {
+    "method": "POST",
+    "status": 401,
+    "body": {
+      "error": {
+        "code": "INVALID_CREDENTIALS",
+        "message": "Credenciales inválidas o expiradas",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Registro duplicado": {
+    "method": "POST",
+    "status": 409,
+    "body": {
+      "error": {
+        "code": "REGISTRATION_UNAVAILABLE",
+        "message": "No se pudo crear la cuenta",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Registro inválido": {
+    "method": "POST",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Solicitud inválida",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Autoconcesión de admin rechazada": {
+    "method": "POST",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Solicitud inválida",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Workspace ajeno B visto por A": {
+    "method": "GET",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "RESOURCE_NOT_FOUND",
+        "message": "Recurso no disponible",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Aplicación A leída por B": {
+    "method": "GET",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "RESOURCE_NOT_FOUND",
+        "message": "Recurso no disponible",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Activo A leído por B": {
+    "method": "GET",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "ASSET_NOT_FOUND",
+        "message": "Activo no encontrado",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Análisis inexistente": {
+    "method": "GET",
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "ANALYSIS_NOT_FOUND",
+        "message": "Consulta no encontrada",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "UUID inválido": {
+    "method": "GET",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Solicitud inválida",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Paginación inválida": {
+    "method": "GET",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Solicitud inválida",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Tecnología inválida": {
+    "method": "POST",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Solicitud inválida",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Conflicto concurrente autorización destino": {
+    "method": "PATCH",
+    "status": 409,
+    "body": {
+      "error": {
+        "code": "TARGET_AUTHORIZATION_CONFLICT",
+        "message": "El destino cambió; actualiza la vista",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Conflicto concurrente revisión hallazgo": {
+    "method": "PATCH",
+    "status": 409,
+    "body": {
+      "error": {
+        "code": "FINDING_REVIEW_CONFLICT",
+        "message": "El hallazgo ya cambió o no puede revisarse",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Conflicto idempotencia activo": {
+    "method": "POST",
+    "status": 409,
+    "body": {
+      "error": {
+        "code": "IDEMPOTENCY_CONFLICT",
+        "message": "Clave utilizada con otros datos",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "ZAP no admitido por contrato de análisis V1": {
+    "method": "POST",
+    "status": 422,
+    "body": {
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Solicitud inválida",
+        "request_id": "example-request-id"
+      }
+    }
+  },
+  "Registro deshabilitado en segunda API de fixture": {
+    "method": "POST",
+    "status": 503,
+    "body": {
+      "error": {
+        "code": "REGISTRATION_DISABLED",
+        "message": "El registro no está habilitado",
+        "request_id": "example-request-id"
+      }
+    }
+  }
+}

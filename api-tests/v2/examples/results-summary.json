@@ -1,0 +1,60 @@
+{
+  "existing": {
+    "requests": {
+      "total": 65,
+      "pending": 0,
+      "failed": 0
+    },
+    "assertions": {
+      "total": 245,
+      "pending": 0,
+      "failed": 0
+    },
+    "items": {
+      "total": 65,
+      "pending": 0,
+      "failed": 0
+    },
+    "failures": [],
+    "distinct_samples": 61
+  },
+  "new": {
+    "requests": {
+      "total": 65,
+      "pending": 0,
+      "failed": 0
+    },
+    "assertions": {
+      "total": 245,
+      "pending": 0,
+      "failed": 0
+    },
+    "items": {
+      "total": 65,
+      "pending": 0,
+      "failed": 0
+    },
+    "failures": [],
+    "distinct_samples": 61
+  },
+  "backend_regression": {
+    "passed": 371,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 129.86,
+    "warning": "Starlette TestClient/httpx2"
+  },
+  "sql_checks_per_runner": {
+    "001": 55,
+    "002": 21,
+    "004": 6,
+    "005": 10
+  },
+  "known_issue_reproductions": 4,
+  "source_commits": {
+    "backend": "5a34f6439881f40eb9aaa931ff5777b60b62e023",
+    "database": "0cc4dfd719463fb15eb1689a0f46550d9f204a71",
+    "frontend": "4514b6840b428152c1cd875c95e3e55ad81c4196"
+  },
+  "openapi_sha256": "a8095975fa1fd5aaf95e05756c63d1bd78a616518ea681d77fd673ec5c2de7d4"
+}
