@@ -1,5 +1,6 @@
 """Owned network-none laboratory only. Never starts ZAP or uses an application DB."""
 
+import argparse
 import base64
 import json
 import secrets
@@ -28,12 +29,23 @@ def inspect(name):
 
 
 def main():
+    global ARTIFACTS
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--phase2b",
+        action="store_true",
+        help="Add controlled DNS and durable lab-only evidence tests",
+    )
+    options = parser.parse_args()
+    phase = "phase2b" if options.phase2b else "phase2a"
+    ARTIFACTS = ROOT / "api-tests/v2/.artifacts" / phase
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     (ARTIFACTS / "network-lab-results.json").unlink(missing_ok=True)
     (ARTIFACTS / "lab-command-failure.log").unlink(missing_ok=True)
     nonce = secrets.token_hex(6)
-    owner = "vulntrack.phase2a=" + nonce
-    names = {role: f"vulntrack-phase2a-{nonce}-{role}" for role in ["fixture", "worker", "memory"]}
+    label = "vulntrack." + phase
+    owner = label + "=" + nonce
+    names = {role: f"vulntrack-{phase}-{nonce}-{role}" for role in ["fixture", "worker", "memory"]}
     created = []
     worker_process = None
     common = [
@@ -75,8 +87,11 @@ def main():
                     "web_target_transport",
                     "web_target_challenges",
                     "web_target_evidence",
+                    "web_target_tokens",
+                    "controlled_dns",
                 ]
             ] + [f"laboratory/phase2a/{name}" for name in ["Dockerfile", "fixture.py", "checks.py"]]
+            sources += ["laboratory/phase2b/dns_fixture.py", "laboratory/phase2b/checks.py"]
             for relative in sources:
                 target = context / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -125,6 +140,14 @@ ip6tables -P OUTPUT DROP
 ip6tables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A OUTPUT -d 2606:4700:ffff::10/128 -p tcp --dport 443 -j ACCEPT
 """
+        if options.phase2b:
+            firewall += """
+ip addr add 10.77.0.53/32 dev lo
+ip addr add 93.184.216.12/32 dev lo
+ip -6 addr add fd00:77::53/128 dev lo nodad
+iptables -A OUTPUT -d 10.77.0.53/32 -p tcp --dport 53 -j ACCEPT
+ip6tables -A OUTPUT -d fd00:77::53/128 -p tcp --dport 53 -j ACCEPT
+"""
         command(
             "docker",
             "run",
@@ -145,6 +168,7 @@ ip6tables -A OUTPUT -d 2606:4700:ffff::10/128 -p tcp --dport 443 -j ACCEPT
             "docker",
             "exec",
             "-d",
+            *(["-e", "VULNTRACK_LAB_DNS=1"] if options.phase2b else []),
             "--user",
             "0:0",
             names["fixture"],
@@ -227,6 +251,14 @@ ip6tables -A OUTPUT -d 2606:4700:ffff::10/128 -p tcp --dport 443 -j ACCEPT
         report["checks"].extend(
             ["listening lab canaries received zero connections", "original SNI observed"]
         )
+        if options.phase2b:
+            from scripts.verification_lab_bridge import run_persisted_lab
+
+            dns_report = run_persisted_lab(command, names, ARTIFACTS)
+            report["checks"].extend(dns_report["checks"])
+            command("docker", "exec", names["fixture"], "test", "!", "-f", "/tmp/canary-hits")
+            report["checks"].append("DNS-changed unauthorized TLS canary received zero connections")
+            report["durable_lab_result_never_counts_as_domain_control"] = True
         # A real, small, isolated OOM experiment verifies memory enforcement.
         memory = names["memory"]
         command(
@@ -268,7 +300,10 @@ ip6tables -A OUTPUT -d 2606:4700:ffff::10/128 -p tcp --dport 443 -j ACCEPT
                 "image_id": image,
                 "topology": "shared lab network-none namespace, loopback fixtures only",
                 "python_policy_bypassed_for_network_negative_tests": True,
-                "application_database_used": False,
+                "application_database_used": options.phase2b,
+                "personal_database_used": False,
+                "disposable_application_database_used": options.phase2b,
+                "network_worker_received_database_credentials": False,
                 "external_target_requests": False,
                 "production_egress_guarantee": False,
                 "runtime_verification_enabled": False,
@@ -303,7 +338,7 @@ ip6tables -A OUTPUT -d 2606:4700:ffff::10/128 -p tcp --dport 443 -j ACCEPT
         )
         for name in reversed(owned_names):
             details = inspect(name)
-            if details["Config"]["Labels"].get("vulntrack.phase2a") != nonce:
+            if details["Config"]["Labels"].get(label) != nonce:
                 raise RuntimeError("Refusing cleanup of an unowned container")
             command("docker", "stop", "--time", "2", name, check=False)
             command("docker", "rm", name)

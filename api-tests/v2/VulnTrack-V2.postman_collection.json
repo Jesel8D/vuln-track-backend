@@ -102,6 +102,16 @@
       "type": "string"
     },
     {
+      "key": "challenge_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "verification_key",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "recommendation_id",
       "value": "",
       "type": "string"
@@ -1216,6 +1226,663 @@
                 }
               ],
               "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000005\",\n      \"application_id\": \"00000000-0000-4000-8000-000000000004\",\n      \"application_name\": \"Laboratorio API V2\",\n      \"application_status\": \"active\",\n      \"url\": \"https://app.example.com/\",\n      \"label\": \"Laboratorio (solo inventario)\",\n      \"authorization_status\": \"rejected\",\n      \"authorization_expires_at\": null,\n      \"authorization_reference\": \"Fixture: no autoriza escaneos\",\n      \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"updated_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"analysis_readiness\": {\n        \"policy_version\": \"web-public-v1\",\n        \"authorization_state\": \"rejected\",\n        \"control_verified\": false,\n        \"url_policy_allowed\": true,\n        \"execution_enabled\": false,\n        \"blocking_reasons\": [\n          \"DECLARATION_REJECTED_OR_WITHDRAWN\",\n          \"CONTROL_VERIFICATION_REQUIRED\",\n          \"PINNED_TRANSPORT_UNAVAILABLE\",\n          \"NETWORK_ISOLATION_UNAVAILABLE\",\n          \"WEB_EXECUTOR_DISABLED\"\n        ]\n      }\n    }\n  ],\n  \"page\": {\n    \"limit\": 100,\n    \"offset\": 0,\n    \"total\": 1\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05b · Verificación persistente",
+      "item": [
+        {
+          "id": "bfbd7d14-ab12-5aa5-8429-f193316c34c6",
+          "name": "Declarar destino para desafio",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/authorization",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Inventario HTTP(S), sin escaneo. Autorizar requiere referencia y expected_updated_at; aprobación vence en el próximo año, rechazo sin vencimiento. Conflicto de versión: 409. No demuestra propiedad del destino. ZAP permanece deshabilitado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"authorization_status\": \"approved\",\n  \"authorization_expires_at\": \"{{verification_expiry}}\",\n  \"authorization_reference\": \"DEMO declaration only; never evidence of domain control\",\n  \"expected_updated_at\": \"{{target_updated_at}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.collectionVariables.set('verification_expiry',new Date(Date.now()+3600000).toISOString());",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.collectionVariables.set('target_updated_at',data.updated_at);",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/authorization",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Inventario HTTP(S), sin escaneo. Autorizar requiere referencia y expected_updated_at; aprobación vence en el próximo año, rechazo sin vencimiento. Conflicto de versión: 409. No demuestra propiedad del destino. ZAP permanece deshabilitado.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"authorization_status\": \"approved\",\n  \"authorization_expires_at\": \"{{verification_expiry}}\",\n  \"authorization_reference\": \"DEMO declaration only; never evidence of domain control\",\n  \"expected_updated_at\": \"{{target_updated_at}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000005\",\n  \"url\": \"https://app.example.com/\",\n  \"label\": \"Laboratorio (solo inventario)\",\n  \"authorization_status\": \"approved\",\n  \"authorization_expires_at\": \"2026-11-15T13:00:00Z\",\n  \"authorization_reference\": \"Fixture: no autoriza escaneos\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"updated_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"analysis_readiness\": {\n    \"policy_version\": \"web-public-v1\",\n    \"authorization_state\": \"verification_pending\",\n    \"control_verified\": false,\n    \"url_policy_allowed\": true,\n    \"execution_enabled\": false,\n    \"blocking_reasons\": [\n      \"CONTROL_VERIFICATION_REQUIRED\",\n      \"PINNED_TRANSPORT_UNAVAILABLE\",\n      \"NETWORK_ISOLATION_UNAVAILABLE\",\n      \"WEB_EXECUTOR_DISABLED\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "336e7c0e-687c-5f67-9042-47f41152f150",
+          "name": "Emitir desafio persistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{verification_key}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_updated_at\": \"{{target_updated_at}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.collectionVariables.set('verification_key',pm.variables.replaceIn('{{$guid}}'));",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.collectionVariables.set('challenge_id',data.challenge.id);pm.test('Pendiente, nunca verificado',()=>{pm.expect(data.challenge.state).to.eql('pending');pm.expect(data.challenge.control_verified).to.eql(false);pm.expect(data.challenge.execution_enabled).to.eql(false);});pm.test('Instrucciones de un solo proposito',()=>pm.expect(data.instructions.body).to.match(/^vulntrack-domain-control-https-v1:[0-9a-f-]+:[A-Za-z0-9_-]{43}$/));pm.test('Respuesta privada',()=>pm.expect(pm.response.headers.get('Cache-Control')).to.eql('no-store'));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "{{verification_key}}"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_updated_at\": \"{{target_updated_at}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"challenge\": {\n    \"id\": \"00000000-0000-4000-8000-000000000005\",\n    \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n    \"application_id\": \"00000000-0000-4000-8000-000000000003\",\n    \"target_id\": \"00000000-0000-4000-8000-000000000004\",\n    \"method\": \"https_file\",\n    \"origin\": \"https://app.example.com\",\n    \"state\": \"pending\",\n    \"effective_state\": \"pending\",\n    \"scope_invalidated\": false,\n    \"version\": 1,\n    \"attempts\": 0,\n    \"created_at\": \"2026-11-15T12:00:00Z\",\n    \"expires_at\": \"2026-11-15T12:10:00Z\",\n    \"consumed_at\": null,\n    \"verified_at\": null,\n    \"revoked_at\": null,\n    \"result_code\": \"NOT_CHECKED\",\n    \"control_verified\": false,\n    \"remote_verification_available\": false,\n    \"execution_enabled\": false,\n    \"blocking_reasons\": [\n      \"PUBLIC_EGRESS_UNPROVEN\",\n      \"OPERATIONAL_DNS_UNAVAILABLE\",\n      \"WEB_EXECUTOR_DISABLED\"\n    ],\n    \"evidence\": []\n  },\n  \"created\": true,\n  \"instructions\": {\n    \"url\": \"https://app.example.com/.well-known/vulntrack-verification/00000000-0000-4000-8000-000000000005\",\n    \"body\": \"\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "b99e2da2-f6fb-5ee0-9fa2-c4351aa46e3d",
+          "name": "Repetir emision idempotente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{verification_key}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_updated_at\": \"{{target_updated_at}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('No reproduce token',()=>{pm.expect(data.created).to.eql(false);pm.expect(data.instructions).to.eql(null);});",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "{{verification_key}}"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_updated_at\": \"{{target_updated_at}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"challenge\": {\n    \"id\": \"00000000-0000-4000-8000-000000000005\",\n    \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n    \"application_id\": \"00000000-0000-4000-8000-000000000003\",\n    \"target_id\": \"00000000-0000-4000-8000-000000000004\",\n    \"method\": \"https_file\",\n    \"origin\": \"https://app.example.com\",\n    \"state\": \"pending\",\n    \"effective_state\": \"pending\",\n    \"scope_invalidated\": false,\n    \"version\": 1,\n    \"attempts\": 0,\n    \"created_at\": \"2026-11-15T12:00:00Z\",\n    \"expires_at\": \"2026-11-15T12:10:00Z\",\n    \"consumed_at\": null,\n    \"verified_at\": null,\n    \"revoked_at\": null,\n    \"result_code\": \"NOT_CHECKED\",\n    \"control_verified\": false,\n    \"remote_verification_available\": false,\n    \"execution_enabled\": false,\n    \"blocking_reasons\": [\n      \"PUBLIC_EGRESS_UNPROVEN\",\n      \"OPERATIONAL_DNS_UNAVAILABLE\",\n      \"WEB_EXECUTOR_DISABLED\"\n    ],\n    \"evidence\": []\n  },\n  \"created\": false,\n  \"instructions\": null\n}"
+            }
+          ]
+        },
+        {
+          "id": "f7977a52-56c0-5355-bc03-76b43fccbb12",
+          "name": "Listar verificaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Servicio remoto bloqueado',()=>pm.expect(data.remote_verification_available).to.eql(false));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000005\",\n      \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n      \"application_id\": \"00000000-0000-4000-8000-000000000003\",\n      \"target_id\": \"00000000-0000-4000-8000-000000000004\",\n      \"method\": \"https_file\",\n      \"origin\": \"https://app.example.com\",\n      \"state\": \"pending\",\n      \"effective_state\": \"pending\",\n      \"scope_invalidated\": false,\n      \"version\": 1,\n      \"attempts\": 0,\n      \"created_at\": \"2026-11-15T12:00:00Z\",\n      \"expires_at\": \"2026-11-15T12:10:00Z\",\n      \"consumed_at\": null,\n      \"verified_at\": null,\n      \"revoked_at\": null,\n      \"result_code\": \"NOT_CHECKED\",\n      \"control_verified\": false,\n      \"remote_verification_available\": false,\n      \"execution_enabled\": false,\n      \"blocking_reasons\": [\n        \"PUBLIC_EGRESS_UNPROVEN\",\n        \"OPERATIONAL_DNS_UNAVAILABLE\",\n        \"WEB_EXECUTOR_DISABLED\"\n      ],\n      \"evidence\": []\n    }\n  ],\n  \"remote_verification_available\": false,\n  \"execution_enabled\": false,\n  \"blocking_reasons\": [\n    \"PUBLIC_EGRESS_UNPROVEN\",\n    \"OPERATIONAL_DNS_UNAVAILABLE\",\n    \"WEB_EXECUTOR_DISABLED\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "id": "e23c753c-f4e7-5ecc-9e13-85e909c2f5d6",
+          "name": "Consultar desafio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications/{{challenge_id}}",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Sin intentos ni control',()=>{pm.expect(data.attempts).to.eql(0);pm.expect(data.control_verified).to.eql(false);});",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications/{{challenge_id}}",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000005\",\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"application_id\": \"00000000-0000-4000-8000-000000000003\",\n  \"target_id\": \"00000000-0000-4000-8000-000000000004\",\n  \"method\": \"https_file\",\n  \"origin\": \"https://app.example.com\",\n  \"state\": \"pending\",\n  \"effective_state\": \"pending\",\n  \"scope_invalidated\": false,\n  \"version\": 1,\n  \"attempts\": 0,\n  \"created_at\": \"2026-11-15T12:00:00Z\",\n  \"expires_at\": \"2026-11-15T12:10:00Z\",\n  \"consumed_at\": null,\n  \"verified_at\": null,\n  \"revoked_at\": null,\n  \"result_code\": \"NOT_CHECKED\",\n  \"control_verified\": false,\n  \"remote_verification_available\": false,\n  \"execution_enabled\": false,\n  \"blocking_reasons\": [\n    \"PUBLIC_EGRESS_UNPROVEN\",\n    \"OPERATIONAL_DNS_UNAVAILABLE\",\n    \"WEB_EXECUTOR_DISABLED\"\n  ],\n  \"evidence\": []\n}"
+            }
+          ]
+        },
+        {
+          "id": "4a0c973b-dda5-5cce-8dd6-a7595f8ef6c0",
+          "name": "Comprobacion remota bloqueada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications/{{challenge_id}}/verify",
+            "description": "Explicitly unavailable: no DNS/network call, queue, attempt or result is created. Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_version\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 503', () => pm.response.to.have.status(503));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Error sanitizado',()=>{pm.expect(data).to.have.property('error'); ['code','message','request_id'].forEach(k=>pm.expect(data.error[k]).to.be.a('string').and.not.empty);});",
+                  "pm.test('Código de error',()=>pm.expect(data.error.code).to.eql('VERIFICATION_EGRESS_UNAVAILABLE'));",
+                  "pm.test('Retry-After',()=>pm.expect(pm.response.headers.get('Retry-After')).to.match(/^[0-9]+$/));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications/{{challenge_id}}/verify",
+                "description": "Explicitly unavailable: no DNS/network call, queue, attempt or result is created. Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VERIFICATION_EGRESS_UNAVAILABLE\",\n    \"message\": \"Synthetic sanitized response; no remote verification performed\",\n    \"request_id\": \"example-request-id\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "aef7ab65-942e-5c48-93e9-dd1f0ced5eaf",
+          "name": "Revocar desafio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications/{{challenge_id}}/revoke",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_version\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Revocacion durable',()=>pm.expect(data.state).to.eql('revoked'));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications/{{challenge_id}}/revoke",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000005\",\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"application_id\": \"00000000-0000-4000-8000-000000000003\",\n  \"target_id\": \"00000000-0000-4000-8000-000000000004\",\n  \"method\": \"https_file\",\n  \"origin\": \"https://app.example.com\",\n  \"state\": \"revoked\",\n  \"effective_state\": \"revoked\",\n  \"scope_invalidated\": false,\n  \"version\": 2,\n  \"attempts\": 0,\n  \"created_at\": \"2026-11-15T12:00:00Z\",\n  \"expires_at\": \"2026-11-15T12:10:00Z\",\n  \"consumed_at\": null,\n  \"verified_at\": null,\n  \"revoked_at\": \"2026-11-15T12:01:00Z\",\n  \"result_code\": \"REVOKED\",\n  \"control_verified\": false,\n  \"remote_verification_available\": false,\n  \"execution_enabled\": false,\n  \"blocking_reasons\": [\n    \"PUBLIC_EGRESS_UNPROVEN\",\n    \"OPERATIONAL_DNS_UNAVAILABLE\",\n    \"WEB_EXECUTOR_DISABLED\"\n  ],\n  \"evidence\": []\n}"
+            }
+          ]
+        },
+        {
+          "id": "ad8948c7-074b-535f-9d66-2bc3746ca205",
+          "name": "Retirar declaracion de desafio",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/authorization",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Inventario HTTP(S), sin escaneo. Autorizar requiere referencia y expected_updated_at; aprobación vence en el próximo año, rechazo sin vencimiento. Conflicto de versión: 409. No demuestra propiedad del destino. ZAP permanece deshabilitado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"authorization_status\": \"rejected\",\n  \"authorization_expires_at\": null,\n  \"authorization_reference\": \"DEMO challenge revoked; no scan permission\",\n  \"expected_updated_at\": \"{{target_updated_at}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.collectionVariables.set('target_updated_at',data.updated_at);",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/authorization",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Inventario HTTP(S), sin escaneo. Autorizar requiere referencia y expected_updated_at; aprobación vence en el próximo año, rechazo sin vencimiento. Conflicto de versión: 409. No demuestra propiedad del destino. ZAP permanece deshabilitado.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"authorization_status\": \"rejected\",\n  \"authorization_expires_at\": null,\n  \"authorization_reference\": \"DEMO challenge revoked; no scan permission\",\n  \"expected_updated_at\": \"{{target_updated_at}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000005\",\n  \"url\": \"https://app.example.com/\",\n  \"label\": \"Laboratorio (solo inventario)\",\n  \"authorization_status\": \"rejected\",\n  \"authorization_expires_at\": null,\n  \"authorization_reference\": \"Fixture: no autoriza escaneos\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"updated_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"analysis_readiness\": {\n    \"policy_version\": \"web-public-v1\",\n    \"authorization_state\": \"rejected\",\n    \"control_verified\": false,\n    \"url_policy_allowed\": true,\n    \"execution_enabled\": false,\n    \"blocking_reasons\": [\n      \"DECLARATION_REJECTED_OR_WITHDRAWN\",\n      \"CONTROL_VERIFICATION_REQUIRED\",\n      \"PINNED_TRANSPORT_UNAVAILABLE\",\n      \"NETWORK_ISOLATION_UNAVAILABLE\",\n      \"WEB_EXECUTOR_DISABLED\"\n    ]\n  }\n}"
             }
           ]
         }
@@ -5016,6 +5683,200 @@
                 }
               ],
               "body": "{\n  \"error\": {\n    \"code\": \"REGISTRATION_DISABLED\",\n    \"message\": \"El registro no está habilitado\",\n    \"request_id\": \"example-request-id\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "c26955f7-5b17-586b-b0b2-5f318f4e41b1",
+          "name": "Desafio ajeno visto por B",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications/{{challenge_id}}",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token_b}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Error sanitizado',()=>{pm.expect(data).to.have.property('error'); ['code','message','request_id'].forEach(k=>pm.expect(data.error[k]).to.be.a('string').and.not.empty);});",
+                  "pm.test('Código de error',()=>pm.expect(data.error.code).to.eql('RESOURCE_NOT_FOUND'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications/{{challenge_id}}",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token_b}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "Example",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"RESOURCE_NOT_FOUND\",\n    \"message\": \"Synthetic sanitized response; no remote verification performed\",\n    \"request_id\": \"example-request-id\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "24e3fc5a-0a2c-54a0-a166-e379990df5f3",
+          "name": "Prueba tecnica enviada por cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{verification_key}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_updated_at\": \"{{target_updated_at}}\",\n  \"control_verified\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 422', () => pm.response.to.have.status(422));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Error sanitizado',()=>{pm.expect(data).to.have.property('error'); ['code','message','request_id'].forEach(k=>pm.expect(data.error[k]).to.be.a('string').and.not.empty);});",
+                  "pm.test('Código de error',()=>pm.expect(data.error.code).to.eql('VALIDATION_ERROR'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "{{verification_key}}"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets/{{target_id}}/verifications",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; token de propósito único mostrado solo en la primera respuesta no-store. Una repetición devuelve metadatos e instructions=null. Lecturas y revocación persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear intentos ni tráfico; egreso público y DNS operativos no demostrados. Resultados de laboratorio nunca acreditan control real ni habilitan ZAP.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_updated_at\": \"{{target_updated_at}}\",\n  \"control_verified\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 422,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Synthetic sanitized response; no remote verification performed\",\n    \"request_id\": \"example-request-id\"\n  }\n}"
             }
           ]
         }

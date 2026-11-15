@@ -1,11 +1,13 @@
 FROM python:3.12-slim-bookworm@sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf229832ef584be2cec9fc03df
 RUN apt-get update && apt-get install -y --no-install-recommends iproute2 iptables openssl \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir idna==3.20
+    && pip install --no-cache-dir idna==3.20 dnspython==2.9.2
 WORKDIR /lab
 ENV PYTHONPATH=/lab PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
-COPY app/services/web_target_policy.py app/services/web_target_transport.py app/services/web_target_challenges.py app/services/web_target_evidence.py /lab/app/services/
+COPY app/services/web_target_policy.py app/services/web_target_transport.py app/services/web_target_challenges.py app/services/web_target_evidence.py app/services/web_target_tokens.py /lab/app/services/
+COPY app/services/controlled_dns.py /lab/app/services/
 COPY laboratory/phase2a/fixture.py laboratory/phase2a/checks.py /lab/laboratory/phase2a/
+COPY laboratory/phase2b/dns_fixture.py laboratory/phase2b/checks.py /lab/laboratory/phase2b/
 ARG LAB_CERT_NONCE
 RUN mkdir /lab/certs && cd /lab/certs \
     && openssl req -x509 -newkey rsa:2048 -nodes -days 2 -subj /CN=VulnTrack-LAB-only-CA -keyout ca.key -out ca.pem \

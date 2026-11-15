@@ -229,6 +229,11 @@ def test_remote_verifier_and_executor_are_not_registered_or_enabled_by_environme
     monkeypatch.setenv("DOMAIN_VERIFICATION_ENABLED", "true")
     monkeypatch.setenv("ZAP_ENABLED", "true")
     routes = create_app(settings).openapi()["paths"]
-    assert not any(
-        "challenge" in path or "verification" in path or "zap" in path for path in routes
+    assert not any("zap" in path for path in routes)
+    verification = next(
+        value
+        for path, value in routes.items()
+        if path.endswith("/verifications/{challenge_id}/verify")
     )
+    assert "503" in verification["post"]["responses"]
+    assert "200" not in verification["post"]["responses"]

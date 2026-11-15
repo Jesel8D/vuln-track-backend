@@ -94,6 +94,21 @@ class DisposableV2:
             database=self.database,
         ).render_as_string(hide_password=False)
 
+    def verification_migrate(self):
+        result = subprocess.run(
+            [sys.executable, "-m", "alembic", "-c", "alembic-verification.ini", "upgrade", "head"],
+            cwd=ROOT,
+            capture_output=True,
+            env={**os.environ, "MIGRATION_DATABASE_URL": self.url("postgres")},
+        )
+        if result.returncode:
+            diagnostic = ROOT / "api-tests/v2/.artifacts/phase2b/migration-failure.log"
+            diagnostic.parent.mkdir(parents=True, exist_ok=True)
+            diagnostic.write_text(
+                result.stderr.decode(errors="replace").replace(self.password, "[redacted]")
+            )
+            raise RuntimeError("Explicit SQL008 migration failed; no credentials printed")
+
     def __enter__(self):
         for relative, digest in SOURCES.items():
             if hashlib.sha256((self.reference / relative).read_bytes()).hexdigest() != digest:
@@ -166,12 +181,15 @@ class DisposableV2:
             if self.installation == "new":
                 # Bootstrap's V2 objects are verified in full before baseline; no blind stamp.
                 self.migrate()
+                self.apply("sql/008_v2_target_verification.sql")
+            self.verification_migrate()
             if self.sql_checks:
                 for relative in (
                     "tests/002_v2_security.sql",
                     "tests/004_v2_workspace_bootstrap.sql",
                     "tests/005_self_service_privileges.sql",
                     "tests/006_v2_stabilization.sql",
+                    "tests/007_v2_verification.sql",
                 ):
                     result = self.apply(relative)
                     print(

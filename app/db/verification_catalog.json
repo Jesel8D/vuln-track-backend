@@ -1,0 +1,2059 @@
+{
+  "columns": [
+    {
+      "table_name": "attempts",
+      "column_name": "actor_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "application_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "certificate_sha256",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "challenge_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "completed_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "deadline_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "outcome",
+      "type": "text",
+      "not_null": true,
+      "default": "'in_progress'::text"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "peer_ip",
+      "type": "inet",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "provenance",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "received_sha256",
+      "type": "text",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "started_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "clock_timestamp()"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "target_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "application_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "attempts",
+      "type": "smallint",
+      "not_null": true,
+      "default": "0"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "consumed_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "clock_timestamp()"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_expires_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_version",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "evidence_expires_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "expires_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "issued_by",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "method",
+      "type": "text",
+      "not_null": true,
+      "default": "'https_file'::text"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "origin",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "proof_sha256",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "purpose",
+      "type": "text",
+      "not_null": true,
+      "default": "'vulntrack-domain-control-https-v1'::text"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "request_key",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "result_code",
+      "type": "text",
+      "not_null": true,
+      "default": "'NOT_CHECKED'::text"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "revoked_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "state",
+      "type": "text",
+      "not_null": true,
+      "default": "'pending'::text"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "target_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "url_sha256",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "verified_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "version",
+      "type": "integer",
+      "not_null": true,
+      "default": "1"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "attempts",
+      "name": "attempt_actor_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, actor_id) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempt_challenge_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, application_id, target_id, challenge_id) REFERENCES vulntrack_verification.challenges(workspace_id, application_id, target_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempt_completion",
+      "type": "c",
+      "definition": "CHECK (((outcome = 'in_progress'::text) = (completed_at IS NULL)))"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempt_deadline",
+      "type": "c",
+      "definition": "CHECK (((started_at < deadline_at) AND (deadline_at <= (started_at + '00:00:15'::interval))))"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempts_certificate_sha256_check",
+      "type": "c",
+      "definition": "CHECK ((certificate_sha256 ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempts_challenge_id_key",
+      "type": "u",
+      "definition": "UNIQUE (challenge_id)"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempts_outcome_check",
+      "type": "c",
+      "definition": "CHECK ((outcome = ANY (ARRAY['in_progress'::text, 'laboratory_match'::text, 'proof_mismatch'::text, 'transport_failed'::text, 'expired'::text, 'revoked'::text])))"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempts_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempts_provenance_check",
+      "type": "c",
+      "definition": "CHECK ((provenance = 'laboratory'::text))"
+    },
+    {
+      "table_name": "attempts",
+      "name": "attempts_received_sha256_check",
+      "type": "c",
+      "definition": "CHECK ((received_sha256 ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenge_consumption",
+      "type": "c",
+      "definition": "CHECK ((((attempts = 0) AND (consumed_at IS NULL)) OR ((attempts = 1) AND (consumed_at IS NOT NULL))))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenge_expiry",
+      "type": "c",
+      "definition": "CHECK (((created_at < expires_at) AND (expires_at <= (created_at + '00:10:00'::interval)) AND (expires_at <= declaration_expires_at) AND (declaration_version <= created_at)))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenge_member_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, issued_by) REFERENCES vulntrack.workspace_members(workspace_id, user_id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenge_no_automatic_verification",
+      "type": "c",
+      "definition": "CHECK ((((state = 'verified'::text) AND (verified_at IS NOT NULL) AND (evidence_expires_at IS NOT NULL) AND (result_code = 'REMOTE_VERIFIED'::text) AND (attempts = 1) AND (verified_at < evidence_expires_at) AND (evidence_expires_at <= declaration_expires_at)) OR ((state <> 'verified'::text) AND (verified_at IS NULL) AND (evidence_expires_at IS NULL))))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenge_revocation",
+      "type": "c",
+      "definition": "CHECK (((state = 'revoked'::text) = (revoked_at IS NOT NULL)))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenge_target_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id, application_id, target_id) REFERENCES vulntrack.application_targets(workspace_id, application_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_attempts_check",
+      "type": "c",
+      "definition": "CHECK (((attempts >= 0) AND (attempts <= 1)))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_method_check",
+      "type": "c",
+      "definition": "CHECK ((method = 'https_file'::text))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_origin_check",
+      "type": "c",
+      "definition": "CHECK (((origin ~ '^https://[^/?#@[:space:]]+$'::text) AND (length(origin) <= 300)))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_proof_sha256_check",
+      "type": "c",
+      "definition": "CHECK ((proof_sha256 ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_purpose_check",
+      "type": "c",
+      "definition": "CHECK ((purpose = 'vulntrack-domain-control-https-v1'::text))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_result_code_check",
+      "type": "c",
+      "definition": "CHECK ((result_code = ANY (ARRAY['NOT_CHECKED'::text, 'LABORATORY_IN_PROGRESS'::text, 'LABORATORY_MATCH_ONLY'::text, 'PROOF_MISMATCH'::text, 'TRANSPORT_FAILED'::text, 'ATTEMPT_EXPIRED'::text, 'CHALLENGE_EXPIRED'::text, 'SCOPE_CHANGED'::text, 'REVOKED'::text, 'REMOTE_VERIFIED'::text])))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_state_check",
+      "type": "c",
+      "definition": "CHECK ((state = ANY (ARRAY['pending'::text, 'verified'::text, 'failed'::text, 'expired'::text, 'revoked'::text])))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_url_sha256_check",
+      "type": "c",
+      "definition": "CHECK ((url_sha256 ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_version_check",
+      "type": "c",
+      "definition": "CHECK ((version > 0))"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_workspace_id_application_id_target_id_id_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, application_id, target_id, id)"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenges_workspace_id_issued_by_request_key_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, issued_by, request_key)"
+    }
+  ],
+  "tables": [
+    {
+      "name": "attempts",
+      "rls": true,
+      "force_rls": true,
+      "owner": "vulntrack_verification_owner"
+    },
+    {
+      "name": "challenges",
+      "rls": true,
+      "force_rls": true,
+      "owner": "vulntrack_verification_owner"
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "attempts",
+      "policyname": "attempt_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (actor_id = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "attempts",
+      "policyname": "attempt_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "attempts",
+      "policyname": "attempt_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "challenges",
+      "policyname": "challenge_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND (issued_by = vulntrack.current_user_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "challenges",
+      "policyname": "challenge_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "challenges",
+      "policyname": "challenge_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    }
+  ],
+  "functions": [
+    {
+      "name": "claim_laboratory",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_verification.claim_laboratory(w uuid, a uuid, t uuid, identity uuid, attempt uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE target vulntrack.application_targets; prior vulntrack_verification.challenges;\n    moment timestamptz:=clock_timestamp(); BEGIN\n    target:=vulntrack_verification.lock_target(w,a,t);\n    SELECT * INTO prior FROM vulntrack_verification.challenges WHERE workspace_id=w\n        AND application_id=a AND target_id=t AND id=identity FOR UPDATE;\n    moment:=clock_timestamp();\n    IF NOT FOUND THEN RAISE EXCEPTION 'verification resource unavailable' USING ERRCODE='42501'; END IF;\n    IF prior.state<>'pending' OR prior.attempts<>0 OR prior.expires_at<=moment\n       OR target.updated_at<>prior.declaration_version\n       OR encode(public.digest(target.url,'sha256'),'hex')<>prior.url_sha256\n       OR target.authorization_status<>'approved' OR target.authorization_expires_at<=moment THEN\n        RAISE EXCEPTION 'verification consumed, expired or changed' USING ERRCODE='23514';\n    END IF;\n    UPDATE vulntrack_verification.challenges SET attempts=1,consumed_at=moment,\n        result_code='LABORATORY_IN_PROGRESS',version=version+1 WHERE id=identity;\n    INSERT INTO vulntrack_verification.attempts(id,workspace_id,application_id,target_id,challenge_id,\n        actor_id,provenance,started_at,deadline_at)\n        VALUES(attempt,w,a,t,identity,vulntrack.current_user_id(),'laboratory',moment,\n            least(moment+interval '15 seconds',prior.expires_at));\n    INSERT INTO vulntrack.audit_events(workspace_id,actor_id,action,object_type,object_id)\n        VALUES(w,vulntrack.current_user_id(),'verification.laboratory_claimed','target_verification',identity);\nEND $function$\n",
+      "owner": "vulntrack_verification_owner",
+      "security_definer": true,
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "acl": "{vulntrack_verification_owner=X/vulntrack_verification_owner,vulntrack_verification_lab=X/vulntrack_verification_owner}"
+    },
+    {
+      "name": "finish_laboratory",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_verification.finish_laboratory(w uuid, a uuid, t uuid, identity uuid, attempt uuid, received_digest text, peer inet, certificate_digest text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE target vulntrack.application_targets; prior vulntrack_verification.challenges;\n    evidence vulntrack_verification.attempts; moment timestamptz:=clock_timestamp(); code text; result text; BEGIN\n    target:=vulntrack_verification.lock_target(w,a,t);\n    SELECT * INTO prior FROM vulntrack_verification.challenges WHERE workspace_id=w\n        AND application_id=a AND target_id=t AND id=identity FOR UPDATE;\n    SELECT * INTO evidence FROM vulntrack_verification.attempts\n        WHERE workspace_id=w AND challenge_id=identity AND id=attempt FOR UPDATE;\n    moment:=clock_timestamp();\n    IF prior.id IS NULL OR evidence.id IS NULL OR prior.state<>'pending'\n       OR prior.attempts<>1 OR evidence.outcome<>'in_progress'\n       OR evidence.actor_id<>vulntrack.current_user_id() THEN\n        RAISE EXCEPTION 'verification attempt unavailable' USING ERRCODE='23514';\n    END IF;\n    IF target.updated_at<>prior.declaration_version\n       OR encode(public.digest(target.url,'sha256'),'hex')<>prior.url_sha256\n       OR target.authorization_status<>'approved' OR target.authorization_expires_at<=moment THEN\n        code:='SCOPE_CHANGED'; result:='revoked';\n    ELSIF prior.expires_at<=moment OR evidence.deadline_at<=moment THEN\n        code:='ATTEMPT_EXPIRED'; result:='expired';\n    ELSIF received_digest IS NULL THEN code:='TRANSPORT_FAILED'; result:='transport_failed';\n    ELSIF received_digest=prior.proof_sha256 THEN code:='LABORATORY_MATCH_ONLY'; result:='laboratory_match';\n    ELSE code:='PROOF_MISMATCH'; result:='proof_mismatch'; END IF;\n    UPDATE vulntrack_verification.attempts SET completed_at=moment,outcome=result,\n        received_sha256=received_digest,peer_ip=peer,certificate_sha256=certificate_digest WHERE id=attempt;\n    -- A fixture match is persisted as a laboratory result, NEVER as verified control.\n    UPDATE vulntrack_verification.challenges SET state='failed',result_code=code,version=version+1 WHERE id=identity;\n    INSERT INTO vulntrack.audit_events(workspace_id,actor_id,action,object_type,object_id)\n        VALUES(w,vulntrack.current_user_id(),'verification.laboratory_completed','target_verification',identity);\nEND $function$\n",
+      "owner": "vulntrack_verification_owner",
+      "security_definer": true,
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "acl": "{vulntrack_verification_owner=X/vulntrack_verification_owner,vulntrack_verification_lab=X/vulntrack_verification_owner}"
+    },
+    {
+      "name": "guard_attempt",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_verification.guard_attempt()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$ BEGIN\n    IF TG_OP='DELETE' OR OLD.outcome<>'in_progress'\n        OR ROW(NEW.id,NEW.workspace_id,NEW.application_id,NEW.target_id,NEW.challenge_id,\n               NEW.actor_id,NEW.provenance,NEW.started_at,NEW.deadline_at)\n        IS DISTINCT FROM ROW(OLD.id,OLD.workspace_id,OLD.application_id,OLD.target_id,OLD.challenge_id,\n               OLD.actor_id,OLD.provenance,OLD.started_at,OLD.deadline_at) THEN\n        RAISE EXCEPTION 'immutable verification evidence' USING ERRCODE='23514';\n    END IF;\n    RETURN NEW;\nEND $function$\n",
+      "owner": "vulntrack_verification_owner",
+      "security_definer": false,
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "acl": "{vulntrack_verification_owner=X/vulntrack_verification_owner}"
+    },
+    {
+      "name": "guard_challenge",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_verification.guard_challenge()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$ BEGIN\n    IF TG_OP='DELETE' OR ROW(NEW.id,NEW.workspace_id,NEW.application_id,NEW.target_id,NEW.issued_by,\n        NEW.request_key,NEW.method,NEW.purpose,NEW.origin,NEW.url_sha256,NEW.declaration_version,\n        NEW.declaration_expires_at,NEW.proof_sha256,NEW.created_at,NEW.expires_at)\n        IS DISTINCT FROM ROW(OLD.id,OLD.workspace_id,OLD.application_id,OLD.target_id,OLD.issued_by,\n        OLD.request_key,OLD.method,OLD.purpose,OLD.origin,OLD.url_sha256,OLD.declaration_version,\n        OLD.declaration_expires_at,OLD.proof_sha256,OLD.created_at,OLD.expires_at)\n        OR NEW.version<>OLD.version+1 OR NEW.attempts<OLD.attempts\n        OR NEW.state='verified' OR (OLD.state<>'pending' AND NEW.state<>'revoked') THEN\n        RAISE EXCEPTION 'verification transition denied' USING ERRCODE='23514';\n    END IF;\n    RETURN NEW;\nEND $function$\n",
+      "owner": "vulntrack_verification_owner",
+      "security_definer": false,
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "acl": "{vulntrack_verification_owner=X/vulntrack_verification_owner}"
+    },
+    {
+      "name": "issue",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_verification.issue(w uuid, a uuid, t uuid, identity uuid, key uuid, expected timestamp with time zone, canonical_origin text, digest text)\n RETURNS TABLE(challenge_id uuid, created boolean)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE target vulntrack.application_targets; prior vulntrack_verification.challenges;\n    moment timestamptz:=clock_timestamp(); old_id uuid; BEGIN\n    target:=vulntrack_verification.lock_target(w,a,t);\n    -- Serialize the workspace quota as well as the per-target unique constraint.\n    PERFORM pg_advisory_xact_lock(hashtextextended('verification-quota:'||w::text,0));\n    moment:=clock_timestamp();\n    SELECT * INTO prior FROM vulntrack_verification.challenges\n        WHERE workspace_id=w AND issued_by=vulntrack.current_user_id() AND request_key=key;\n    IF FOUND THEN\n        IF prior.target_id<>t OR prior.application_id<>a OR prior.declaration_version<>expected\n           OR prior.origin<>canonical_origin THEN\n            RAISE EXCEPTION 'idempotency conflict' USING ERRCODE='23505';\n        END IF;\n        RETURN QUERY SELECT prior.id,false; RETURN;\n    END IF;\n    IF target.updated_at IS DISTINCT FROM expected OR target.authorization_status<>'approved'\n       OR target.authorization_reference IS NULL OR target.authorization_expires_at<=moment\n       OR canonical_origin IS DISTINCT FROM substring(target.url from '^(https://[^/?#]+)') THEN\n        RAISE EXCEPTION 'verification scope changed' USING ERRCODE='23514';\n    END IF;\n    FOR old_id IN SELECT id FROM vulntrack_verification.challenges\n        WHERE workspace_id=w AND target_id=t AND state='pending' AND expires_at<=moment FOR UPDATE LOOP\n        UPDATE vulntrack_verification.challenges SET state='expired',result_code='CHALLENGE_EXPIRED',\n            version=version+1 WHERE id=old_id;\n        UPDATE vulntrack_verification.attempts SET outcome='expired',completed_at=moment\n            WHERE challenge_id=old_id AND outcome='in_progress';\n        INSERT INTO vulntrack.audit_events(workspace_id,actor_id,action,object_type,object_id)\n            VALUES(w,vulntrack.current_user_id(),'verification.expired','target_verification',old_id);\n    END LOOP;\n    IF (SELECT count(*) FROM vulntrack_verification.challenges\n        WHERE workspace_id=w AND created_at>moment-interval '24 hours')>=20 THEN\n        RAISE EXCEPTION 'verification quota reached' USING ERRCODE='54000';\n    END IF;\n    INSERT INTO vulntrack_verification.challenges(id,workspace_id,application_id,target_id,issued_by,\n        request_key,origin,url_sha256,declaration_version,declaration_expires_at,proof_sha256,created_at,expires_at)\n        VALUES(identity,w,a,t,vulntrack.current_user_id(),key,canonical_origin,\n            encode(public.digest(target.url,'sha256'),'hex'),target.updated_at,\n            target.authorization_expires_at,digest,moment,least(moment+interval '10 minutes',target.authorization_expires_at));\n    INSERT INTO vulntrack.audit_events(workspace_id,actor_id,action,object_type,object_id)\n        VALUES(w,vulntrack.current_user_id(),'verification.issued','target_verification',identity);\n    RETURN QUERY SELECT identity,true;\nEND $function$\n",
+      "owner": "vulntrack_verification_owner",
+      "security_definer": true,
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "acl": "{vulntrack_verification_owner=X/vulntrack_verification_owner,vulntrack_app=X/vulntrack_verification_owner}"
+    },
+    {
+      "name": "lock_target",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_verification.lock_target(w uuid, a uuid, t uuid, require_active boolean DEFAULT true)\n RETURNS vulntrack.application_targets\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE target vulntrack.application_targets; BEGIN\n    IF w IS DISTINCT FROM vulntrack.current_workspace_id()\n       OR NOT vulntrack.has_workspace_role(w,ARRAY['owner','editor']) THEN\n        RAISE EXCEPTION 'verification resource unavailable' USING ERRCODE='42501';\n    END IF;\n    PERFORM 1 FROM vulntrack.applications WHERE workspace_id=w AND id=a\n        AND (NOT require_active OR status='active') FOR SHARE;\n    IF NOT FOUND THEN RAISE EXCEPTION 'verification resource unavailable' USING ERRCODE='42501'; END IF;\n    SELECT * INTO target FROM vulntrack.application_targets\n        WHERE workspace_id=w AND application_id=a AND id=t FOR UPDATE;\n    IF NOT FOUND THEN RAISE EXCEPTION 'verification resource unavailable' USING ERRCODE='42501'; END IF;\n    RETURN target;\nEND $function$\n",
+      "owner": "vulntrack_verification_owner",
+      "security_definer": true,
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "acl": "{vulntrack_verification_owner=X/vulntrack_verification_owner}"
+    },
+    {
+      "name": "revoke",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_verification.revoke(w uuid, a uuid, t uuid, identity uuid, expected integer)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE prior vulntrack_verification.challenges; moment timestamptz:=clock_timestamp(); BEGIN\n    PERFORM vulntrack_verification.lock_target(w,a,t,false);\n    SELECT * INTO prior FROM vulntrack_verification.challenges WHERE workspace_id=w\n        AND application_id=a AND target_id=t AND id=identity FOR UPDATE;\n    moment:=clock_timestamp();\n    IF NOT FOUND THEN RAISE EXCEPTION 'verification resource unavailable' USING ERRCODE='42501'; END IF;\n    IF prior.state='revoked' THEN RETURN; END IF;\n    IF prior.version IS DISTINCT FROM expected THEN\n        RAISE EXCEPTION 'verification version conflict' USING ERRCODE='23505';\n    END IF;\n    UPDATE vulntrack_verification.challenges SET state='revoked',revoked_at=moment,\n        result_code='REVOKED',version=version+1 WHERE id=identity;\n    UPDATE vulntrack_verification.attempts SET outcome='revoked',completed_at=moment\n        WHERE challenge_id=identity AND outcome='in_progress';\n    INSERT INTO vulntrack.audit_events(workspace_id,actor_id,action,object_type,object_id)\n        VALUES(w,vulntrack.current_user_id(),'verification.revoked','target_verification',identity);\nEND $function$\n",
+      "owner": "vulntrack_verification_owner",
+      "security_definer": true,
+      "config": [
+        "search_path=pg_catalog"
+      ],
+      "acl": "{vulntrack_verification_owner=X/vulntrack_verification_owner,vulntrack_app=X/vulntrack_verification_owner}"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "attempts",
+      "indexname": "attempts_challenge_id_key",
+      "indexdef": "CREATE UNIQUE INDEX attempts_challenge_id_key ON vulntrack_verification.attempts USING btree (challenge_id)"
+    },
+    {
+      "tablename": "attempts",
+      "indexname": "attempts_pkey",
+      "indexdef": "CREATE UNIQUE INDEX attempts_pkey ON vulntrack_verification.attempts USING btree (id)"
+    },
+    {
+      "tablename": "challenges",
+      "indexname": "challenge_one_pending_target",
+      "indexdef": "CREATE UNIQUE INDEX challenge_one_pending_target ON vulntrack_verification.challenges USING btree (workspace_id, target_id) WHERE (state = 'pending'::text)"
+    },
+    {
+      "tablename": "challenges",
+      "indexname": "challenge_workspace_history",
+      "indexdef": "CREATE INDEX challenge_workspace_history ON vulntrack_verification.challenges USING btree (workspace_id, target_id, created_at DESC, id)"
+    },
+    {
+      "tablename": "challenges",
+      "indexname": "challenges_pkey",
+      "indexdef": "CREATE UNIQUE INDEX challenges_pkey ON vulntrack_verification.challenges USING btree (id)"
+    },
+    {
+      "tablename": "challenges",
+      "indexname": "challenges_workspace_id_application_id_target_id_id_key",
+      "indexdef": "CREATE UNIQUE INDEX challenges_workspace_id_application_id_target_id_id_key ON vulntrack_verification.challenges USING btree (workspace_id, application_id, target_id, id)"
+    },
+    {
+      "tablename": "challenges",
+      "indexname": "challenges_workspace_id_issued_by_request_key_key",
+      "indexdef": "CREATE UNIQUE INDEX challenges_workspace_id_issued_by_request_key_key ON vulntrack_verification.challenges USING btree (workspace_id, issued_by, request_key)"
+    }
+  ],
+  "triggers": [
+    {
+      "table_name": "attempts",
+      "name": "attempt_guard",
+      "definition": "CREATE TRIGGER attempt_guard BEFORE DELETE OR UPDATE ON vulntrack_verification.attempts FOR EACH ROW EXECUTE FUNCTION vulntrack_verification.guard_attempt()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "challenges",
+      "name": "challenge_guard",
+      "definition": "CREATE TRIGGER challenge_guard BEFORE DELETE OR UPDATE ON vulntrack_verification.challenges FOR EACH ROW EXECUTE FUNCTION vulntrack_verification.guard_challenge()",
+      "enabled": "O"
+    }
+  ],
+  "column_grants": [
+    {
+      "table_name": "attempts",
+      "column_name": "actor_id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "actor_id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "actor_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "actor_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "actor_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "actor_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "application_id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "certificate_sha256",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "certificate_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "certificate_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "certificate_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "certificate_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "challenge_id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "challenge_id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "challenge_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "challenge_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "challenge_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "challenge_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "completed_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "completed_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "completed_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "completed_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "completed_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "completed_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "deadline_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "deadline_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "deadline_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "deadline_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "deadline_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "deadline_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "outcome",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "outcome",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "outcome",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "outcome",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "outcome",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "outcome",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "peer_ip",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "peer_ip",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "peer_ip",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "peer_ip",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "peer_ip",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "provenance",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "provenance",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "provenance",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "provenance",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "provenance",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "provenance",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "received_sha256",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "received_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "received_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "received_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "received_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "started_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "started_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "started_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "started_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "started_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "started_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "target_id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "application_id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "application_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "attempts",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "attempts",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "consumed_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "consumed_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "consumed_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "consumed_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "consumed_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "consumed_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "created_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "created_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "created_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "created_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "created_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "created_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_expires_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_expires_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_version",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_version",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_version",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_version",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_version",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "declaration_version",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "evidence_expires_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "evidence_expires_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "evidence_expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "evidence_expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "evidence_expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "evidence_expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "expires_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "expires_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "expires_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "issued_by",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "issued_by",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "issued_by",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "issued_by",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "issued_by",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "issued_by",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "method",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "method",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "method",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "method",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "method",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "method",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "origin",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "origin",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "origin",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "origin",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "origin",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "origin",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "proof_sha256",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "proof_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "proof_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "proof_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "proof_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "purpose",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "purpose",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "purpose",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "purpose",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "purpose",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "purpose",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "request_key",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "request_key",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "request_key",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "request_key",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "request_key",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "request_key",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "result_code",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "result_code",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "result_code",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "result_code",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "result_code",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "result_code",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "revoked_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "revoked_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "revoked_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "revoked_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "revoked_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "revoked_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "state",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "state",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "state",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "state",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "state",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "state",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "target_id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "target_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "url_sha256",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "url_sha256",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "url_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "url_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "url_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "url_sha256",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "verified_at",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "verified_at",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "verified_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "verified_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "verified_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "verified_at",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "version",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "version",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "version",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "version",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "version",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "version",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_app",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "column_name": "workspace_id",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    }
+  ],
+  "table_grants": [
+    {
+      "table_name": "attempts",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "attempts",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "challenges",
+      "grantee": "vulntrack_verification_lab",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "challenges",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "challenges",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "challenges",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "challenges",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "challenges",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "challenges",
+      "grantee": "vulntrack_verification_owner",
+      "privilege_type": "UPDATE"
+    }
+  ],
+  "roles": [
+    {
+      "rolname": "vulntrack_verification_lab",
+      "rolsuper": false,
+      "rolcreaterole": false,
+      "rolcreatedb": false,
+      "rolcanlogin": false,
+      "rolreplication": false,
+      "rolbypassrls": false
+    },
+    {
+      "rolname": "vulntrack_verification_owner",
+      "rolsuper": false,
+      "rolcreaterole": false,
+      "rolcreatedb": false,
+      "rolcanlogin": false,
+      "rolreplication": false,
+      "rolbypassrls": false
+    }
+  ],
+  "memberships": [],
+  "schema_acl": [
+    {
+      "nspname": "vulntrack_verification",
+      "owner": "vulntrack_verification_owner",
+      "acl": "{vulntrack_verification_owner=UC/vulntrack_verification_owner,vulntrack_app=U/vulntrack_verification_owner,vulntrack_verification_lab=U/vulntrack_verification_owner}"
+    }
+  ],
+  "default_acl": []
+}

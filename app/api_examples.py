@@ -1689,6 +1689,85 @@ RESPONSE_EXAMPLES = {
             ]
         },
     ],
+    (
+        "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/target"
+        "s/{target_id}/verifications"
+    ): [
+        200,
+        {
+            ("blocking_reasons"): [
+                ("PUBLIC_EGRESS_UNPROVEN"),
+                ("OPERATIONAL_DNS_UNAVAILABLE"),
+                ("WEB_EXECUTOR_DISABLED"),
+            ],
+            ("execution_enabled"): False,
+            ("items"): [
+                {
+                    ("application_id"): ("00000000-0000-4000-8000-000000000003"),
+                    ("attempts"): 0,
+                    ("blocking_reasons"): [
+                        ("PUBLIC_EGRESS_UNPROVEN"),
+                        ("OPERATIONAL_DNS_UNAVAILABLE"),
+                        ("WEB_EXECUTOR_DISABLED"),
+                    ],
+                    ("consumed_at"): None,
+                    ("control_verified"): False,
+                    ("created_at"): ("2026-11-15T12:00:00Z"),
+                    ("effective_state"): ("pending"),
+                    ("evidence"): [],
+                    ("execution_enabled"): False,
+                    ("expires_at"): ("2026-11-15T12:10:00Z"),
+                    ("id"): ("00000000-0000-4000-8000-000000000005"),
+                    ("method"): ("https_file"),
+                    ("origin"): ("https://app.example.com"),
+                    ("remote_verification_available"): False,
+                    ("result_code"): ("NOT_CHECKED"),
+                    ("revoked_at"): None,
+                    ("scope_invalidated"): False,
+                    ("state"): ("pending"),
+                    ("target_id"): ("00000000-0000-4000-8000-000000000004"),
+                    ("verified_at"): None,
+                    ("version"): 1,
+                    ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+                }
+            ],
+            ("remote_verification_available"): False,
+        },
+    ],
+    (
+        "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/target"
+        "s/{target_id}/verifications/{challenge_id}"
+    ): [
+        200,
+        {
+            ("application_id"): ("00000000-0000-4000-8000-000000000003"),
+            ("attempts"): 0,
+            ("blocking_reasons"): [
+                ("PUBLIC_EGRESS_UNPROVEN"),
+                ("OPERATIONAL_DNS_UNAVAILABLE"),
+                ("WEB_EXECUTOR_DISABLED"),
+            ],
+            ("consumed_at"): None,
+            ("control_verified"): False,
+            ("created_at"): ("2026-11-15T12:00:00Z"),
+            ("effective_state"): ("pending"),
+            ("evidence"): [],
+            ("execution_enabled"): False,
+            ("expires_at"): ("2026-11-15T12:10:00Z"),
+            ("id"): ("00000000-0000-4000-8000-000000000005"),
+            ("method"): ("https_file"),
+            ("origin"): ("https://app.example.com"),
+            ("remote_verification_available"): False,
+            ("result_code"): ("NOT_CHECKED"),
+            ("revoked_at"): None,
+            ("scope_invalidated"): False,
+            ("state"): ("pending"),
+            ("target_id"): ("00000000-0000-4000-8000-000000000004"),
+            ("verified_at"): None,
+            ("version"): 1,
+            ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
     "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies": [
         200,
         {
@@ -2887,6 +2966,78 @@ RESPONSE_EXAMPLES = {
             "url": ("https://app.example.com/"),
         },
     ],
+    (
+        "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targe"
+        "ts/{target_id}/verifications"
+    ): [
+        200,
+        {
+            ("challenge"): {
+                ("application_id"): ("00000000-0000-4000-8000-000000000003"),
+                ("attempts"): 0,
+                ("blocking_reasons"): [
+                    ("PUBLIC_EGRESS_UNPROVEN"),
+                    ("OPERATIONAL_DNS_UNAVAILABLE"),
+                    ("WEB_EXECUTOR_DISABLED"),
+                ],
+                ("consumed_at"): None,
+                ("control_verified"): False,
+                ("created_at"): ("2026-11-15T12:00:00Z"),
+                ("effective_state"): ("pending"),
+                ("evidence"): [],
+                ("execution_enabled"): False,
+                ("expires_at"): ("2026-11-15T12:10:00Z"),
+                ("id"): ("00000000-0000-4000-8000-000000000005"),
+                ("method"): ("https_file"),
+                ("origin"): ("https://app.example.com"),
+                ("remote_verification_available"): False,
+                ("result_code"): ("NOT_CHECKED"),
+                ("revoked_at"): None,
+                ("scope_invalidated"): False,
+                ("state"): ("pending"),
+                ("target_id"): ("00000000-0000-4000-8000-000000000004"),
+                ("verified_at"): None,
+                ("version"): 1,
+                ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+            },
+            ("created"): False,
+            ("instructions"): None,
+        },
+    ],
+    (
+        "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targe"
+        "ts/{target_id}/verifications/{challenge_id}/revoke"
+    ): [
+        200,
+        {
+            ("application_id"): ("00000000-0000-4000-8000-000000000003"),
+            ("attempts"): 0,
+            ("blocking_reasons"): [
+                ("PUBLIC_EGRESS_UNPROVEN"),
+                ("OPERATIONAL_DNS_UNAVAILABLE"),
+                ("WEB_EXECUTOR_DISABLED"),
+            ],
+            ("consumed_at"): None,
+            ("control_verified"): False,
+            ("created_at"): ("2026-11-15T12:00:00Z"),
+            ("effective_state"): ("revoked"),
+            ("evidence"): [],
+            ("execution_enabled"): False,
+            ("expires_at"): ("2026-11-15T12:10:00Z"),
+            ("id"): ("00000000-0000-4000-8000-000000000005"),
+            ("method"): ("https_file"),
+            ("origin"): ("https://app.example.com"),
+            ("remote_verification_available"): False,
+            ("result_code"): ("REVOKED"),
+            ("revoked_at"): ("2026-11-15T12:01:00Z"),
+            ("scope_invalidated"): False,
+            ("state"): ("revoked"),
+            ("target_id"): ("00000000-0000-4000-8000-000000000004"),
+            ("verified_at"): None,
+            ("version"): 2,
+            ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
     "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies": [
         201,
         {
@@ -2928,6 +3079,56 @@ RESPONSE_EXAMPLES = {
             ("title"): ("Cisco Small Business RV340 Firmware 1.0.0.33"),
         },
     ],
+}
+
+ADDITIONAL_RESPONSE_EXAMPLES = {
+    (
+        "POST /api/v2/workspaces/{workspace_id}/appl"
+        "ications/{application_id}/targets/{target_i"
+        "d}/verifications"
+    ): {
+        201: {
+            ("challenge"): {
+                ("application_id"): ("00000000-0000-4000-8000-000000000003"),
+                ("attempts"): 0,
+                ("blocking_reasons"): [
+                    ("PUBLIC_EGRESS_UNPROVEN"),
+                    ("OPERATIONAL_DNS_UNAVAILABLE"),
+                    ("WEB_EXECUTOR_DISABLED"),
+                ],
+                ("consumed_at"): None,
+                ("control_verified"): False,
+                ("created_at"): ("2026-11-15T12:00:00Z"),
+                ("effective_state"): ("pending"),
+                ("evidence"): [],
+                ("execution_enabled"): False,
+                ("expires_at"): ("2026-11-15T12:10:00Z"),
+                ("id"): ("00000000-0000-4000-8000-000000000005"),
+                ("method"): ("https_file"),
+                ("origin"): ("https://app.example.com"),
+                ("remote_verification_available"): False,
+                ("result_code"): ("NOT_CHECKED"),
+                ("revoked_at"): None,
+                ("scope_invalidated"): False,
+                ("state"): ("pending"),
+                ("target_id"): ("00000000-0000-4000-8000-000000000004"),
+                ("verified_at"): None,
+                ("version"): 1,
+                ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+            },
+            ("created"): True,
+            ("instructions"): {
+                ("body"): "",
+                ("url"): (
+                    "https://app.example."
+                    "com/.well-known/vuln"
+                    "track-verification/0"
+                    "0000000-0000-4000-80"
+                    "00-000000000005"
+                ),
+            },
+        }
+    }
 }
 
 REQUEST_EXAMPLES = {
@@ -3067,6 +3268,33 @@ REQUEST_EXAMPLES = {
                 ("label"): ("Demostración (solo inventario)"),
                 ("url"): ("https://app.example.com/"),
             },
+        }
+    },
+    (
+        "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targe"
+        "ts/{target_id}/verifications"
+    ): {
+        ("local"): {
+            ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            ("value"): {("expected_updated_at"): ("2026-11-13T12:00:00Z")},
+        }
+    },
+    (
+        "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targe"
+        "ts/{target_id}/verifications/{challenge_id}/revoke"
+    ): {
+        ("local"): {
+            ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            ("value"): {("expected_version"): 1},
+        }
+    },
+    (
+        "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targe"
+        "ts/{target_id}/verifications/{challenge_id}/verify"
+    ): {
+        ("local"): {
+            ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            ("value"): {("expected_version"): 1},
         }
     },
     "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies": {

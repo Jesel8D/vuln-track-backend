@@ -1,5 +1,13 @@
 # VulnTrack Backend
 
+Fase 2B: [persistencia, RLS y límites](docs/V2_SECURITY_ANALYSIS_PHASE2B.md),
+[contrato HTTP](docs/V2_VERIFICATION_API.md) y
+[actualización/reversión](docs/V2_PHASE2B_LOCAL_UPGRADE.md).
+SQL008 coordina Database/ORM/Alembic sin cambiar el head legado. La API puede
+emitir/consultar/revocar; la verificación remota responde 503 y ZAP sigue bloqueado.
+Usar Frontend `feat/v2-security-analysis-web-phase2b` y Database
+`feat/v2-security-verification-database`. No hay despliegue personal automático.
+
 Fase 2A: [componentes, pruebas y límites](docs/V2_SECURITY_ANALYSIS_PHASE2A.md),
 [actualización y rollback](docs/V2_PHASE1_LOCAL_UPGRADE.md),
 [checklist independiente previo a ZAP](docs/V2_ZAP_READINESS_CHECKLIST.md) y

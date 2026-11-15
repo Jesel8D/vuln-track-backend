@@ -9,16 +9,15 @@ roles, origins or versions must never be used to construct a trusted Scope.
 import asyncio
 import hashlib
 import hmac
-import secrets
 import threading
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from app.services.web_target_evidence import ControlEvidence
 from app.services.web_target_policy import DestinationDenied, DestinationPolicy
-
-PURPOSE = "vulntrack-domain-control-https-v1"
+from app.services.web_target_tokens import PURPOSE as PURPOSE
+from app.services.web_target_tokens import challenge_material
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,13 +115,9 @@ class LaboratoryChallengeStore:
                 for record in self._records.values()
             ):
                 raise DestinationDenied("CHALLENGE_ALREADY_ACTIVE")
-            identity = uuid4()
-            nonce = secrets.token_urlsafe(32)
-            body = f"{PURPOSE}:{identity}:{nonce}".encode("ascii")
+            identity, body, digest = challenge_material()
             expiry = min(now + timedelta(minutes=10), scope.declaration_expires_at)
-            record = Challenge(
-                identity, scope, destination.origin, hashlib.sha256(body).hexdigest(), now, expiry
-            )
+            record = Challenge(identity, scope, destination.origin, digest, now, expiry)
             self._commit(record, "control.challenge.issued")
             return ChallengeInstructions(identity, record.url, expiry, body)
 

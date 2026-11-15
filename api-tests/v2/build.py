@@ -213,11 +213,118 @@ add(
             "pm.test('Ejecucion web bloqueada', () => ",
             "pm.expect(data.analysis_readiness.execution_enabled).to.eql(false));",
             "pm.test('Guardia del executor', () => ",
-            "pm.expect(data.analysis_readiness.blocking_reasons).to.include('WEB_EXECUTOR_DISABLED'));",
+            (
+                "pm.expect(data.analysis_readiness.blocking_reasons).to.include("
+                "'WEB_EXECUTOR_DISABLED'));"
+            ),
         )
     ),
 )
 add("05 · Destinos autorizados", "Listar destinos de aplicación", "GET", APP + "/targets")
+VERIFICATIONS = APP + "/targets/{{target_id}}/verifications"
+VFOLDER = "05b · Verificación persistente"
+add(
+    VFOLDER,
+    "Declarar destino para desafio",
+    "PATCH",
+    APP + "/targets/{{target_id}}/authorization",
+    body={
+        "authorization_status": "approved",
+        "authorization_expires_at": "{{verification_expiry}}",
+        "authorization_reference": "DEMO declaration only; never evidence of domain control",
+        "expected_updated_at": "{{target_updated_at}}",
+    },
+    pre=f"{SET}('verification_expiry',new Date(Date.now()+3600000).toISOString());",
+    capture=f"{SET}('target_updated_at',data.updated_at);",
+)
+add(
+    VFOLDER,
+    "Emitir desafio persistente",
+    "POST",
+    VERIFICATIONS,
+    status=201,
+    body={"expected_updated_at": "{{target_updated_at}}"},
+    headers={"Idempotency-Key": "{{verification_key}}"},
+    pre=f"{SET}('verification_key',{UUID});",
+    capture="".join(
+        (
+            f"{SET}",
+            "('challenge_id',data.challenge.id);pm.test('Pend",
+            "iente, nunca verificado',()=>{pm.expect(data.cha",
+            "llenge.state).to.eql('pending');pm.expect(data.c",
+            "hallenge.control_verified).to.eql(false);pm.expe",
+            "ct(data.challenge.execution_enabled).to.eql(fals",
+            "e);});pm.test('Instrucciones de un solo proposit",
+            "o',()=>pm.expect(data.instructions.body).to.matc",
+            "h(/^vulntrack-domain-control-https-v1:[0-9a-f-]+",
+            ":[A-Za-z0-9_-]{43}$/));pm.test('Respuesta privad",
+            "a',()=>pm.expect(pm.response.headers.get('Cache-",
+            "Control')).to.eql('no-store'));",
+        )
+    ),
+)
+add(
+    VFOLDER,
+    "Repetir emision idempotente",
+    "POST",
+    VERIFICATIONS,
+    body={"expected_updated_at": "{{target_updated_at}}"},
+    headers={"Idempotency-Key": "{{verification_key}}"},
+    capture=(
+        "pm.test('No reproduce token',()=>{pm.expect(data.created).to.eq"
+        "l(false);pm.expect(data.instructions).to.eql(null);});"
+    ),
+)
+add(
+    VFOLDER,
+    "Listar verificaciones",
+    "GET",
+    VERIFICATIONS,
+    capture=(
+        "pm.test('Servicio remoto bloqueado',()=>pm.expect(data.remote_v"
+        "erification_available).to.eql(false));"
+    ),
+)
+add(
+    VFOLDER,
+    "Consultar desafio",
+    "GET",
+    VERIFICATIONS + "/{{challenge_id}}",
+    capture=(
+        "pm.test('Sin intentos ni control',()=>{pm.expect(data.attempts)"
+        ".to.eql(0);pm.expect(data.control_verified).to.eql(false);});"
+    ),
+)
+add(
+    VFOLDER,
+    "Comprobacion remota bloqueada",
+    "POST",
+    VERIFICATIONS + "/{{challenge_id}}/verify",
+    body={"expected_version": 1},
+    status=503,
+    error="VERIFICATION_EGRESS_UNAVAILABLE",
+)
+add(
+    VFOLDER,
+    "Revocar desafio",
+    "POST",
+    VERIFICATIONS + "/{{challenge_id}}/revoke",
+    body={"expected_version": 1},
+    capture="pm.test('Revocacion durable',()=>pm.expect(data.state).to.eql('revoked'));",
+)
+add(
+    VFOLDER,
+    "Retirar declaracion de desafio",
+    "PATCH",
+    APP + "/targets/{{target_id}}/authorization",
+    body={
+        "authorization_status": "rejected",
+        "authorization_expires_at": None,
+        "authorization_reference": "DEMO challenge revoked; no scan permission",
+        "expected_updated_at": "{{target_updated_at}}",
+    },
+    capture=f"{SET}('target_updated_at',data.updated_at);",
+)
 # Rejection is deliberate: no forged approval/ownership statement.
 add(
     "05 · Destinos autorizados",
@@ -775,6 +882,29 @@ add(
 REQUESTS[-1]["base"] = "{{disabled_base_url}}"
 
 
+add(
+    "10 · Seguridad negativa",
+    "Desafio ajeno visto por B",
+    "GET",
+    VERIFICATIONS + "/{{challenge_id}}",
+    auth="b",
+    status=404,
+    error="RESOURCE_NOT_FOUND",
+)
+
+
+add(
+    "10 · Seguridad negativa",
+    "Prueba tecnica enviada por cliente",
+    "POST",
+    VERIFICATIONS,
+    body={"expected_updated_at": "{{target_updated_at}}", "control_verified": True},
+    headers={"Idempotency-Key": "{{verification_key}}"},
+    status=422,
+    error="VALIDATION_ERROR",
+)
+
+
 def dump(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
@@ -822,7 +952,11 @@ def main():
         op = operations.get((req["method"], canonical))
         if (
             op
-            and (req["status"] < 300 or req["name"] == ("Crear workspace adicional idempotente"))
+            and (
+                req["status"] < 300
+                or req["name"]
+                in {"Crear workspace adicional idempotente", "Comprobacion remota bloqueada"}
+            )
             and req["body"] is not None
             and "requestBody" in op
         ):
@@ -833,7 +967,7 @@ def main():
                     return ""
                 if not isinstance(value, str) or "{{" not in value:
                     return value
-                if key in {"expected_updated_at"}:
+                if key in {"expected_updated_at", "authorization_expires_at"}:
                     return "2026-11-13T12:00:00Z"
                 if key in {"username"}:
                     return "api_example"
@@ -983,6 +1117,8 @@ def main():
         "asset_finding_id": "",
         "identification_id": "",
         "target_id": "",
+        "challenge_id": "",
+        "verification_key": "",
         "recommendation_id": "",
         "user_id": "",
     }
@@ -1082,6 +1218,7 @@ def main():
         if "examples" in content:
             body_examples[f"{method} {path}"] = content["examples"]
     response_examples = {}
+    additional_response_examples = {}
     for req in REQUESTS:
         if req["name"] in synthetic and (
             req["status"] < 300 or req["name"] == ("Crear workspace adicional idempotente")
@@ -1102,7 +1239,14 @@ def main():
                 req["path"].split("?")[0],
             )
             if (req["method"], canonical) in operations:
-                response_examples[f"{req['method']} {canonical}"] = [
+                operation_key = f"{req['method']} {canonical}"
+                previous = response_examples.get(operation_key)
+                if previous and previous[0] != req["status"]:
+                    additional_response_examples.setdefault(operation_key, {})[previous[0]] = (
+                        previous[1]
+                    )
+                    additional_response_examples[operation_key].pop(req["status"], None)
+                response_examples[operation_key] = [
                     req["status"],
                     synthetic[req["name"]]["body"],
                 ]
@@ -1112,6 +1256,8 @@ def main():
             'Never credentials."""\n\nRESPONSE_EXAMPLES = '
         )
         + pprint.pformat(response_examples, sort_dicts=True, width=100)
+        + "\n\nADDITIONAL_RESPONSE_EXAMPLES = "
+        + pprint.pformat(additional_response_examples, sort_dicts=True, width=100)
         + "\n\nREQUEST_EXAMPLES = "
         + pprint.pformat(body_examples, sort_dicts=True, width=100)
         + "\n"
