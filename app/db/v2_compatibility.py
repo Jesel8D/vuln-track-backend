@@ -22,7 +22,24 @@ FIELDS = {
 def without_verified_v2(connection, actual):
     if not any(row["name"] == "workspaces" for row in actual["tables"]):
         return actual
-    reference = json.loads(files("app.db").joinpath("v2_additions_catalog.json").read_text())
+    candidates = [
+        json.loads(files("app.db").joinpath(name).read_text())
+        for name in ("v2_additions_catalog.json", "v2_stabilized_catalog.json")
+    ]
+    # Accept only either exact published V2 revision, never arbitrary constraint drift.
+    reference = next(
+        (
+            candidate
+            for candidate in candidates
+            if [
+                row
+                for row in actual["constraints"]
+                if row["table_name"] in {t["name"] for t in candidate["tables"]}
+            ]
+            == candidate["constraints"]
+        ),
+        candidates[0],
+    )
     tables = {row["name"] for row in reference["tables"]}
     functions = {row["name"] for row in reference["functions"]}
     core = {}

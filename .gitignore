@@ -27,3 +27,6 @@ Thumbs.db
 # API documentation/test dependencies and PRIVATE runtime artifacts
 api-tests/v2/node_modules/
 api-tests/v2/.artifacts/
+
+# Persistent V2 development: private config, logs, backups and process records
+.local/

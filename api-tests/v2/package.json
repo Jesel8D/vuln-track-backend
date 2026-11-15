@@ -5,5 +5,13 @@
   "description": "Newman local; sin instalación global",
   "devDependencies": {
     "newman": "6.2.3"
+  },
+  "overrides": {
+    "handlebars": "4.7.10",
+    "node-forge": "1.4.3",
+    "flatted": "3.4.4",
+    "qs": "6.17.1",
+    "underscore": "1.13.8",
+    "lodash": "4.18.1"
   }
 }

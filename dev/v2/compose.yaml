@@ -1,0 +1,39 @@
+name: ${VT_PROJECT:?Use scripts.v2_development}
+services:
+  postgres:
+    image: postgres:16.15-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+    container_name: ${VT_CONTAINER:?}
+    labels:
+      io.vulntrack.purpose: v2-development
+      io.vulntrack.installation: ${VT_INSTALLATION:?}
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: vulntrack_v2_development
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "127.0.0.1:${VT_PG_PORT:?}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    secrets:
+      - postgres_password
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U postgres -d vulntrack_v2_development']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    restart: "no"
+volumes:
+  pgdata:
+    name: ${VT_VOLUME:?}
+    external: true
+networks:
+  default:
+    labels:
+      io.vulntrack.purpose: v2-development
+      io.vulntrack.installation: ${VT_INSTALLATION:?}
+secrets:
+  postgres_password:
+    file: ${VT_PASSWORD_FILE:?}

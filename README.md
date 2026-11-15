@@ -68,3 +68,7 @@ La suite existente documenta verificaciones previas para V1/MVP-A/B. La integrac
 ## Colección y documentación reproducible de API V2
 
 En la rama `test/v2-api-collection`, consultar [api-tests/v2/README.md](api-tests/v2/README.md): OpenAPI versionado, Postman v2.1, entornos sin secretos, runner PostgreSQL desechable y matriz de endpoints. Se distinguen los contratos de activos V1 y aplicaciones V2, y se documentan los defectos existentes sin cambiar funcionalidades ni RLS.
+
+## Estabilización y desarrollo persistente V2
+
+En `feat/v2-stabilization`, usar la [guía de instalación persistente](docs/V2_PERSISTENT_DEVELOPMENT.md) y el [informe de pruebas/correcciones](docs/V2_STABILIZATION_REPORT.md). El volumen dedicado conserva datos entre reinicios; las suites temporales siguen aisladas. La rama Database coordinada incluye SQL007, sin integración con MVP-B.

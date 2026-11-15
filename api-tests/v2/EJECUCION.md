@@ -4,16 +4,16 @@
 
 1. Health/readiness.
 2. Registro A con username nuevo, login y captura de JWT; me comprueba user_id.
-3. Directorio de workspaces y captura del personal owner; detalle. El POST adicional reproduce el bloqueo RLS conocido y no sustituye workspace_id.
+3. Directorio de workspaces y captura del personal owner; detalle. El POST adicional crea otro workspace con owner y no sustituye workspace_id.
 4. Crear/listar aplicación; dashboard.
 5. Crear destino loopback, listar, rechazar su autorización y listar por workspace. No escanear ni inventar aprobación.
 6. Crear/listar tecnología, buscar candidatos y comprobar UUID + binding + deprecated del fixture previamente documentado. Confirmar ese CPE con expected_selected_cpe null.
 7. POST CVE V2 una vez con Idempotency-Key; capturar analysis_id. Consultar estado e historial con GET y comprobar una sola ejecución.
-8. Hallazgos: capturar finding_id/updated_at; revisar como potential en el fixture OR. Crear/listar recomendación, capturar recommendation_id/updated_at y cambiarla a in_progress. No se marca falsamente como corregida.
+8. Hallazgos: capturar finding_id/updated_at; revisar como undetermined en el fixture AND original. Crear/listar recomendación, capturar recommendation_id/updated_at y cambiarla a in_progress. No se marca falsamente como corregida.
 9. V1 separado: registrar activo, capturar asset_id, confirmar identificación, aceptar análisis 202 y capturar asset_analysis_id. Polling GET acotado, historial con total uno, hallazgos y revisión con su contrato V1 (reason/evidence).
 10. Preparar identidad B y ejecutar negativos. Nunca asumir permisos SQL ni manipular el contexto HMAC.
 
-Los positivos V2 usan fixture OR y descripción corta simulados. La revisión undetermined, el AND original y el título original tienen reproducciones separadas de fallo. Los GET de historial no relanzan consultas; Idempotency-Key se guarda por intención para poder reconciliar el mismo POST. Repetir manualmente el creador de clave inicia otra intención; para un retry conservar la clave ya capturada y no regenerarla.
+Los positivos V2 usan el fixture AND original y conservan su descripción larga en evidence. Las antiguas incidencias tienen regresiones positivas tras SQL007. Los GET de historial no relanzan consultas; Idempotency-Key se guarda por intención para poder reconciliar el mismo POST. Repetir manualmente el creador de clave inicia otra intención; para un retry conservar la clave ya capturada y no regenerarla.
 
 ## Variables
 
@@ -45,7 +45,7 @@ No crear variables de entorno con los nombres de IDs/tokens automáticos: el alc
 
 ## Negativos ejecutables
 
-La carpeta 10 tiene 22 solicitudes: tres preparan B y 19 son negativas. El error de workspace adicional se reproduce en carpeta 03.
+La carpeta 10 tiene 22 solicitudes: tres preparan B y 19 son negativas. La creación positiva del workspace adicional se ejecuta en carpeta 03.
 
 - Sin token, token inválido, token realmente expirado firmado y usuario inexistente: 401. El expirado requiere su variable o se omite explícitamente en Postman manual.
 - Duplicado: 409 REGISTRATION_UNAVAILABLE, sin exponer cuenta existente.
@@ -57,4 +57,4 @@ La carpeta 10 tiene 22 solicitudes: tres preparan B y 19 son negativas. El error
 - Cuerpo ZAP ajeno al contrato V1: 422, sin lanzar análisis.
 - Registro deshabilitado en la segunda API: 503 REGISTRATION_DISABLED y Retry-After. Si disabled_base_url está vacío se omite en Postman manual; el runner sí lo ejecuta.
 
-Ningún caso debe ejecutarse contra una base persistente. Los ejemplos preparados no constituyen autorización para probar servidores ajenos.
+Los negativos solo se ejecutan en temporal; el entorno persistent-development los omite automáticamente y conserva datos. Los ejemplos preparados no constituyen autorización para probar servidores ajenos.

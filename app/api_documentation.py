@@ -95,22 +95,18 @@ def configure_api_documentation(app: FastAPI, routers: tuple[APIRouter, ...]) ->
             )
         if route.endpoint.__name__ == "create_workspace":
             detail += (
-                " INCIDENCIA VERIFICADA: el POST adicional devuelve 404 "
-                "RESOURCE_NOT_FOUND (SQLSTATE 42501 al INSERT RETURNING bajo "
-                "RLS), aunque su status declarado es 201. El workspace personal "
-                "del registro funciona. No se modifica RLS aquí."
+                " Alta adicional e idempotente con owner inicial, sin modificar RLS. "
+                "La clave identifica la misma intención; cambiar el nombre produce 409."
             )
         if route.endpoint.__module__ == "app.api.v2_nvd" and route.endpoint.__name__ in {
             "analyze_technology",
             "review_finding",
         }:
             detail += (
-                " INCIDENCIAS VERIFICADAS: Pydantic/evaluador permiten "
-                "undetermined pero el CHECK SQL V2 lo rechaza; análisis AND puede"
-                " terminar 503 NVD_PROCESSING_FAILED y revisión undetermined en "
-                "409 INTEGRITY_CONFLICT. Un título truncado a 500 que termina en "
-                "espacio también provoca 503. Los ejemplos positivos usan OR y "
-                "título corto SIMULADOS; no certifican esos casos reales."
+                " Requiere SQL007 para undetermined, conservando valores históricos. "
+                "El título visible se limita a 500 sin espacios extremos; TITLE_TRUNCATED "
+                "avisa del resumen. Las descripciones originales permanecen en evidence "
+                "dentro del presupuesto de evidencia documentado."
             )
         if "cpe" in path:
             detail += (

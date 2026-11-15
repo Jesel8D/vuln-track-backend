@@ -66,7 +66,7 @@ def server(app, port):
                 raise RuntimeError("API did not stop")
 
 
-def fixture_app(settings, *, original_and=False, original_title=False):
+def fixture_app(settings, *, original_and=True, original_title=False):
     # Only upstream HTTP is replaced. No endpoint overrides, no RLS bypass.
     cpe = json.loads((ROOT / "tests/fixtures/nvd_cpe_verified.json").read_text())
     cve = json.loads((ROOT / "tests/fixtures/nvd_cve_verified.json").read_text())
@@ -163,6 +163,11 @@ def main():
         help="Keep fixture API for local Postman; Ctrl+C destroys its database",
     )
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument(
+        "--persistent-contract",
+        action="store_true",
+        help="Test persistent collection guard on an owned TEMPORARY database",
+    )
     args = parser.parse_args()
     artifacts = HERE / ".artifacts"
     artifacts.mkdir(mode=0o700, exist_ok=True)
@@ -216,8 +221,24 @@ def main():
                 "disposable_confirmed": "true",
                 "allow_live_nvd": "false",
                 "expired_token": expired_token(settings),
-                "installation": args.installation,
-                "output": str(artifacts / f"{args.installation}.json"),
+                "installation": args.installation
+                + ("-persistent-contract" if args.persistent_contract else ""),
+                "target_mode": "persistent-development"
+                if args.persistent_contract
+                else "temporary",
+                "persistent_development_confirmed": "true"
+                if args.persistent_contract
+                else ("false"),
+                "output": str(
+                    artifacts
+                    / "".join(
+                        (
+                            f"{args.installation}",
+                            f"{('-persistent-contract' if args.persistent_contract else '')}",
+                            ".json",
+                        )
+                    )
+                ),
             }
             result = subprocess.run(
                 ["node", str(HERE / "run-newman.cjs")], input=json.dumps(data), text=True, cwd=ROOT
