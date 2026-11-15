@@ -1663,14 +1663,28 @@ RESPONSE_EXAMPLES = {
         {
             "items": [
                 {
+                    ("analysis_readiness"): {
+                        ("authorization_state"): ("registered"),
+                        ("blocking_reasons"): [
+                            ("DECLARATION_REQUIRED"),
+                            ("CONTROL_VERIFICATION_REQUIRED"),
+                            ("PINNED_TRANSPORT_UNAVAILABLE"),
+                            ("NETWORK_ISOLATION_UNAVAILABLE"),
+                            ("WEB_EXECUTOR_DISABLED"),
+                        ],
+                        ("control_verified"): False,
+                        ("execution_enabled"): False,
+                        ("policy_version"): ("web-public-v1"),
+                        ("url_policy_allowed"): True,
+                    },
                     ("authorization_expires_at"): None,
                     ("authorization_reference"): None,
                     ("authorization_status"): ("pending"),
                     ("created_at"): ("2026-11-13T12:00:00.000001Z"),
                     ("id"): ("00000000-0000-4000-8000-000000000005"),
-                    ("label"): ("Laboratorio local (solo inventario)"),
+                    ("label"): ("Laboratorio (solo inventario)"),
                     ("updated_at"): ("2026-11-13T12:00:00.000001Z"),
-                    ("url"): ("http://127.0.0.1:8080"),
+                    ("url"): ("https://app.example.com/"),
                 }
             ]
         },
@@ -1730,6 +1744,20 @@ RESPONSE_EXAMPLES = {
         {
             "items": [
                 {
+                    "analysis_readiness": {
+                        ("authorization_state"): ("rejected"),
+                        ("blocking_reasons"): [
+                            ("DECLARATION_REJECTED_OR_WITHDRAWN"),
+                            ("CONTROL_VERIFICATION_REQUIRED"),
+                            ("PINNED_TRANSPORT_UNAVAILABLE"),
+                            ("NETWORK_ISOLATION_UNAVAILABLE"),
+                            ("WEB_EXECUTOR_DISABLED"),
+                        ],
+                        ("control_verified"): False,
+                        ("execution_enabled"): False,
+                        ("policy_version"): ("web-public-v1"),
+                        ("url_policy_allowed"): True,
+                    },
                     "application_id": ("00000000-0000-4000-8000-000000000004"),
                     "application_name": ("Laboratorio API V2"),
                     "application_status": ("active"),
@@ -1738,9 +1766,9 @@ RESPONSE_EXAMPLES = {
                     "authorization_status": ("rejected"),
                     "created_at": ("2026-11-13T12:00:00.000001Z"),
                     "id": ("00000000-0000-4000-8000-000000000005"),
-                    "label": ("Laboratorio local (solo inventario)"),
+                    "label": ("Laboratorio (solo inventario)"),
                     "updated_at": ("2026-11-13T12:00:00.000001Z"),
-                    "url": ("http://127.0.0.1:8080"),
+                    "url": ("https://app.example.com/"),
                 }
             ],
             "page": {"limit": 100, "offset": 0, "total": 1},
@@ -2723,14 +2751,28 @@ RESPONSE_EXAMPLES = {
     ): [
         200,
         {
+            ("analysis_readiness"): {
+                ("authorization_state"): ("rejected"),
+                ("blocking_reasons"): [
+                    ("DECLARATION_REJECTED_OR_WITHDRAWN"),
+                    ("CONTROL_VERIFICATION_REQUIRED"),
+                    ("PINNED_TRANSPORT_UNAVAILABLE"),
+                    ("NETWORK_ISOLATION_UNAVAILABLE"),
+                    ("WEB_EXECUTOR_DISABLED"),
+                ],
+                ("control_verified"): False,
+                ("execution_enabled"): False,
+                ("policy_version"): ("web-public-v1"),
+                ("url_policy_allowed"): True,
+            },
             ("authorization_expires_at"): None,
             ("authorization_reference"): ("Fixture: no autoriza escaneos"),
             ("authorization_status"): ("rejected"),
             ("created_at"): ("2026-11-13T12:00:00.000001Z"),
             ("id"): ("00000000-0000-4000-8000-000000000005"),
-            ("label"): ("Laboratorio local (solo inventario)"),
+            ("label"): ("Laboratorio (solo inventario)"),
             ("updated_at"): ("2026-11-13T12:00:00.000001Z"),
-            ("url"): ("http://127.0.0.1:8080"),
+            ("url"): ("https://app.example.com/"),
         },
     ],
     "POST /api/v1/assets": [
@@ -2821,14 +2863,28 @@ RESPONSE_EXAMPLES = {
     "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets": [
         201,
         {
+            ("analysis_readiness"): {
+                ("authorization_state"): ("registered"),
+                ("blocking_reasons"): [
+                    ("DECLARATION_REQUIRED"),
+                    ("CONTROL_VERIFICATION_REQUIRED"),
+                    ("PINNED_TRANSPORT_UNAVAILABLE"),
+                    ("NETWORK_ISOLATION_UNAVAILABLE"),
+                    ("WEB_EXECUTOR_DISABLED"),
+                ],
+                ("control_verified"): False,
+                ("execution_enabled"): False,
+                ("policy_version"): ("web-public-v1"),
+                ("url_policy_allowed"): True,
+            },
             ("authorization_expires_at"): None,
             ("authorization_reference"): None,
             ("authorization_status"): ("pending"),
             ("created_at"): ("2026-11-13T12:00:00.000001Z"),
             "id": ("00000000-0000-4000-8000-000000000005"),
-            "label": ("Laboratorio local (solo inventario)"),
+            "label": ("Laboratorio (solo inventario)"),
             ("updated_at"): ("2026-11-13T12:00:00.000001Z"),
-            "url": ("http://127.0.0.1:8080"),
+            "url": ("https://app.example.com/"),
         },
     ],
     "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies": [
@@ -3008,8 +3064,8 @@ REQUEST_EXAMPLES = {
         "local": {
             ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
             ("value"): {
-                ("label"): ("Laboratorio local (solo inventario)"),
-                ("url"): ("http://127.0.0.1:8080"),
+                ("label"): ("Demostración (solo inventario)"),
+                ("url"): ("https://app.example.com/"),
             },
         }
     },
