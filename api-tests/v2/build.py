@@ -193,10 +193,10 @@ add(
 add("04 · Aplicaciones", "Dashboard", "GET", BASE + "/dashboard")
 add(
     "05 · Destinos autorizados",
-    "Registrar destino local sin escanear",
+    "Registrar destino público sin escanear",
     "POST",
     APP + "/targets",
-    body={"url": "http://127.0.0.1:8080", "label": "Laboratorio local (solo inventario)"},
+    body={"url": "https://app.example.com/", "label": "Demostración (solo inventario)"},
     status=201,
     capture="".join(
         (
@@ -208,6 +208,12 @@ add(
             "('target_original_updated_at',data.updated_at); ",
             "pm.test('Pendiente de autorización', () => ",
             "pm.expect(data.authorization_status).to.eql('pending'));",
+            "pm.test('Control no verificado', () => ",
+            "pm.expect(data.analysis_readiness.control_verified).to.eql(false));",
+            "pm.test('Ejecucion web bloqueada', () => ",
+            "pm.expect(data.analysis_readiness.execution_enabled).to.eql(false));",
+            "pm.test('Guardia del executor', () => ",
+            "pm.expect(data.analysis_readiness.blocking_reasons).to.include('WEB_EXECUTOR_DISABLED'));",
         )
     ),
 )

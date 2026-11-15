@@ -2,7 +2,6 @@
 
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Literal
-from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Query, Request
@@ -12,6 +11,8 @@ from sqlalchemy import text
 from app.api.router import Identity
 from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
+from app.services.web_target_authorization import public_target
+from app.services.web_target_policy import INVENTORY_POLICY, DestinationDenied
 
 router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/applications/{application_id}/targets")
 workspace_router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/targets")
@@ -40,23 +41,12 @@ class TargetCreate(BaseModel):
     @field_validator("url")
     @classmethod
     def valid_target_url(cls, value):
-        parsed = urlsplit(value)
-        if (
-            parsed.scheme not in {"http", "https"}
-            or not parsed.hostname
-            or parsed.username
-            or parsed.password
-            or parsed.fragment
-            or any(char.isspace() or ord(char) < 32 for char in value)
-        ):
-            raise ValueError("URL HTTP(S) válida, sin credenciales ni fragmento")
         try:
-            port = parsed.port
-        except ValueError as exc:
-            raise ValueError("Puerto inválido") from exc
-        if port is not None and not 1 <= port <= 65535:
-            raise ValueError("Puerto fuera de rango")
-        return value
+            return INVENTORY_POLICY.parse(value).url
+        except DestinationDenied:
+            raise ValueError(
+                "Destino HTTP(S) público válido, sin credenciales y en puerto estándar"
+            ) from None
 
     @field_validator("label", mode="before")
     @classmethod
@@ -148,7 +138,7 @@ def list_workspace_targets(
             {"workspace": workspace_id},
         )
         return {
-            "items": [dict(row) for row in rows],
+            "items": [public_target(row, workspace_id, row["application_id"]) for row in rows],
             "page": {"limit": limit, "offset": offset, "total": total},
         }
 
@@ -175,7 +165,7 @@ def list_targets(workspace_id: UUID, application_id: UUID, user: Identity, reque
             .mappings()
             .all()
         )
-        return {"items": [dict(row) for row in rows]}
+        return {"items": [public_target(row, workspace_id, application_id) for row in rows]}
 
 
 @router.post("", status_code=201)
@@ -228,7 +218,7 @@ def create_target(
                 VALUES (:workspace,:actor,'target.created','application_target',:object)"""),
             {"workspace": workspace_id, "actor": user.id, "object": target_id},
         )
-        return dict(row)
+        return public_target(row, workspace_id, application_id)
 
 
 @router.patch("/{target_id}/authorization")
@@ -262,7 +252,7 @@ def update_target_authorization(
         _authorize(session, workspace_id, application_id, write=True)
         current = (
             session.execute(
-                text("""SELECT updated_at FROM vulntrack.application_targets
+                text("""SELECT updated_at,authorization_status FROM vulntrack.application_targets
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id
                 FOR UPDATE"""),
                 {"workspace": workspace_id, "application": application_id, "id": target_id},
@@ -307,8 +297,13 @@ def update_target_authorization(
             {
                 "workspace": workspace_id,
                 "actor": user.id,
-                "action": f"target.authorization.{payload.authorization_status}",
+                "action": (
+                    "target.authorization.withdrawn"
+                    if current["authorization_status"] == "approved"
+                    and payload.authorization_status == "rejected"
+                    else f"target.authorization.{payload.authorization_status}"
+                ),
                 "object": target_id,
             },
         )
-        return dict(row)
+        return public_target(row, workspace_id, application_id)
