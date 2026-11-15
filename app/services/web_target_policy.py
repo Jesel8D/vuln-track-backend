@@ -1,8 +1,8 @@
 """Local URL policy and connection *plans*. This module never opens a connection.
 
-A plan is not an execution permission or a transport. A future adapter must pin
-the selected IP, preserve Host/SNI/TLS verification and enforce independent egress.
-Until that adapter is implemented and tested, web execution stays unavailable.
+A plan is not execution permission. Phase 2A's web_target_transport component is
+tested in an isolated laboratory, but controlled production DNS, durable evidence
+and independent deployed egress remain unavailable. Web execution stays blocked.
 """
 
 import ipaddress

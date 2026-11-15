@@ -1,16 +1,17 @@
 """Separate a stored declaration from control verification and execution.
 
-No verification producer/store or web executor exists in Phase 1. API callers
-cannot submit ControlEvidence; existing approvals are always unverified.
+No production verification producer/store or web executor is connected. Phase
+2A's in-memory laboratory verifier cannot feed API responses. API callers cannot
+submit ControlEvidence; existing approvals are always unverified.
 """
 
 import re
-from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
 from app.core.errors import APIError
+from app.services.web_target_evidence import ControlEvidence as ControlEvidence
 from app.services.web_target_policy import INVENTORY_POLICY, POLICY_VERSION, DestinationDenied
 
 AuthorizationState = Literal[
@@ -23,26 +24,6 @@ AuthorizationState = Literal[
     "expired",
     "incomplete",
 ]
-
-
-@dataclass(frozen=True, slots=True)
-class ControlEvidence:
-    """Future trusted verifier output, NOT a request schema or a permission token.
-
-    Persistence, trusted provenance and DNS/HTTP verification remain pending.
-    IDs/origin/version/expiry binding is locally testable without network access.
-    """
-
-    workspace_id: UUID
-    application_id: UUID
-    target_id: UUID
-    origin: str
-    declaration_updated_at: datetime
-    method: Literal["dns_txt", "http_file", "administrative"]
-    evidence_sha256: str
-    verified_at: datetime
-    expires_at: datetime
-    revoked_at: datetime | None = None
 
 
 def _aware(value):
@@ -62,7 +43,7 @@ def assess_target(
     """Describe an already RLS-authorized row; never authorizes a connection.
 
     The resource IDs must come from a checked workspace transaction, not a
-    request body. Runtime serializers always leave evidence=None in Phase 1.
+    request body. Runtime serializers always leave evidence=None in Phase 2A.
     """
     now = now or datetime.now(UTC)
     if not _aware(now):
