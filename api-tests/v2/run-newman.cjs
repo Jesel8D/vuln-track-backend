@@ -18,6 +18,7 @@ process.stdin.on('end', () => {
     if (Array.isArray(value)) return value.map(item => sanitize(item, key));
     if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k,v]) => [k,sanitize(v,k)]));
     if (typeof value !== 'string') return value;
+    if (value.startsWith('vulntrack-domain-control-https-v1:')) return '';
     if (key !== 'token_type' && /token|password|secret|signature|hmac/i.test(key)) return '';
     if (key === 'username') return 'api_example';
     if (key === 'request_id') return 'example-request-id';
@@ -42,7 +43,11 @@ process.stdin.on('end', () => {
   });
   run.on('request', (err,args) => {
     if(err || !args.response) return;
-    try { samples[args.item.name] = {method:args.request.method,status:args.response.code,body:sanitize(args.response.json())}; }
+    try {
+      const raw=args.response.json();
+      if(raw?.instructions?.body) secrets.push(raw.instructions.body);
+      samples[args.item.name] = {method:args.request.method,status:args.response.code,body:sanitize(raw)};
+    }
     catch { samples[args.item.name] = {method:args.request.method,status:args.response.code,body:'non-JSON'}; }
   });
 });

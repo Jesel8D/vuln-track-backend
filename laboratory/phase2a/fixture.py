@@ -1,6 +1,7 @@
 """Synthetic TLS/canary servers in a Docker --network none namespace only."""
 
 import asyncio
+import os
 import ssl
 from pathlib import Path
 
@@ -85,6 +86,10 @@ async def main():
         DNSCanary, local_addr=("127.0.0.11", 53)
     )
     servers.append(udp)
+    if os.environ.get("VULNTRACK_LAB_DNS") == "1":
+        from laboratory.phase2b.dns_fixture import start
+
+        servers.extend(await start(canary))
     Path("/tmp/ready").write_text("ready")
     await asyncio.Event().wait()
 

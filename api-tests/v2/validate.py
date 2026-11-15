@@ -68,7 +68,22 @@ def main():
     app = create_app(settings)
     assert app.openapi() == spec, "Snapshot differs from live generator"
     baseline = load("baseline-contract.json")
-    assert contract(spec) == baseline, "Runtime request/success/security contract changed"
+    actual_contract = contract(spec)
+    for category in ("operations", "schemas", "securitySchemes"):
+        assert all(
+            actual_contract[category].get(key) == value for key, value in baseline[category].items()
+        ), "Existing contract changed: " + category
+    added = load("verification-contract.json")
+    assert {
+        key: value
+        for key, value in actual_contract["operations"].items()
+        if key not in baseline["operations"]
+    } == added["operations"]
+    assert {
+        key: value
+        for key, value in actual_contract["schemas"].items()
+        if key not in baseline["schemas"]
+    } == added["schemas"]
     collection = load("VulnTrack-V2.postman_collection.json")
     Draft4Validator(load("vendor/postman-collection-v2.1.schema.json")).validate(collection)
     builder_spec = importlib.util.spec_from_file_location(
@@ -91,8 +106,13 @@ def main():
     from app.api.v2_nvd import router as nvd
     from app.api.v2_resources import router as resources
     from app.api.v2_targets import router as targets
+    from app.api.v2_verifications import router as verifications
 
-    routes = [r for router in (v1, analyses, cpe, nvd, resources, targets) for r in router.routes]
+    routes = [
+        r
+        for router in (v1, analyses, cpe, nvd, resources, targets, verifications)
+        for r in router.routes
+    ]
     for request in builder.REQUESTS:
         raw = request["path"].split("?")[0]
         canonical = re.sub(
@@ -164,7 +184,10 @@ def main():
             ).validate(sample["body"])
             checked_responses += 1
         elif request["name"] in samples:
-            if request["name"] == "Workspace adicional: bloqueo RLS conocido":
+            if request["name"] in {
+                "Workspace adicional: bloqueo RLS conocido",
+                "Comprobacion remota bloqueada",
+            }:
                 example = op["requestBody"]["content"]["application/json"]["examples"]["local"][
                     "value"
                 ]
@@ -179,7 +202,7 @@ def main():
             if request["error"]:
                 assert sample["body"]["error"]["code"] == request["error"]
     assert covered == set(ops), set(ops) - covered
-    assert len(ops) == 39 and len(builder.REQUESTS) == 61
+    assert len(ops) == 44 and len(builder.REQUESTS) == 71
     for env in [
         "local.postman_environment.json",
         "test.postman_environment.json",
@@ -202,7 +225,7 @@ def main():
             (
                 "VALIDATED: OpenAPI 3.1; Postman 2.1; ",
                 f"{len(ops)}",
-                " unchanged operations; ",
+                " operations (39 unchanged + 5 verification); ",
                 f"{len(builder.REQUESTS)}",
                 " requests; ",
                 f"{checked_bodies}",

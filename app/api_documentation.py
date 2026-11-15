@@ -6,6 +6,7 @@ from itertools import chain
 from fastapi import APIRouter, FastAPI
 from fastapi.routing import APIRoute
 
+from app import api_examples
 from app.api_examples import REQUEST_EXAMPLES, RESPONSE_EXAMPLES
 
 ERROR_SCHEMA = {
@@ -136,7 +137,17 @@ def configure_api_documentation(app: FastAPI, routers: tuple[APIRouter, ...]) ->
                 "otra consulta activa o cambios incompatibles pueden producir "
                 "409. GET de progreso/resultados no crea ejecuciones."
             )
-        if "targets" in path:
+        if "/verifications" in path:
+            tag = "V2 · Verificación de control"
+            detail += (
+                " SQL008 requerido. Emisión con Idempotency-Key UUID y versión del destino; "
+                "token de propósito único mostrado solo en la primera respuesta no-store. "
+                "Una repetición devuelve metadatos e instructions=null. Lecturas y revocación "
+                "persistentes bajo RLS. Las comprobaciones remotas devuelven 503 sin crear "
+                "intentos ni tráfico; egreso público y DNS operativos no demostrados. "
+                "Resultados de laboratorio nunca acreditan control real ni habilitan ZAP."
+            )
+        if "targets" in path and "/verifications" not in path:
             detail += (
                 " Inventario HTTP(S), sin escaneo. Autorizar requiere referencia "
                 "y expected_updated_at; aprobación vence en el próximo año, "
@@ -193,7 +204,12 @@ def configure_api_documentation(app: FastAPI, routers: tuple[APIRouter, ...]) ->
                 "confirm_cpe",
                 "analyze_technology",
             }
-            if calls_nvd or route.endpoint.__name__ in {"register_account", "login", "accept"}:
+            if calls_nvd or route.endpoint.__name__ in {
+                "register_account",
+                "login",
+                "accept",
+                "issue_verification",
+            }:
                 codes[429] = "Cuota agotada; respetar Retry-After"
             if calls_nvd:
                 codes.update({502: "Respuesta NVD inválida", 504: "Timeout NVD"})
@@ -224,13 +240,25 @@ def configure_api_documentation(app: FastAPI, routers: tuple[APIRouter, ...]) ->
                 }
         for method in route.methods:
             key = f"{method} {path}"
+            for status, example in (
+                getattr(api_examples, "ADDITIONAL_RESPONSE_EXAMPLES", {}).get(key, {}).items()
+            ):
+                responses[str(status)] = {
+                    "description": "Ejemplo sintético de prueba desechable",
+                    "content": {"application/json": {"example": example}},
+                }
             if key in RESPONSE_EXAMPLES:
                 status, example = RESPONSE_EXAMPLES[key]
                 responses[str(status)] = {
                     "description": "Ejemplo sintético de prueba desechable",
                     "content": {"application/json": {"example": example}},
                 }
-        route.responses.update({int(code): value for code, value in responses.items()})
+        if "/verifications" in path:
+            # Preserve the declared model on the idempotent 200 response too.
+            for code, value in responses.items():
+                route.responses[int(code)] = {**route.responses.get(int(code), {}), **value}
+        else:
+            route.responses.update({int(code): value for code, value in responses.items()})
         route.openapi_extra = {}
         for method in route.methods:
             examples = REQUEST_EXAMPLES.get(f"{method} {path}")
@@ -248,6 +276,12 @@ def configure_api_documentation(app: FastAPI, routers: tuple[APIRouter, ...]) ->
         for path, methods in schema["paths"].items():
             for method, operation in methods.items():
                 key = f"{method.upper()} {path}"
+                for status, example in (
+                    getattr(api_examples, "ADDITIONAL_RESPONSE_EXAMPLES", {}).get(key, {}).items()
+                ):
+                    operation["responses"][str(status)]["content"]["application/json"][
+                        "example"
+                    ] = deepcopy(example)
                 if key in REQUEST_EXAMPLES:
                     operation["requestBody"]["content"]["application/json"]["examples"] = deepcopy(
                         REQUEST_EXAMPLES[key]

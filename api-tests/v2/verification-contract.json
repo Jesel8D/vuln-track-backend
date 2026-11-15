@@ -1,0 +1,625 @@
+{
+  "operations": {
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets/{target_id}/verifications": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "target_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Target Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/ChallengeList"
+        }
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets/{target_id}/verifications": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "target_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Target Id"
+          }
+        },
+        {
+          "name": "Idempotency-Key",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Idempotency-Key"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/ChallengeIssue"
+      },
+      "required": true,
+      "success": {
+        "201": {
+          "$ref": "#/components/schemas/IssueResult"
+        },
+        "200": {
+          "$ref": "#/components/schemas/IssueResult"
+        }
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets/{target_id}/verifications/{challenge_id}": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "target_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Target Id"
+          }
+        },
+        {
+          "name": "challenge_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Challenge Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/ChallengeRead"
+        }
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets/{target_id}/verifications/{challenge_id}/revoke": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "target_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Target Id"
+          }
+        },
+        {
+          "name": "challenge_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Challenge Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/ChallengeVersion"
+      },
+      "required": true,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/ChallengeRead"
+        }
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets/{target_id}/verifications/{challenge_id}/verify": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "application_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          }
+        },
+        {
+          "name": "target_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Target Id"
+          }
+        },
+        {
+          "name": "challenge_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Challenge Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/ChallengeVersion"
+      },
+      "required": true,
+      "success": {}
+    }
+  },
+  "schemas": {
+    "ChallengeIssue": {
+      "properties": {
+        "expected_updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expected Updated At"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "expected_updated_at"
+      ],
+      "title": "ChallengeIssue"
+    },
+    "ChallengeList": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/ChallengeRead"
+          },
+          "type": "array",
+          "title": "Items"
+        },
+        "remote_verification_available": {
+          "type": "boolean",
+          "const": false,
+          "title": "Remote Verification Available"
+        },
+        "execution_enabled": {
+          "type": "boolean",
+          "const": false,
+          "title": "Execution Enabled"
+        },
+        "blocking_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Blocking Reasons"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "items",
+        "remote_verification_available",
+        "execution_enabled",
+        "blocking_reasons"
+      ],
+      "title": "ChallengeList"
+    },
+    "ChallengeRead": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Workspace Id"
+        },
+        "application_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Application Id"
+        },
+        "target_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Target Id"
+        },
+        "method": {
+          "type": "string",
+          "const": "https_file",
+          "title": "Method"
+        },
+        "origin": {
+          "type": "string",
+          "title": "Origin"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "verified",
+            "failed",
+            "expired",
+            "revoked"
+          ],
+          "title": "State"
+        },
+        "effective_state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "failed",
+            "expired",
+            "revoked",
+            "unavailable"
+          ],
+          "title": "Effective State"
+        },
+        "scope_invalidated": {
+          "type": "boolean",
+          "title": "Scope Invalidated"
+        },
+        "version": {
+          "type": "integer",
+          "title": "Version"
+        },
+        "attempts": {
+          "type": "integer",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Attempts"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Created At"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expires At"
+        },
+        "consumed_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Consumed At"
+        },
+        "verified_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Verified At"
+        },
+        "revoked_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Revoked At"
+        },
+        "result_code": {
+          "type": "string",
+          "title": "Result Code"
+        },
+        "control_verified": {
+          "type": "boolean",
+          "const": false,
+          "title": "Control Verified"
+        },
+        "remote_verification_available": {
+          "type": "boolean",
+          "const": false,
+          "title": "Remote Verification Available"
+        },
+        "execution_enabled": {
+          "type": "boolean",
+          "const": false,
+          "title": "Execution Enabled"
+        },
+        "blocking_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "title": "Blocking Reasons"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/components/schemas/Evidence"
+          },
+          "type": "array",
+          "title": "Evidence"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "id",
+        "workspace_id",
+        "application_id",
+        "target_id",
+        "method",
+        "origin",
+        "state",
+        "effective_state",
+        "scope_invalidated",
+        "version",
+        "attempts",
+        "created_at",
+        "expires_at",
+        "consumed_at",
+        "verified_at",
+        "revoked_at",
+        "result_code",
+        "control_verified",
+        "remote_verification_available",
+        "execution_enabled",
+        "blocking_reasons",
+        "evidence"
+      ],
+      "title": "ChallengeRead"
+    },
+    "ChallengeVersion": {
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "maximum": 2147483647.0,
+          "minimum": 1.0,
+          "title": "Expected Version"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "expected_version"
+      ],
+      "title": "ChallengeVersion"
+    },
+    "Evidence": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Id"
+        },
+        "provenance": {
+          "type": "string",
+          "const": "laboratory",
+          "title": "Provenance"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Started At"
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Completed At"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "in_progress",
+            "laboratory_match",
+            "proof_mismatch",
+            "transport_failed",
+            "expired",
+            "revoked"
+          ],
+          "title": "Outcome"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "id",
+        "provenance",
+        "started_at",
+        "completed_at",
+        "outcome"
+      ],
+      "title": "Evidence"
+    },
+    "Instructions": {
+      "properties": {
+        "url": {
+          "type": "string",
+          "title": "Url"
+        },
+        "body": {
+          "type": "string",
+          "title": "Body"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "url",
+        "body"
+      ],
+      "title": "Instructions"
+    },
+    "IssueResult": {
+      "properties": {
+        "challenge": {
+          "$ref": "#/components/schemas/ChallengeRead"
+        },
+        "created": {
+          "type": "boolean",
+          "title": "Created"
+        },
+        "instructions": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Instructions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "challenge",
+        "created",
+        "instructions"
+      ],
+      "title": "IssueResult"
+    }
+  }
+}

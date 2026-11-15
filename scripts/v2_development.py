@@ -21,6 +21,7 @@ from sqlalchemy import URL, create_engine, text
 
 from app.core.config import Settings
 from app.db.verify_schema import CVE_REVISION, verify_schema
+from app.db.verify_verification import verify_verification_schema
 from app.main import create_app
 from scripts.disposable_v2 import SOURCES
 
@@ -323,6 +324,10 @@ class PersistentV2:
             "sql/007_v2_stabilization.sql",
         ]:
             self.sql((self.reference / relative).read_text())
+        command(
+            [sys.executable, "-m", "alembic", "-c", "alembic-verification.ini", "upgrade", "head"],
+            env=env,
+        )
         self.api_role()
         self.grant_api()
         self.config["workspace_hmac_key"] = (
@@ -340,6 +345,8 @@ class PersistentV2:
         try:
             with engine.connect() as connection:
                 verify_schema(connection, CVE_REVISION)
+                if connection.scalar(text("SELECT to_regnamespace('vulntrack_verification')")):
+                    verify_verification_schema(connection)
                 checks = [
                     connection.scalar(text("SELECT version_num FROM public.alembic_version"))
                     == CVE_REVISION
@@ -347,11 +354,9 @@ class PersistentV2:
                 checks.append(
                     connection.scalar(
                         text(
-
-                                "SELECT NOT (rolsuper OR rolcreatedb OR rolcreaterole OR"
-                                " rolbypassrls OR rolreplication) FROM pg_roles WHERE "
-                                "rolname=:role"
-
+                            "SELECT NOT (rolsuper OR rolcreatedb OR rolcreaterole OR"
+                            " rolbypassrls OR rolreplication) FROM pg_roles WHERE "
+                            "rolname=:role"
                         ),
                         {"role": API_ROLE},
                     )
@@ -359,11 +364,9 @@ class PersistentV2:
                 checks.append(
                     connection.scalar(
                         text(
-
-                                "SELECT NOT rolcanlogin AND NOT rolsuper AND NOT "
-                                "rolbypassrls FROM pg_roles WHERE "
-                                "rolname='vulntrack_registration'"
-
+                            "SELECT NOT rolcanlogin AND NOT rolsuper AND NOT "
+                            "rolbypassrls FROM pg_roles WHERE "
+                            "rolname='vulntrack_registration'"
                         )
                     )
                 )
@@ -377,10 +380,8 @@ class PersistentV2:
                 checks.append(
                     not connection.scalar(
                         text(
-
-                                "SELECT has_table_privilege(:role,'vulntrack_private.con"
-                                "text_keys','SELECT')"
-
+                            "SELECT has_table_privilege(:role,'vulntrack_private.con"
+                            "text_keys','SELECT')"
                         ),
                         {"role": API_ROLE},
                     )
@@ -394,12 +395,10 @@ class PersistentV2:
                 checks.append(
                     connection.scalar(
                         text(
-
-                                "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON "
-                                "n.oid=c.relnamespace WHERE n.nspname IN "
-                                "('vulntrack','vulntrack_private') AND "
-                                "pg_get_userbyid(c.relowner)=:role"
-
+                            "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON "
+                            "n.oid=c.relnamespace WHERE n.nspname IN "
+                            "('vulntrack','vulntrack_private') AND "
+                            "pg_get_userbyid(c.relowner)=:role"
                         ),
                         {"role": API_ROLE},
                     )
@@ -493,6 +492,10 @@ class PersistentV2:
             "CREATE ROLE vulntrack_app NOLOGIN NOSUPERUSER NOCREATEDB "
             "NOCREATEROLE NOREPLICATION NOBYPASSRLS; CREATE ROLE "
             "vulntrack_registration NOLOGIN NOSUPERUSER NOCREATEDB "
+            "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
+            "CREATE ROLE vulntrack_verification_owner NOLOGIN NOSUPERUSER NOCREATEDB "
+            "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
+            "CREATE ROLE vulntrack_verification_lab NOLOGIN NOSUPERUSER NOCREATEDB "
             "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
         )
         self.api_role()

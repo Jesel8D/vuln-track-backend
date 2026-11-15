@@ -6,7 +6,7 @@ Ejecutar desde Backend con dependencias bloqueadas y Docker Desktop Linux activo
 .venv/bin/python -m scripts.test_v2_security_lab
 ```
 
-El runner construye una imagen con contexto explícito de siete archivos de
+El runner construye una imagen con una lista explícita de archivos de
 código/laboratorio, sin .env, .local, bases, credenciales Git ni archivos del
 host. La imagen base tiene digest fijo; IDNA está fijado a 3.20 como en el lock.
 Los paquetes apt no tienen snapshot binario fijado. El ID final se conserva en
@@ -56,3 +56,7 @@ futura plataforma con salida pública necesita otras pruebas y aprobación.
 
 Ver [informe técnico](../../docs/V2_SECURITY_ANALYSIS_PHASE2A.md) y
 [checklist independiente](../../docs/V2_ZAP_READINESS_CHECKLIST.md).
+
+Este documento describe el recorrido original de Fase 2A. El mismo runner admite
+ahora el recorrido ampliado de [Fase 2B](../phase2b/README.md); su imagen incluye
+también esos módulos, el generador compartido de tokens y dnspython 2.9.2.
