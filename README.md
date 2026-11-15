@@ -1,11 +1,13 @@
 # VulnTrack Backend
 
-Preparación de seguridad web Fase 1: [informe y reproducción](docs/V2_SECURITY_ANALYSIS_PHASE1.md),
-[autorización de destinos](docs/V2_TARGET_AUTHORIZATION.md) y
-[política SSRF y aislamiento pendiente](docs/V2_SSRF_THREAT_MODEL.md).
-Esta rama conserva ZAP bloqueado; no añade un executor ni lo autoriza para activarse.
-Se revisa junto con Frontend `feat/v2-security-analysis-web-phase1`, sin desplegar
-automáticamente sobre el volumen personal.
+Fase 2A: [componentes, pruebas y límites](docs/V2_SECURITY_ANALYSIS_PHASE2A.md),
+[actualización y rollback](docs/V2_PHASE1_LOCAL_UPGRADE.md),
+[checklist independiente previo a ZAP](docs/V2_ZAP_READINESS_CHECKLIST.md) y
+[laboratorio sin salida externa](laboratory/phase2a/README.md).
+El transporte y los desafíos se prueban localmente; la verificación remota en
+servicio y ZAP siguen bloqueados. Revisar con Frontend
+`feat/v2-security-analysis-web-phase2a`, sin despliegue sobre el volumen personal.
+El [informe Fase 1](docs/V2_SECURITY_ANALYSIS_PHASE1.md) conserva su alcance histórico.
 
 Registro público V2 opt-in y workspace personal transaccional preparados para
 revisión: [contrato y ejecución](docs/SELF_SERVICE_REGISTRATION.md),
