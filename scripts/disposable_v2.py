@@ -162,6 +162,7 @@ class DisposableV2:
             self.apply("sql/004_v2_application_model.sql")
             self.apply("sql/005_v2_nvd_evidence.sql")
             self.apply("sql/006_self_service_registration.sql")
+            self.apply("sql/007_v2_stabilization.sql")
             if self.installation == "new":
                 # Bootstrap's V2 objects are verified in full before baseline; no blind stamp.
                 self.migrate()
@@ -170,6 +171,7 @@ class DisposableV2:
                     "tests/002_v2_security.sql",
                     "tests/004_v2_workspace_bootstrap.sql",
                     "tests/005_self_service_privileges.sql",
+                    "tests/006_v2_stabilization.sql",
                 ):
                     result = self.apply(relative)
                     print(

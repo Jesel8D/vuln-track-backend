@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Header, Request
 from pydantic import BaseModel, ConfigDict, StringConstraints, field_validator
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 from app.api.router import Identity
 from app.core.errors import APIError
@@ -100,12 +101,26 @@ def create_workspace(
             if existing["created_by"] != user.id or existing["name"] != name:
                 raise APIError(409, "IDEMPOTENCY_CONFLICT", "Clave utilizada con otro workspace")
             return {"id": str(existing["id"]), "name": existing["name"]}
-        created = session.execute(
-            text("""INSERT INTO vulntrack.workspaces(id,name,created_by)
-                VALUES (:id,:name,:actor) ON CONFLICT (id) DO NOTHING RETURNING id"""),
-            {"id": workspace_id, "name": name, "actor": user.id},
-        ).first()
-        if created is None:
+        inserted = True
+        try:
+            # Neither RETURNING nor ON CONFLICT: both require visibility of the new row
+            # before its first membership exists under the published SELECT RLS policy.
+            # A savepoint arbitrates duplicate UUIDs without rolling back signed context.
+            with session.begin_nested():
+                session.execute(
+                    text("""INSERT INTO vulntrack.workspaces(id,name,created_by)
+                        VALUES (:id,:name,:actor)"""),
+                    {"id": workspace_id, "name": name, "actor": user.id},
+                )
+        except IntegrityError as error:
+            if (
+                getattr(error.orig, "sqlstate", None) != "23505"
+                or getattr(getattr(error.orig, "diag", None), "constraint_name", None)
+                != "workspaces_pkey"
+            ):
+                raise
+            inserted = False
+        if not inserted:
             existing = (
                 session.execute(
                     text("SELECT id,name,created_by FROM vulntrack.workspaces WHERE id=:id"),

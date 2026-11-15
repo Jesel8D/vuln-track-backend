@@ -180,7 +180,11 @@ def main():
                 assert sample["body"]["error"]["code"] == request["error"]
     assert covered == set(ops), set(ops) - covered
     assert len(ops) == 39 and len(builder.REQUESTS) == 61
-    for env in ["local.postman_environment.json", "test.postman_environment.json"]:
+    for env in [
+        "local.postman_environment.json",
+        "test.postman_environment.json",
+        "persistent-development.postman_environment.json",
+    ]:
         values = {v["key"]: v["value"] for v in load(env)["values"]}
         assert values["password"] == values["expired_token"] == ""
         assert values["disposable_confirmed"] == "false"

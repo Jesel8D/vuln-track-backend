@@ -1,8 +1,9 @@
 {
   "tool": "Newman",
   "version": "6.2.3",
-  "scope": "development-only; local loopback fixtures",
-  "vulnerabilities": {
+  "date": "2026-11-13",
+  "scope": "local testing only",
+  "before": {
     "info": 0,
     "low": 0,
     "moderate": 6,
@@ -10,6 +11,34 @@
     "critical": 1,
     "total": 19
   },
-  "date": "2026-11-13",
-  "global_installation": false
+  "after": {
+    "info": 0,
+    "low": 0,
+    "moderate": 5,
+    "high": 5,
+    "critical": 0,
+    "total": 10
+  },
+  "overrides": {
+    "handlebars": "4.7.10",
+    "node-forge": "1.4.3",
+    "flatted": "3.4.4",
+    "qs": "6.17.1",
+    "underscore": "1.13.8",
+    "lodash": "4.18.1"
+  },
+  "remaining": [
+    "@faker-js/faker",
+    "csv-parse",
+    "jose",
+    "newman",
+    "postman-collection",
+    "postman-request",
+    "postman-runtime",
+    "postman-sandbox",
+    "serialised-error",
+    "uuid"
+  ],
+  "advisory_packages_before": 10,
+  "meta_packages_before": 9
 }

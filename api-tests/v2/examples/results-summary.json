@@ -1,60 +1,83 @@
 {
   "existing": {
-    "requests": {
-      "total": 65,
-      "pending": 0,
-      "failed": 0
-    },
-    "assertions": {
-      "total": 245,
-      "pending": 0,
-      "failed": 0
-    },
-    "items": {
-      "total": 65,
-      "pending": 0,
-      "failed": 0
-    },
-    "failures": [],
-    "distinct_samples": 61
+    "requests": 67,
+    "assertions": 254,
+    "failed": 0,
+    "distinct_executed": 61
   },
   "new": {
-    "requests": {
-      "total": 65,
-      "pending": 0,
-      "failed": 0
-    },
-    "assertions": {
-      "total": 245,
-      "pending": 0,
-      "failed": 0
-    },
-    "items": {
-      "total": 65,
-      "pending": 0,
-      "failed": 0
-    },
-    "failures": [],
-    "distinct_samples": 61
+    "requests": 63,
+    "assertions": 234,
+    "failed": 0,
+    "distinct_executed": 61
   },
-  "backend_regression": {
-    "passed": 371,
+  "existing-persistent-contract": {
+    "requests": 46,
+    "assertions": 169,
+    "failed": 0,
+    "distinct_executed": 39
+  },
+  "date": "2026-11-14",
+  "backend": {
+    "passed": 380,
     "failed": 0,
     "skipped": 0,
-    "seconds": 129.86,
-    "warning": "Starlette TestClient/httpx2"
+    "seconds": 194.12
   },
-  "sql_checks_per_runner": {
+  "frontend": {
+    "passed": 77,
+    "failed": 0,
+    "skipped": 0,
+    "build": "passed"
+  },
+  "browser_existing": {
+    "passed": 5,
+    "seconds": 30.7
+  },
+  "browser_new": {
+    "passed": 5,
+    "seconds": 31.0
+  },
+  "sql_per_route": {
     "001": 55,
     "002": 21,
     "004": 6,
-    "005": 10
+    "005": 10,
+    "006": 4
   },
-  "known_issue_reproductions": 4,
-  "source_commits": {
-    "backend": "5a34f6439881f40eb9aaa931ff5777b60b62e023",
-    "database": "0cc4dfd719463fb15eb1689a0f46550d9f204a71",
-    "frontend": "4514b6840b428152c1cd875c95e3e55ad81c4196"
+  "sql_adversarial": 27,
+  "sql007_reapplication": "rejected, constraint unchanged",
+  "persistence": {
+    "result": "passed",
+    "checks": [
+      "register/login",
+      "owner workspace",
+      "application/technology",
+      "verified fixture CPE",
+      "original AND CVE",
+      "review undetermined",
+      "recommendation state",
+      "complete service stop/restart",
+      "stable original evidence",
+      "A/B isolation after restart",
+      "custom pg_dump backup",
+      "restore into NEW volume",
+      "A/B isolation after restore",
+      "JWT stable on restart and rotated on restore",
+      "exact schema and least privileges"
+    ],
+    "source_profile": "validation-869479fe",
+    "source_volume": "vulntrack_v2_validation_869479fe_pgdata",
+    "restored_profile": "restore-869479fe",
+    "restored_volume": "vulntrack_v2_restore_869479fe_pgdata",
+    "volumes_retained": true,
+    "production_database_used": false,
+    "zap_executed": false
   },
-  "openapi_sha256": "a8095975fa1fd5aaf95e05756c63d1bd78a616518ea681d77fd673ec5c2de7d4"
+  "docker_build_and_uid10001_smoke": "passed",
+  "api_schema_unchanged_operations": 39,
+  "postman_prepared": 61,
+  "database_commit": "b377b5bd8013cc2151f6a1681d168e1df0f5fe42",
+  "frontend_commit": "4514b6840b428152c1cd875c95e3e55ad81c4196",
+  "openapi_sha256": "bc57aea56aee95f8a81e85964f00aa9ecfd830c428ecb7e9a77e26ec3763965e"
 }

@@ -361,7 +361,14 @@ def analyze_technology(
             title = next(
                 (item.get("value") for item in descriptions if item.get("lang") == "en"), None
             )
-            title = " ".join(title.split())[:500] if isinstance(title, str) else None
+            if isinstance(title, str):
+                normalized_title = " ".join(title.split())
+                if len(normalized_title) > 500:
+                    warnings.append("TITLE_TRUNCATED")
+                # Display title is bounded; evidence_for retains original descriptions.
+                title = normalized_title[:500].rstrip()
+            else:
+                title = None
             metrics = record.get("metrics") or None
             if metrics and len(encoded(metrics)) > 24000:
                 warnings.append("METRICS_OMITTED")

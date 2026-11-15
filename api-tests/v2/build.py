@@ -154,18 +154,15 @@ add(
 )
 add(
     "03 · Workspaces",
-    "Workspace adicional: bloqueo RLS conocido",
+    "Crear workspace adicional idempotente",
     "POST",
     "/api/v2/workspaces",
     body={"name": "Workspace API adicional"},
-    status=404,
-    error="RESOURCE_NOT_FOUND",
+    status=201,
+    capture=f"{SET}('additional_workspace_id',data.id);",
     description=(
-        "INCIDENCIA EXISTENTE: el contrato anuncia 201 pero la "
-        "implementación devuelve 404 (SQLSTATE 42501) durante INSERT "
-        "RETURNING bajo RLS antes de la membresía inicial. No se cambia "
-        "la política ni se elude RLS. El registro sí crea workspace "
-        "personal."
+        "Crear un workspace adicional con owner, sin relajar RLS. "
+        "Reintentar conserva la misma clave y nombre."
     ),
     pre=f"{SET}('workspace_key', {UUID});",
     headers={"Idempotency-Key": "{{workspace_key}}"},
@@ -819,9 +816,7 @@ def main():
         op = operations.get((req["method"], canonical))
         if (
             op
-            and (
-                req["status"] < 300 or req["name"] == ("Workspace adicional: bloqueo RLS conocido")
-            )
+            and (req["status"] < 300 or req["name"] == ("Crear workspace adicional idempotente"))
             and req["body"] is not None
             and "requestBody" in op
         ):
@@ -927,14 +922,20 @@ def main():
                 },
             }
         ]
-        if req["pre"]:
+        pre = req["pre"]
+        if req["folder"].startswith("10"):
+            pre = (
+                "if (pm.variables.get('target_mode') === 'persistent-development') "
+                "{ pm.execution.skipRequest(); return; }\n" + pre
+            )
+        if pre:
             events.insert(
                 0,
                 {
                     "listen": "prerequest",
                     "script": {
                         "type": "text/javascript",
-                        "exec": ("(function(){\n" + req["pre"] + "\n})();").splitlines(),
+                        "exec": ("(function(){\n" + pre + "\n})();").splitlines(),
                     },
                 },
             )
@@ -985,11 +986,12 @@ def main():
             "name": "VulnTrack · API V2 y legado separado",
             "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
             "description": (
-                "Solo entorno desechable identificado. Orden completo: estado → "
-                "registro/login → workspace → aplicación/tecnología → CPE "
-                "revisado → CVE → hallazgos/recomendaciones → legado V1 separado "
-                "→ negativos. Secretos solo locales. Leer README. ZAP no existe "
-                "como endpoint y sigue deshabilitado."
+                "Temporal: suite completa; persistente de desarrollo: "
+                "positivos sin borrar datos. estado → registro/login → "
+                "workspace → aplicación/tecnología → CPE revisado → CVE → "
+                "hallazgos/recomendaciones → legado V1 separado → negativos."
+                " Secretos solo locales. Leer README. ZAP no existe como "
+                "endpoint y sigue deshabilitado."
             ),
         },
         "auth": {
@@ -1004,21 +1006,31 @@ def main():
                     "type": "text/javascript",
                     "exec": [
                         (
-                            "if (pm.variables.get('disposable_confirmed') !== 'true') throw "
-                            "new Error('Usar solo entorno desechable identificado; establecer"
-                            " disposable_confirmed=true tras verificarlo');"
+                            "if (pm.variables.get('target_mode') === "
+                            "'persistent-development') { if (pm.variables.ge"
+                            "t('persistent_development_confirmed') !== "
+                            "'true') throw new Error('Confirmar instalación "
+                            "persistente local de desarrollo'); } else if "
+                            "((pm.variables.get('target_mode') || "
+                            "'temporary') === 'temporary') { if "
+                            "(pm.variables.get('disposable_confirmed') !== "
+                            "'true') throw new Error('Se requiere entorno "
+                            "desechable identificado'); } else { throw new "
+                            "Error('Modo de entorno no admitido'); }"
                         ),
                         (
                             "const base = pm.variables.get('base_url'); if "
-                            "(!/^http:\\/\\/127\\.0\\.0\\.1:\\d+$/.test(base || '')) throw new "
-                            "Error('Esta colección de pruebas solo acepta loopback HTTP con "
-                            "puerto explícito');"
+                            "(!/^http:\\/\\/127\\.0\\.0\\.1:\\d+$/.test(base || "
+                            "'')) throw new Error('Esta colección de pruebas"
+                            " solo acepta loopback HTTP con puerto "
+                            "explícito');"
                         ),
                         (
-                            "if (pm.variables.get('nvd_mode') !== 'fixture' && "
-                            "pm.variables.get('allow_live_nvd') !== 'true') throw new "
-                            "Error('Para NVD real se requiere allow_live_nvd=true y revisión "
-                            "manual del CPE');"
+                            "if (pm.variables.get('nvd_mode') !== 'fixture' "
+                            "&& pm.variables.get('allow_live_nvd') !== "
+                            "'true') throw new Error('Para NVD real se "
+                            "requiere allow_live_nvd=true y revisión manual "
+                            "del CPE');"
                         ),
                     ],
                 },
@@ -1027,7 +1039,7 @@ def main():
         "item": [{"name": name, "item": items} for name, items in folders.items()],
     }
     dump(HERE / "VulnTrack-V2.postman_collection.json", collection)
-    for mode in ["local", "test"]:
+    for mode in ["local", "test", "persistent-development"]:
         env = {
             "id": str(uuid5(NAMESPACE_URL, "vulntrack-v2-" + mode)),
             "name": "VulnTrack V2 · " + mode + " (sin secretos)",
@@ -1042,7 +1054,11 @@ def main():
                 for key, value in {
                     "base_url": "http://127.0.0.1:8000",
                     "password": "",
-                    "nvd_mode": "fixture" if mode == "test" else "live",
+                    "nvd_mode": "live" if mode == "local" else "fixture",
+                    "target_mode": "persistent-development"
+                    if mode == "persistent-development"
+                    else "temporary",
+                    "persistent_development_confirmed": "false",
                     "disposable_confirmed": "false",
                     "allow_live_nvd": "false",
                     "cpe_confirmed_manually": "false",
@@ -1062,7 +1078,7 @@ def main():
     response_examples = {}
     for req in REQUESTS:
         if req["name"] in synthetic and (
-            req["status"] < 300 or req["name"] == ("Workspace adicional: bloqueo RLS conocido")
+            req["status"] < 300 or req["name"] == ("Crear workspace adicional idempotente")
         ):
             canonical = re.sub(
                 r"\{\{([^}]+)\}\}",
