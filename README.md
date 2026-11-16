@@ -1,5 +1,13 @@
 # VulnTrack Backend
 
+RC1: [integración y resultados actuales](docs/V2_RC1_INTEGRATION_REPORT.md),
+[matriz de requisitos](docs/V2_RC1_REQUIREMENTS_MATRIX.md),
+[demostración de 13 minutos](docs/V2_RC1_DEMO_GUIDE.md) y
+[ejecución aislada/backup/restore](docs/V2_RC1_LOCAL_RUN.md).
+Usar `release/v2-rc1-integration` con Frontend `release/v2-rc1-web` y Database
+`a562e638dfe5b7e8d07eec0e8046e6998f8a2802`. Candidato local con NVD fixture;
+verify, egreso público y ZAP bloqueados. No actualiza la instalación personal.
+
 Fase 2C: [gateway obligatorio y seguridad de egreso](docs/V2_PHASE2C_EGRESS_SECURITY.md),
 [resultados y regresiones](docs/V2_PHASE2C_LAB_RESULTS.md) y
 [laboratorio reproducible](laboratory/phase2c/README.md).

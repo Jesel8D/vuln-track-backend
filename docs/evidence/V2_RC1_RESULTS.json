@@ -1,0 +1,337 @@
+{
+  "date_local": "2026-11-15",
+  "scope": "Controlled local V2 academic candidate; no production approval",
+  "backend": {
+    "existing": {
+      "passed": 755,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 196.13,
+      "inherited": 734,
+      "new_rc1": 21
+    },
+    "new": {
+      "passed": 755,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 196.1,
+      "inherited": 734,
+      "new_rc1": 21
+    }
+  },
+  "frontend": {
+    "unit_component_passed": 96,
+    "files": 8,
+    "failed": 0,
+    "skipped": 0,
+    "typecheck": true,
+    "lint": true,
+    "build": true
+  },
+  "newman": {
+    "existing": {
+      "assertions": 283,
+      "http_requests": 74,
+      "failed": 0
+    },
+    "new": {
+      "assertions": 288,
+      "http_requests": 75,
+      "failed": 0
+    },
+    "persistent_contract_on_tmpfs": {
+      "assertions": 185,
+      "http_requests": 50,
+      "failed": 0
+    }
+  },
+  "browser": {
+    "previous_existing": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "database": "owned tmpfs"
+    },
+    "previous_new": {
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "database": "owned tmpfs"
+    },
+    "create": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "database": "owned RC1 persistent"
+    },
+    "resume": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "database": "owned RC1 persistent"
+    },
+    "restore": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "database": "owned RC1 persistent"
+    },
+    "affected_ux_repeat": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "additional_unique_cases": false
+    }
+  },
+  "network_labs": {
+    "2b": {
+      "result": "passed",
+      "checks": [
+        "live namespace: loopback only, no IPv4/IPv6 external/default routes",
+        "real IPv4 pinned TCP/TLS",
+        "original Host and certificate hostname",
+        "getaddrinfo forbidden during real exchange",
+        "environment proxies ignored",
+        "real IPv6 pinned TCP/TLS",
+        "random single-purpose challenge over real pinned HTTPS",
+        "proof revocation",
+        "wrong certificate hostname rejected",
+        "untrusted certificate chain rejected",
+        "expired certificate rejected",
+        "REDIRECTS_DISABLED:redirect",
+        "HTTP_BODY_TOO_LARGE:huge",
+        "HTTPS_EXCHANGE_FAILED:header-flood",
+        "HTTP_ENCODING_DENIED:chunked",
+        "REQUEST_DEADLINE_EXCEEDED:slow",
+        "in-flight socket cancellation",
+        "raw TCP denied to listening DB/private/metadata/HTTP/DNS lab canaries",
+        "raw IPv6 TCP and UDP DNS denied independently of Python policy",
+        "no socket FD leaks after success, TLS failures, timeout or cancellation",
+        "non-root and zero capabilities",
+        "no-new-privileges",
+        "read-only root; no host files/socket/app secrets",
+        "live cgroup memory/pids/CPU limits",
+        "listening lab canaries received zero connections",
+        "original SNI observed",
+        "real TCP DNS A/AAAA and pinned HTTPS composed without OS DNS",
+        "no database/application credentials in network worker",
+        "real CNAME resolution with bounded depth",
+        "real numeric IPv6 TCP DNS endpoint with A/AAAA answers",
+        "NON_PUBLIC_IP",
+        "DNS_CNAME_LOOP_OR_CONFLICT",
+        "DNS_WIRE_BUDGET",
+        "DNS_RESPONSE_INVALID",
+        "changed DNS set denied before a TLS connection",
+        "real DNS timeout without retry",
+        "cancellation during real TCP DNS closes the socket",
+        "independent egress denies the changed IP even when Python is bypassed",
+        "DNS/TLS success, rejection, timeout and cancellation leak no socket FDs",
+        "real FastAPI issuance persisted through restricted API role and RLS",
+        "blocked operational verification created zero DNS requests",
+        "real DNS/TLS result consumed once through restricted lab SQL role",
+        "laboratory evidence persisted but NEVER represented as verified domain control",
+        "DNS-changed unauthorized TLS canary received zero connections",
+        "real cgroup OOM enforced on owned 32MiB probe"
+      ],
+      "image_id": "sha256:7152c063924bd8aeb5b2013cd4c5503d125837821e8ba2850bcbb58be85aa065",
+      "external_target_requests": false,
+      "runtime_verification_enabled": false,
+      "production_egress_guarantee": false,
+      "personal_database_used": false,
+      "zap_executed": false
+    },
+    "2c": {
+      "result": "passed",
+      "checks": [
+        "three owned dual-stack internal bridges, no published ports or host mounts",
+        "worker kernel OUTPUT DROP forces the gateway on IPv4 and IPv6",
+        "gateway kernel INPUT/OUTPUT/FORWARD DROP and forwarding disabled",
+        "untrusted worker cannot change firewall, open raw sockets or read control credentials",
+        "live worker root filesystem, cgroup limits and private-key permissions audited",
+        "private IPv4/IPv6 canaries independently confirmed listening",
+        "real API verify stays 503 with zero DNS and zero durable attempts",
+        "allowed operation reaches real IPv4 TLS only through gateway and controlled DNS",
+        "consumed operation cannot be replayed on another connection",
+        "allowed operation reaches real IPv6 TLS through IPv6 gateway ingress",
+        "original Host and SNI verified by the separate TLS fixture",
+        "raw worker TCP denied: allowed TLS IP directly without gateway",
+        "raw worker TCP denied: unauthorized IPv4 and IPv6",
+        "raw worker TCP denied: non-HTTPS ports",
+        "raw worker TCP denied: simulated Windows and WSL hosts",
+        "raw worker TCP denied: simulated PostgreSQL and Backend",
+        "raw worker TCP denied: simulated Docker API and alternate proxy",
+        "raw worker TCP denied: unapproved DNS TCP",
+        "raw worker TCP denied: metadata representation",
+        "listening localhost IPv4/IPv6 services unreachable even in worker namespace",
+        "worker UDP DNS cannot bypass the mandatory gateway",
+        "raw gateway TCP independently denied: private services",
+        "raw gateway TCP independently denied: unapproved TLS IP",
+        "raw gateway TCP independently denied: unapproved TLS port",
+        "gateway UDP denied despite allowing operator DNS TCP",
+        "worker cannot supply host, IP, port, workspace or arbitrary egress rules",
+        "unknown operation fails closed without upstream connection",
+        "forged control authentication rejected over the actual TCP control channel",
+        "real HTTPS redirect denied without contacting metadata canary",
+        "DNS set differing from the authorized permit denied before TLS",
+        "DNS rebinding between fresh resolutions denied",
+        "DNS failure has no system resolver fallback or permissive retry",
+        "real SQL challenge revocation prevents new connections",
+        "changed declaration invalidates the bound target version",
+        "expired policy prevents new connections",
+        "SQL revocation closes an already active gateway TLS socket within measured bound",
+        "revoked active operation cannot reuse its previous policy",
+        "expiry during operation cancels TLS and releases no buffered result",
+        "concurrent consumption of the same operation is denied",
+        "distinct scoped operations proceed concurrently without sharing a tunnel",
+        "existing worker connection cannot be reused for another request",
+        "loss of authorization broker heartbeat closes active TLS and denies new work",
+        "control service outage fails closed for active and new operations",
+        "authority restart cannot resurrect an old unconsumed policy",
+        "recovery requires a freshly issued policy bound to the new authority epoch",
+        "gateway restart closes old connections and rejects old epoch policies",
+        "gateway recovery applies kernel filters before serving new operations",
+        "IPv4/IPv6 denials repeated after gateway restart with fresh kernel counters",
+        "all forbidden canaries received zero adversarial TCP or UDP traffic",
+        "IPv4 and IPv6 kernel counters prove drops independently of Python and routing",
+        "live kernel rules and counters retained as private reproducible evidence"
+      ],
+      "measurements": {
+        "revocation_to_active_tls_close_seconds": 0.536,
+        "broker_loss_to_denial_seconds": 1.205,
+        "broker_successful_refreshes": 148,
+        "broker_read_or_publish_errors": 4,
+        "broker_invalidated_scope_observations": 59,
+        "maximum_broker_snapshot_refresh_seconds": 0.543,
+        "worker_kernel_dropped_packets": {
+          "ipv4": 13,
+          "ipv6": 14
+        },
+        "gateway_kernel_dropped_packets": {
+          "ipv4": 2,
+          "ipv6": 16
+        }
+      },
+      "image_id": "sha256:f0334388b5c155f705b61b78018afb24049b0bbb8cec38e3220bad188f3802c0",
+      "build_source_sha256": {
+        "app/services/web_target_policy.py": "c0850aaaf4db34ca51f363fb4777a6908066bff138d2a2791b40fecd349098e7",
+        "app/services/web_target_transport.py": "3a4d80680c32a77e117d6ea7c8df23c2495f86ed2dfa57f4421cf4f6fceaee45",
+        "app/services/controlled_dns.py": "ce4c9a33b7757b14f1f2532f11c1dfd022f88ebdfd8926be147e1b7d3884dfc6",
+        "laboratory/phase2c/Dockerfile": "41f31599962ef7373c97bc76a8bb40aaeeecce1455a56d7dc6ecfefaf4e02bae",
+        "laboratory/phase2c/policy.py": "a8bf5aacd737d448a567b247748a871abb6cb495859b92b06645438260865082",
+        "laboratory/phase2c/protocol.py": "074b628393e3bd58083b4be1c63f574eb4c0d2d3266698a783ec59de445d208d",
+        "laboratory/phase2c/authority.py": "9d3fe2b7a21db676b7169648cb340643af3c1d8ab208259d9e72cb0363c66576",
+        "laboratory/phase2c/gateway.py": "3c2b17a45cbbd073a346fb1ae5dc7c4459f0eaca72e291d969aebb4cc7c005b5",
+        "laboratory/phase2c/fixture.py": "15614c7b81066256539c1e26b7b02346a0d3de31d5648473876782ba00feed99",
+        "laboratory/phase2c/probe.py": "260e0986d708beb92c187888da052657a76d98b07d08e2013f31e56fd57b58d1"
+      },
+      "external_target_requests": false,
+      "runtime_verification_enabled": false,
+      "personal_database_used": false
+    }
+  },
+  "sql": {
+    "checks_per_installation": 120,
+    "additional_adversarial_calls": 27
+  },
+  "recovery": {
+    "result": "passed",
+    "checks": [
+      "browser-created application, CPE, run, reviewed finding and recommendation captured",
+      "RC1 API, web and database stopped without deleting their named volume",
+      "exact IDs, states and dates survive full restart on the same RC1 volume",
+      "existing JWT remains valid after restart with the same private keys",
+      "existing-user browser journey succeeds after full restart",
+      "sensitive RC1 backup checksum, private permissions and Git exclusion verified",
+      "backup restored transactionally into another NEW owned volume",
+      "restored core and verification schemas, RLS, roles and keys verified exactly",
+      "restored IDs, CPE, analysis, review, recommendations and dates match original DTOs",
+      "old JWT rejected on restored profile while normal password login succeeds",
+      "multiuser isolation and pooled connection reuse rechecked after restore",
+      "existing-user browser journey succeeds against restored API and web",
+      "restored services stopped; source RC1 remains ready and both volumes retained"
+    ],
+    "source_volume": "vulntrack_v2_rc1_pgdata",
+    "restore_profile": "rc1-restore-49bec2c1",
+    "restore_volume": "vulntrack_v2_rc1_restore_49bec2c1_pgdata",
+    "backup_sha256": "bd4816ed5b5029d766ad0fa79224fb75ad719029f658e7e3a452c08971feb88e",
+    "dataset_dto_sha256": "290d32039ced85431c98137a448a42f1083189dc5a174ea76cd2bcaa35f48562",
+    "backup_sensitive": true,
+    "backup_published": false,
+    "backup_relative_private_path": ".local/rc1/backups/20261116T034929Z-7ee9/database.dump",
+    "personal_database_used": false,
+    "source_rc1_running": true,
+    "restore_stopped": true,
+    "volumes_retained": true
+  },
+  "protected_installation": {
+    "personal_database_used_for_tests": false,
+    "original_repositories": {
+      "backend": {
+        "branch": "feat/v2-stabilization",
+        "commit": "fcabbe986f2a4d3dffb259edda0b7245e533ee91",
+        "clean": true
+      },
+      "database": {
+        "branch": "feat/v2-persistent-development-database",
+        "commit": "b377b5bd8013cc2151f6a1681d168e1df0f5fe42",
+        "clean": true
+      },
+      "frontend": {
+        "branch": "feat/v2-registration-web",
+        "commit": "4514b6840b428152c1cd875c95e3e55ad81c4196",
+        "clean": true
+      },
+      "context": {
+        "branch": "docs/mvp-context-consolidation",
+        "commit": "caa7ef13b0e2b24848991e32b3c0ee3fc59139c7",
+        "clean": true
+      }
+    },
+    "services": {
+      "development": {
+        "postgres": "healthy",
+        "volume": "vulntrack_v2_development_pgdata",
+        "postgres_binding": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "55434"
+          }
+        ]
+      },
+      "rc1": {
+        "postgres": "healthy",
+        "volume": "vulntrack_v2_rc1_pgdata",
+        "postgres_binding": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "55438"
+          }
+        ]
+      }
+    },
+    "both_personal_and_rc1_http_ready": true,
+    "restored_profiles_stopped": true,
+    "running_containers": [
+      "vulntrack-v2-rc1-postgres",
+      "vulntrack-v2-development-postgres"
+    ]
+  },
+  "raw_evidence_sha256": {
+    "backend-existing.log": "584515406234148b927111a757347fd68499737704fead8ec2924825d4f1bbe3",
+    "backend-new.log": "61b5a9c55852fcc092c0b0d55dc69f3a5bec3026aaac18c52960acc9632b6ebe",
+    "frontend-check.log": "f755ede56923ae20eca6f8c9ecb460dd943a154ae88f23f2c01d224cd302808e",
+    "frontend-final-lint.log": "ba3007e10a1b2e82b8d6bcb31bddab2a40cd0ad4ce4df87365dde18ede051d1e",
+    "browser-existing.log": "e57194c93c036c3fb993951f219c81cca9eb70f35c8d3b719a47769d76b802bd",
+    "browser-new.log": "40e427d5d3fc3c2ab1990cc6b4cf1bb283c78845197c32dcf7129af8fbf4c7f3",
+    "browser-create.log": "0047ea1018f1fc678a1ad0455d9bdaae8bebe6f8ff4f564887fef63f88cdf7fc",
+    "browser-resume.log": "1cfb16adff87ec347d2788e047e7fb52a8e24de30f452cee8c25c220a4744da8",
+    "browser-restore.log": "1cfb16adff87ec347d2788e047e7fb52a8e24de30f452cee8c25c220a4744da8",
+    "recovery-results.json": "367238b295b7daa355042669748bdcb5a88a4ce0559486ea13d731fa49d32df3",
+    "phase2b-network-lab-results.json": "37c41788d4dfc5bf30e4f0583a852add48e7b5f0b64af3827c0d86fe98d10bab",
+    "egress-lab-results.json": "48766f3ca513dd7afbcdf95a58d04952ed3a1281531b1a46a02979b66fbd95e8",
+    "api-contract.log": "e2670a278d7456cf77d7b2ca2b78abb6c78a2f083d45473ebf42a03f7904fdd7",
+    "sql-adversarial.log": "55dcfa141b9f4ec86546b7be8516af6555116b99dbab7037a2bf1bbfd7c7a2eb",
+    "browser-final-ux.log": "dd4e030c5a9d711e545fa72e924dc89bd98db68558352234423b866b0ebfaf50"
+  },
+  "published_frontend": "4674cbcd9f46ad0e9e587b0db630b9f51a990a86"
+}
