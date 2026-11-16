@@ -61,6 +61,8 @@ def private_json(path, value):
 
 def free_port(preferred=0):
     with socket.socket() as sock:
+        # Match server restart semantics without accepting an existing listener.
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind(("127.0.0.1", preferred))
         return sock.getsockname()[1]
 
@@ -596,6 +598,7 @@ class PersistentV2:
                 )
                 public_env = {
                     **env,
+                    "VITE_NVD_MODE": nvd_mode,
                     "VITE_API_URL": "".join(
                         ("http://127.0.0.1:", "".join(f"{self.config['api_port']}"))
                     ),
