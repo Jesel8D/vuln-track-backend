@@ -1,8 +1,12 @@
-# Checklist independiente antes de cualquier fase ZAP — estado Fase 2B
+# Checklist independiente antes de cualquier fase ZAP — estado Fase 2C
 
 **ZAP BLOQUEADO. Las pruebas locales no autorizan análisis ni verificaciones remotas.**
 La misión autoriza ramas y laboratorio; D-001/D-002 y las aprobaciones pendientes
 Jesel/Rudi no se modifican. Los resultados de Fase 2A siguen siendo antecedentes.
+Fase 2C añade 51 comprobaciones de gateway obligatorio en redes internas propias.
+Las regresiones y sus conteos actuales se registran en
+[resultados de Fase 2C](V2_PHASE2C_LAB_RESULTS.md); los conteos anteriores no se
+presentan como pruebas nuevas. **Egreso público BLOQUEADO.**
 
 ## A. Controles implementados
 
@@ -67,3 +71,27 @@ público no esté demostrado. Un laboratorio network-none no satisface esa casil
 
 No se registra aprobación conjunta nueva. Incluso con todas las pruebas futuras
 aprobadas, **ZAP NO está autorizado para activarse por defecto**.
+
+## E. Demostración adicional Fase 2C — solo laboratorio
+
+- [x] Tres bridges internos dual-stack propios; worker y gateway en namespaces separados.
+- [x] INPUT/OUTPUT/FORWARD DROP y forwarding desactivado; TCP directo no evita el gateway.
+- [x] Canarios reales y contadores de descartes IPv4/IPv6; sin contactar hosts/DB reales.
+- [x] DNS alternativo, UDP, puertos no permitidos, localhost y destinos internos bloqueados.
+- [x] Permisos inmutables emitidos por broker externo desde API/RLS de PostgreSQL tmpfs.
+- [x] UUID de operación como única entrada; sin hosts, IPs, puertos o reglas del worker.
+- [x] HMAC y nonce del control; consumo único, versiones y épocas anti-replay tras reinicio.
+- [x] Dos resoluciones frescas comparadas con el conjunto autorizado; TLS/Host/SNI originales.
+- [x] Revocación SQL cancela el TLS activo; caducidad y pérdida del broker/autoridad fallan cerradas.
+- [x] Reinicio del gateway aplica filtros antes de servir; se repiten denegaciones después.
+- [x] Raíz read-only, cgroups, FD, capacidades y ausencia de secretos comprobados en el worker.
+- [ ] Egreso selectivo atravesando un perímetro público real: NO DEMOSTRADO, capacidad BLOQUEADA.
+- [ ] Canal de control operativo, supervisor, runner por job y aislamiento multitenant desplegado.
+- [ ] Retirada dinámica de reglas/conntrack por permiso fuera del gateway confiable.
+- [ ] Verificador operativo y autorización posterior explícita para cualquier integración ZAP.
+
+La cancelación activa observada no es instantánea en kernel ni retira bytes ya
+enviados. El filtro del gateway impone un techo fijo de destinos del laboratorio;
+la autorización por operación pertenece al gateway/control confiable. Las pruebas
+no aíslan de un administrador Docker, kernel o gateway comprometido. Consulte
+[modelo de amenazas y alternativa Linux/VM](V2_PHASE2C_EGRESS_SECURITY.md).

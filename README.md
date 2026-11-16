@@ -1,5 +1,12 @@
 # VulnTrack Backend
 
+Fase 2C: [gateway obligatorio y seguridad de egreso](docs/V2_PHASE2C_EGRESS_SECURITY.md),
+[resultados y regresiones](docs/V2_PHASE2C_LAB_RESULTS.md) y
+[laboratorio reproducible](laboratory/phase2c/README.md).
+El nuevo laboratorio demuestra filtros IPv4/IPv6 y fallos seguros con destinos
+propios. **Egreso público BLOQUEADO; verify sigue en 503 y ZAP deshabilitado.**
+No cambia API, SQL ni Frontend, ni despliega sobre la instalación personal.
+
 Fase 2B: [persistencia, RLS y límites](docs/V2_SECURITY_ANALYSIS_PHASE2B.md),
 [contrato HTTP](docs/V2_VERIFICATION_API.md) y
 [actualización/reversión](docs/V2_PHASE2B_LOCAL_UPGRADE.md).
