@@ -74,12 +74,16 @@ def main():
             timeout=60,
         )
         if result.returncode:
-            # Diagnostics contain synthetic credentials only; keep private.
-            out = ROOT / "api-tests/v2/.artifacts/phase2a/upgrade-probe.log"
-            out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(result.stderr)
-            raise RuntimeError("Owned upgrade probe failed; no credentials printed")
-        data = json.loads(result.stdout)
+            raise RuntimeError("Owned upgrade probe failed; child diagnostics suppressed")
+        state = json.loads(result.stdout)
+        expected_keys = {"workspace", "application", "target", "target_version", "other_registered"}
+        if set(state) != expected_keys or state.pop("other_registered") is not True:
+            raise RuntimeError("Invalid upgrade probe result")
+        data.update(state)
+        data["other"] = {
+            "username": data["credentials"]["username"] + "_b",
+            "password": data["credentials"]["password"],
+        }
 
     try:
         stack.start_database()

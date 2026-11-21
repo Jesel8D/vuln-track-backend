@@ -1,4 +1,4 @@
-"""Private stdin/stdout protocol for the owned upgrade/rollback runner only."""
+"""Private stdin input. Stdout carries only identifiers and non-secret state."""
 
 import json
 import os
@@ -82,7 +82,18 @@ def main():
         response = client.get(base, headers=data["headers"])
         assert response.status_code == 404
         data.pop("headers")
-    print(json.dumps(data))
+    # Keep credentials in the parent. A pipe may still be captured by a shell or CI.
+    print(
+        json.dumps(
+            {
+                "workspace": data["workspace"],
+                "application": data["application"],
+                "target": data["target"],
+                "target_version": data["target_version"],
+                "other_registered": "other" in data,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":
