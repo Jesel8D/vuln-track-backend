@@ -190,6 +190,7 @@ class DisposableV2:
                     "tests/005_self_service_privileges.sql",
                     "tests/006_v2_stabilization.sql",
                     "tests/007_v2_verification.sql",
+                    "tests/008_v2_devices.sql",
                 ):
                     result = self.apply(relative)
                     print(

@@ -73,7 +73,9 @@ def main():
         assert all(
             actual_contract[category].get(key) == value for key, value in baseline[category].items()
         ), "Existing contract changed: " + category
-    added = load("verification-contract.json")
+    verified = load("verification-contract.json")
+    rc2 = load("rc2-contract.json")
+    added = {key: verified[key] | rc2[key] for key in ("operations", "schemas")}
     assert {
         key: value
         for key, value in actual_contract["operations"].items()
@@ -103,6 +105,7 @@ def main():
     from app.api.analyses import router as analyses
     from app.api.cpe import router as cpe
     from app.api.router import router as v1
+    from app.api.v2_devices import router as devices
     from app.api.v2_nvd import router as nvd
     from app.api.v2_resources import router as resources
     from app.api.v2_targets import router as targets
@@ -110,7 +113,7 @@ def main():
 
     routes = [
         r
-        for router in (v1, analyses, cpe, nvd, resources, targets, verifications)
+        for router in (v1, analyses, cpe, nvd, resources, targets, verifications, devices)
         for r in router.routes
     ]
     for request in builder.REQUESTS:
@@ -121,9 +124,9 @@ def main():
                 "{"
                 + (
                     "run_id"
-                    if m[1] in {"analysis_id", "asset_analysis_id"}
+                    if m[1] in {"analysis_id", "asset_analysis_id", "device_run_id"}
                     else "finding_id"
-                    if m[1] == "asset_finding_id"
+                    if m[1] in {"asset_finding_id", "device_finding_id"}
                     else m[1]
                 )
                 + "}"
@@ -202,7 +205,7 @@ def main():
             if request["error"]:
                 assert sample["body"]["error"]["code"] == request["error"]
     assert covered == set(ops), set(ops) - covered
-    assert len(ops) == 44 and len(builder.REQUESTS) == 71
+    assert len(ops) == 59 and len(builder.REQUESTS) == 86
     for env in [
         "local.postman_environment.json",
         "test.postman_environment.json",
@@ -225,7 +228,7 @@ def main():
             (
                 "VALIDATED: OpenAPI 3.1; Postman 2.1; ",
                 f"{len(ops)}",
-                " operations (39 unchanged + 5 verification); ",
+                " operations (44 RC1 + 15 RC2); ",
                 f"{len(builder.REQUESTS)}",
                 " requests; ",
                 f"{checked_bodies}",

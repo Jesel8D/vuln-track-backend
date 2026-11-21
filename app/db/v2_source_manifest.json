@@ -7,9 +7,12 @@
     "sql/005_v2_nvd_evidence.sql": "361195f0f4ca117aba00d8fd1c1989069d94bc0677a8b90fd428e4c765b27a57",
     "sql/006_self_service_registration.sql": "b2e4ec41a50ed841a71645045796edb0ba519b9489dd747ab0ce082da8ac1b7e",
     "sql/007_v2_stabilization.sql": "429dd13b912debe685fa45fb319ed0a216120b99d60da9c87c745a52d075e82d",
-    "sql/008_v2_target_verification.sql": "8c5c1cb792fd4daa1da187ebc45631af6b27dd2b431b7b6c37373282b76483e3"
+    "sql/008_v2_target_verification.sql": "8c5c1cb792fd4daa1da187ebc45631af6b27dd2b431b7b6c37373282b76483e3",
+    "sql/009_v2_devices.sql": "5955a9bfe9ecec045b9d0386dfbb737e842da478e068e0daadcd9c5df62522ee"
   },
   "database_base_commit": "0cc4dfd719463fb15eb1689a0f46550d9f204a71",
   "database_branch": "feat/v2-security-verification-database",
-  "phase2a_database_commit": "b377b5bd8013cc2151f6a1681d168e1df0f5fe42"
+  "phase2a_database_commit": "b377b5bd8013cc2151f6a1681d168e1df0f5fe42",
+  "rc2_database_commit": "4fae50e8ed92fa1a5325e5cb00c5d497f639e234",
+  "rc2_database_branch": "feat/v2-rc2-device-inventory-database"
 }

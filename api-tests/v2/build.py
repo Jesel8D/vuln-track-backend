@@ -905,6 +905,97 @@ add(
 )
 
 
+# The RC2 folder follows the normal account/workspace setup. NVD operations have
+# the same explicit fixture/manual guard as the existing V2 catalogue operations.
+DEVICES = BASE + "/devices"
+DEVICE = DEVICES + "/{{device_id}}"
+DEVICE_FINDING = DEVICE + "/findings/{{device_finding_id}}"
+DEVICE_RUN = DEVICE + "/analyses/{{device_run_id}}"
+RC2 = "11 RC2 Devices"
+ADD_DEVICE = {
+    "device_type": "router",
+    "manufacturer": "Cisco",
+    "model": "RV340",
+    "product_vendor": "cisco",
+    "product": "small_business_rv340_firmware",
+    "component_kind": "firmware",
+    "version": "1.0.0.33",
+    "site_label": "Laboratorio",
+}
+add(
+    RC2,
+    "RC2 Crear dispositivo",
+    "POST",
+    DEVICES,
+    body=ADD_DEVICE,
+    status=201,
+    capture=f"{SET}('device_id', data.id);",
+)
+add(RC2, "RC2 Inventario filtrado", "GET", DEVICES + "?device_type=router&q=RV340")
+add(RC2, "RC2 Detalle de dispositivo", "GET", DEVICE)
+add(RC2, "RC2 Candidatos CPE", "GET", DEVICE + "/cpe-candidates?query=RV340", fixture=True)
+add(
+    RC2,
+    "RC2 Confirmar CPE",
+    "POST",
+    DEVICE + "/identifications",
+    status=201,
+    fixture=True,
+    body={
+        "cpe_name_id": CPE_ID,
+        "expected_identification_id": None,
+        "reason": "Revision humana de ejemplo",
+    },
+)
+add(RC2, "RC2 Historial CPE", "GET", DEVICE + "/identifications")
+add(
+    RC2,
+    "RC2 Consultar CVE",
+    "POST",
+    DEVICE + "/analyses",
+    status=201,
+    fixture=True,
+    headers={"Idempotency-Key": "{{$guid}}"},
+    capture=f"{SET}('device_run_id', data.id);",
+)
+add(RC2, "RC2 Historial CVE", "GET", DEVICE + "/analyses")
+add(RC2, "RC2 Estado CVE", "GET", DEVICE_RUN)
+add(
+    RC2,
+    "RC2 Hallazgos CVE",
+    "GET",
+    DEVICE_RUN + "/findings",
+    capture=(
+        f"{SET}('device_finding_id', data.items[0].id);"
+        f"{SET}('device_finding_time', data.items[0].updated_at);"
+    ),
+)
+add(
+    RC2,
+    "RC2 Revisar hallazgo",
+    "PATCH",
+    DEVICE_FINDING,
+    body={
+        "applicability": "undetermined",
+        "expected_updated_at": "{{device_finding_time}}",
+        "reason": "Revision humana de ejemplo",
+        "evidence": "Informacion insuficiente del entorno",
+    },
+)
+add(
+    RC2,
+    "RC2 Crear recomendacion",
+    "POST",
+    DEVICE_FINDING + "/recommendations",
+    status=201,
+    headers={"Idempotency-Key": "{{$guid}}"},
+    body={"recommendation": "Revisar el aviso del fabricante"},
+)
+add(RC2, "RC2 Listar recomendaciones", "GET", DEVICE_FINDING + "/recommendations")
+add(RC2, "RC2 Retirar dispositivo", "PATCH", DEVICE + "/status", body={"status": "retired"})
+add(RC2, "RC2 Dashboard por fuente", "GET", BASE + "/nvd-dashboard/{{nvd_mode}}")
+
+
 def dump(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
@@ -940,9 +1031,9 @@ def main():
                 "{"
                 + (
                     "run_id"
-                    if m[1] in {"analysis_id", "asset_analysis_id"}
+                    if m[1] in {"analysis_id", "asset_analysis_id", "device_run_id"}
                     else "finding_id"
-                    if m[1] == "asset_finding_id"
+                    if m[1] in {"asset_finding_id", "device_finding_id"}
                     else m[1]
                 )
                 + "}"
@@ -1063,7 +1154,7 @@ def main():
             }
         ]
         pre = req["pre"]
-        if req["folder"].startswith("10"):
+        if req["folder"].startswith(("10", "11")):
             pre = (
                 "if (pm.variables.get('target_mode') === 'persistent-development') "
                 "{ pm.execution.skipRequest(); return; }\n" + pre
@@ -1121,6 +1212,10 @@ def main():
         "verification_key": "",
         "recommendation_id": "",
         "user_id": "",
+        "device_id": "",
+        "device_run_id": "",
+        "device_finding_id": "",
+        "device_finding_time": "",
     }
     collection = {
         "info": {
@@ -1229,9 +1324,9 @@ def main():
                     "{"
                     + (
                         "run_id"
-                        if m[1] in {"analysis_id", "asset_analysis_id"}
+                        if m[1] in {"analysis_id", "asset_analysis_id", "device_run_id"}
                         else "finding_id"
-                        if m[1] == "asset_finding_id"
+                        if m[1] in {"asset_finding_id", "device_finding_id"}
                         else m[1]
                     )
                     + "}"

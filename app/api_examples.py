@@ -1818,6 +1818,648 @@ RESPONSE_EXAMPLES = {
             },
         },
     ],
+    "GET /api/v2/workspaces/{workspace_id}/devices": [
+        200,
+        {
+            "items": [
+                {
+                    "component_kind": "firmware",
+                    "cpe_confirmed": False,
+                    "created_at": ("2026-11-13T12:00:00.000001Z"),
+                    "created_by": ("00000000-0000-4000-8000-000000000001"),
+                    "device_type": "router",
+                    "id": ("00000000-0000-4000-8000-000000000033"),
+                    "inventory_label": None,
+                    "manufacturer": "Cisco",
+                    "model": "RV340",
+                    "notes": None,
+                    "product": ("small_business_rv340_firmware"),
+                    "product_vendor": "cisco",
+                    "site_label": "Laboratorio",
+                    "status": "active",
+                    "updated_at": ("2026-11-13T12:00:00.000001Z"),
+                    "version": "1.0.0.33",
+                    "workspace_id": ("00000000-0000-4000-8000-000000000002"),
+                }
+            ],
+            "page": {"limit": 20, "offset": 0, "total": 1},
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}": [
+        200,
+        {
+            "component_kind": "firmware",
+            "created_at": ("2026-11-13T12:00:00.000001Z"),
+            "created_by": ("00000000-0000-4000-8000-000000000001"),
+            "current_identification": None,
+            "device_type": "router",
+            "id": ("00000000-0000-4000-8000-000000000033"),
+            "inventory_label": None,
+            "manufacturer": "Cisco",
+            "model": "RV340",
+            "notes": None,
+            "product": ("small_business_rv340_firmware"),
+            "product_vendor": "cisco",
+            "site_label": "Laboratorio",
+            "status": "active",
+            "updated_at": ("2026-11-13T12:00:00.000001Z"),
+            "version": "1.0.0.33",
+            "workspace_id": ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/analyses": [
+        200,
+        {
+            "items": [
+                {
+                    ("completed_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("coverage"): ("complete"),
+                    ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("failure_code"): None,
+                    "id": ("00000000-0000-4000-8000-000000000035"),
+                    ("identification_id"): ("00000000-0000-4000-8000-000000000034"),
+                    "mode": ("fixture"),
+                    ("observed_version"): ("1.0.0.33"),
+                    ("retrieved_count"): 1,
+                    ("selected_cpe"): (
+                        "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"
+                    ),
+                    "source": ("nvd"),
+                    ("source_timestamp"): ("2026-11-13T12:00:00.000001Z"),
+                    "status": ("completed"),
+                    ("stored_count"): 1,
+                    ("total_results"): 1,
+                    ("warning_codes"): [("TITLE_TRUNCATED")],
+                }
+            ],
+            "page": {"limit": 20, "offset": 0, "total": 1},
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/analyses/{run_id}": [
+        200,
+        {
+            ("completed_at"): ("2026-11-13T12:00:00.000001Z"),
+            "coverage": ("complete"),
+            ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+            ("failure_code"): None,
+            "id": ("00000000-0000-4000-8000-000000000035"),
+            ("identification_id"): ("00000000-0000-4000-8000-000000000034"),
+            "mode": ("fixture"),
+            ("observed_version"): ("1.0.0.33"),
+            ("retrieved_count"): 1,
+            ("selected_cpe"): (
+                "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"
+            ),
+            "source": ("nvd"),
+            ("source_timestamp"): ("2026-11-13T12:00:00.000001Z"),
+            "status": ("completed"),
+            ("stored_count"): 1,
+            ("total_results"): 1,
+            ("warning_codes"): [("TITLE_TRUNCATED")],
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/analyses/{run_id}/findings": [
+        200,
+        {
+            ("items"): [
+                {
+                    ("analysis_id"): ("00000000-0000-4000-8000-000000000035"),
+                    ("applicability"): ("undetermined"),
+                    ("cvss"): {
+                        ("cvssMetricV2"): [
+                            {
+                                ("acInsufInfo"): False,
+                                ("baseSeverity"): ("MEDIUM"),
+                                ("cvssData"): {
+                                    ("accessComplexity"): ("LOW"),
+                                    ("accessVector"): ("NETWORK"),
+                                    ("authentication"): ("NONE"),
+                                    ("availabilityImpact"): ("NONE"),
+                                    ("baseScore"): 5,
+                                    ("confidentialityImpact"): ("PARTIAL"),
+                                    ("integrityImpact"): ("NONE"),
+                                    ("vectorString"): ("AV:N/AC:L/Au:N/C:P/I:N/A:N"),
+                                    ("version"): ("2.0"),
+                                },
+                                ("exploitabilityScore"): 10,
+                                ("impactScore"): 2.9,
+                                ("obtainAllPrivilege"): False,
+                                ("obtainOtherPrivilege"): False,
+                                ("obtainUserPrivilege"): False,
+                                ("source"): ("nvd@nist.gov"),
+                                ("type"): ("Primary"),
+                                ("userInteractionRequired"): False,
+                            }
+                        ],
+                        ("cvssMetricV30"): [
+                            {
+                                ("cvssData"): {
+                                    ("attackComplexity"): ("LOW"),
+                                    ("attackVector"): ("NETWORK"),
+                                    ("availabilityImpact"): ("NONE"),
+                                    ("baseScore"): 5.3,
+                                    ("baseSeverity"): ("MEDIUM"),
+                                    ("confidentialityImpact"): ("LOW"),
+                                    ("integrityImpact"): ("NONE"),
+                                    ("privilegesRequired"): ("NONE"),
+                                    ("scope"): ("UNCHANGED"),
+                                    ("userInteraction"): ("NONE"),
+                                    ("vectorString"): (
+                                        "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"
+                                    ),
+                                    ("version"): ("3.0"),
+                                },
+                                ("exploitabilityScore"): 3.9,
+                                ("impactScore"): 1.4,
+                                ("source"): ("nvd@nist.gov"),
+                                ("type"): ("Primary"),
+                            }
+                        ],
+                    },
+                    ("evidence"): {
+                        ("configurations"): [
+                            {
+                                ("nodes"): [
+                                    {
+                                        ("cpeMatch"): [
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv340_firmware:"
+                                                    "1.0.0.30:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000011"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv340_firmware:"
+                                                    "1.0.0.33:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000012"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv340_firmware:"
+                                                    "1.0.1.9:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000013"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv340_firmware:"
+                                                    "1.0.1.16:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000014"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                        ],
+                                        ("negate"): False,
+                                        ("operator"): ("OR"),
+                                    },
+                                    {
+                                        ("cpeMatch"): [
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:h:cisco:small_b"
+                                                    "usiness_rv340:-:*:*:*:*"
+                                                    ":*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000015"
+                                                ),
+                                                ("vulnerable"): False,
+                                            }
+                                        ],
+                                        ("negate"): False,
+                                        ("operator"): ("OR"),
+                                    },
+                                ],
+                                ("operator"): ("AND"),
+                            },
+                            {
+                                ("nodes"): [
+                                    {
+                                        ("cpeMatch"): [
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv345_firmware:"
+                                                    "1.0.0.30:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000016"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv345_firmware:"
+                                                    "1.0.0.33:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000017"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv345_firmware:"
+                                                    "1.0.1.9:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000018"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv345_firmware:"
+                                                    "1.0.1.16:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000019"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                        ],
+                                        ("negate"): False,
+                                        ("operator"): ("OR"),
+                                    },
+                                    {
+                                        ("cpeMatch"): [
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:h:cisco:small_b"
+                                                    "usiness_rv345:-:*:*:*:*"
+                                                    ":*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000020"
+                                                ),
+                                                ("vulnerable"): False,
+                                            }
+                                        ],
+                                        ("negate"): False,
+                                        ("operator"): ("OR"),
+                                    },
+                                ],
+                                ("operator"): ("AND"),
+                            },
+                            {
+                                ("nodes"): [
+                                    {
+                                        ("cpeMatch"): [
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv345p_firmware"
+                                                    ":1.0.0.30:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000021"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv345p_firmware"
+                                                    ":1.0.0.33:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000022"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv345p_firmware"
+                                                    ":1.0.1.9:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000023"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:o:cisco:small_b"
+                                                    "usiness_rv345p_firmware"
+                                                    ":1.0.1.16:*:*:*:*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000024"
+                                                ),
+                                                ("vulnerable"): True,
+                                            },
+                                        ],
+                                        ("negate"): False,
+                                        ("operator"): ("OR"),
+                                    },
+                                    {
+                                        ("cpeMatch"): [
+                                            {
+                                                ("criteria"): (
+                                                    "cpe:2.3:h:cisco:small_b"
+                                                    "usiness_rv345p:-:*:*:*:"
+                                                    "*:*:*:*"
+                                                ),
+                                                ("matchCriteriaId"): (
+                                                    "00000000-0000-4000-8000-000000000025"
+                                                ),
+                                                ("vulnerable"): False,
+                                            }
+                                        ],
+                                        ("negate"): False,
+                                        ("operator"): ("OR"),
+                                    },
+                                ],
+                                ("operator"): ("AND"),
+                            },
+                        ],
+                        ("cve_id"): ("CVE-2017-6784"),
+                        ("descriptions"): [
+                            {
+                                ("lang"): ("en"),
+                                ("value"): (
+                                    "A vulnerability in the web interface of"
+                                    " the Cisco RV340, RV345, and RV345P "
+                                    "Dual WAN Gigabit VPN Routers could "
+                                    "allow an unauthenticated, remote "
+                                    "attacker to access sensitive data. The "
+                                    "attacker could use this information to "
+                                    "conduct additional reconnaissance "
+                                    "attacks. The vulnerability is due to "
+                                    "Cisco WebEx Meetings not sufficiently "
+                                    "protecting sensitive data when "
+                                    "responding to an HTTP request to the "
+                                    "web interface. An attacker could "
+                                    "exploit the vulnerability by attempting"
+                                    " to use the HTTP protocol and looking "
+                                    "at the data in the HTTP responses from "
+                                    "the Cisco WebEx Meetings Server. An "
+                                    "exploit could allow the attacker to "
+                                    "find sensitive information about the "
+                                    "application. Cisco Bug IDs: CSCve37988."
+                                    " Known Affected Releases: firmware "
+                                    "1.0.0.30, 1.0.0.33, 1.0.1.9, 1.0.1.16."
+                                ),
+                            },
+                            {
+                                ("lang"): ("es"),
+                                ("value"): (
+                                    "Una vulnerabilidad en la interfaz web "
+                                    "de Cisco RV340, RV345, y RV345P Dual "
+                                    "WAN Gigabit VPN Routers podría permitir"
+                                    " que un atacante remoto sin autenticar "
+                                    "acceda a datos sensibles. El atacante "
+                                    "podría utilizar esta información para "
+                                    "llevar a cabo ataques de reconocimiento"
+                                    " adicionales. La vulnerabilidad se debe"
+                                    " a que Cisco WebEx Meetings no protege "
+                                    "lo suficiente los datos sensibles "
+                                    "cuando responde a una petición HTTP a "
+                                    "la interfaz web. Un atacante podría "
+                                    "explotar la vulnerabilidad tratando de "
+                                    "emplear el protocolo HTTP y mirando los"
+                                    " datos en las respuestas HTTP "
+                                    "provenientes de Cisco WebEx Meetings "
+                                    "Server. Un exploit podría permitir que "
+                                    "el atacante encuentre información "
+                                    "sensible sobre la aplicación. Cisco Bug"
+                                    " IDs: CSCve37988. Versiones afectadas "
+                                    "conocidas: firmware 1.0.0.30, 1.0.0.33,"
+                                    " 1.0.1.9, 1.0.1.16."
+                                ),
+                            },
+                        ],
+                        ("evaluator"): ("cpe-conservative-1"),
+                        ("initial_applicability"): ("undetermined"),
+                        ("lastModified"): ("2026-11-13T12:00:00.000001Z"),
+                        ("observed_version"): ("1.0.0.33"),
+                        ("published"): ("2026-11-13T12:00:00.000001Z"),
+                        ("references"): [
+                            {
+                                ("source"): ("psirt@cisco.com"),
+                                ("tags"): [("Third Party Advisory"), ("VDB Entry")],
+                                ("url"): ("http://www.securityfocus.com/bid/100402"),
+                            },
+                            {
+                                ("source"): ("psirt@cisco.com"),
+                                ("tags"): [("Third Party Advisory"), ("VDB Entry")],
+                                ("url"): ("http://www.securitytracker.com/id/1039191"),
+                            },
+                            {
+                                ("source"): ("psirt@cisco.com"),
+                                ("tags"): [("Vendor Advisory")],
+                                ("url"): (
+                                    "https://tools.cisco.com/security/center"
+                                    "/content/CiscoSecurityAdvisory/cisco-sa"
+                                    "-20170816-crr"
+                                ),
+                            },
+                            {
+                                ("source"): ("00000000-0000-4000-8000-000000000010"),
+                                ("tags"): [("Third Party Advisory"), ("VDB Entry")],
+                                ("url"): ("http://www.securityfocus.com/bid/100402"),
+                            },
+                            {
+                                ("source"): ("00000000-0000-4000-8000-000000000010"),
+                                ("tags"): [("Third Party Advisory"), ("VDB Entry")],
+                                ("url"): ("http://www.securitytracker.com/id/1039191"),
+                            },
+                            {
+                                ("source"): ("00000000-0000-4000-8000-000000000010"),
+                                ("tags"): [("Vendor Advisory")],
+                                ("url"): (
+                                    "https://tools.cisco.com/security/center"
+                                    "/content/CiscoSecurityAdvisory/cisco-sa"
+                                    "-20170816-crr"
+                                ),
+                            },
+                        ],
+                        ("rule_codes"): [("COMPLEX_CONFIGURATION")],
+                        ("selected_cpe"): (
+                            "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"
+                        ),
+                        ("source"): ("NVD"),
+                        ("source_record_sha256"): (
+                            "44f4291d60eadd8cd5cb7cb79816edf401be285bfa494e533cd80226bec24f2c"
+                        ),
+                        ("truncated"): False,
+                        ("vulnStatus"): ("Modified"),
+                    },
+                    ("external_id"): ("CVE-2017-6784"),
+                    ("id"): ("00000000-0000-4000-8000-000000000036"),
+                    ("last_modified_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("published_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("review_evidence"): None,
+                    ("review_reason"): None,
+                    ("reviewed_by"): None,
+                    ("severity"): ("medium"),
+                    ("status"): ("open"),
+                    ("title"): (
+                        "A vulnerability in "
+                        "the web interface of"
+                        " the Cisco RV340, "
+                        "RV345, and RV345P "
+                        "Dual WAN Gigabit VPN"
+                        " Routers could allow"
+                        " an unauthenticated,"
+                        " remote attacker to "
+                        "access sensitive "
+                        "data. The attacker "
+                        "could use this "
+                        "information to "
+                        "conduct additional "
+                        "reconnaissance "
+                        "attacks. The "
+                        "vulnerability is due"
+                        " to Cisco WebEx "
+                        "Meetings not "
+                        "sufficiently "
+                        "protecting sensitive"
+                        " data when "
+                        "responding to an "
+                        "HTTP request to the "
+                        "web interface. An "
+                        "attacker could "
+                        "exploit the "
+                        "vulnerability by "
+                        "attempting to use "
+                        "the HTTP protocol "
+                        "and"
+                    ),
+                    ("updated_at"): ("2026-11-13T12:00:00.000001Z"),
+                }
+            ],
+            ("page"): {("limit"): 20, ("offset"): 0, ("total"): 1},
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/cpe-candidates": [
+        200,
+        {
+            "items": [
+                {
+                    ("cpe_name"): (
+                        "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"
+                    ),
+                    ("cpe_name_id"): ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
+                    ("deprecated"): False,
+                    ("title"): ("Cisco Small Business RV340 Firmware 1.0.0.33"),
+                }
+            ],
+            "page": {("limit"): 10, ("offset"): 0, ("total"): 1},
+            ("source_timestamp"): ("2026-11-13T12:00:00.000001Z"),
+        },
+    ],
+    (
+        "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/findings/{findin"
+        "g_id}/recommendations"
+    ): [
+        200,
+        {
+            ("items"): [
+                {
+                    ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("created_by"): ("00000000-0000-4000-8000-000000000001"),
+                    ("finding_id"): ("00000000-0000-4000-8000-000000000036"),
+                    ("id"): ("00000000-0000-4000-8000-000000000037"),
+                    ("recommendation"): ("Revisar el aviso del fabricante"),
+                    ("status"): ("pending"),
+                }
+            ],
+            ("page"): {("limit"): 20, ("offset"): 0, ("total"): 1},
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/identifications": [
+        200,
+        {
+            "items": [
+                {
+                    ("cpe_name"): (
+                        "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"
+                    ),
+                    ("cpe_name_id"): ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
+                    ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("device_id"): ("00000000-0000-4000-8000-000000000033"),
+                    ("id"): ("00000000-0000-4000-8000-000000000034"),
+                    ("mode"): ("fixture"),
+                    ("reason"): ("Revision humana de ejemplo"),
+                    ("recorded_by"): ("00000000-0000-4000-8000-000000000001"),
+                    ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+                }
+            ],
+            "page": {("limit"): 20, ("offset"): 0, ("total"): 1},
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/nvd-dashboard/{nvd_mode}": [
+        200,
+        {
+            "analysis_trend": [
+                {("analyses"): 0, ("month"): ("2026-11-13T12:00:00.000001Z")},
+                {("analyses"): 0, ("month"): ("2026-11-13T12:00:00.000001Z")},
+                {("analyses"): 0, ("month"): ("2026-11-13T12:00:00.000001Z")},
+                {("analyses"): 0, ("month"): ("2026-11-13T12:00:00.000001Z")},
+                {("analyses"): 0, ("month"): ("2026-11-13T12:00:00.000001Z")},
+                {("analyses"): 1, ("month"): ("2026-11-13T12:00:00.000001Z")},
+            ],
+            "priority_findings": [],
+            "recent_analyses": [
+                {
+                    ("application_id"): ("00000000-0000-4000-8000-000000000004"),
+                    ("application_name"): ("Laboratorio API V2"),
+                    ("completed_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("coverage"): ("complete"),
+                    ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("finding_count"): 1,
+                    ("id"): ("00000000-0000-4000-8000-000000000008"),
+                    ("product"): ("small_business_rv340_firmware"),
+                    ("status"): ("completed"),
+                    ("stored_count"): 1,
+                    ("technology_id"): ("00000000-0000-4000-8000-000000000007"),
+                    ("version"): ("1.0.0.33"),
+                    ("warning_codes"): [("TITLE_TRUNCATED")],
+                }
+            ],
+            "summary": {
+                ("analyses_failed"): 0,
+                ("analyses_in_progress"): 0,
+                ("analyses_total"): 1,
+                ("applications_total"): 1,
+                ("authorized_targets_total"): 0,
+                ("confirmed_cpe_total"): 1,
+                ("critical_open"): 0,
+                ("findings_open"): 0,
+                ("findings_total"): 1,
+                "high_open": 0,
+                "low_open": 0,
+                ("medium_open"): 0,
+                ("severity_unknown"): 0,
+                ("targets_total"): 1,
+                ("technologies_total"): 1,
+                ("technologies_with_completed_analysis"): 1,
+            },
+        },
+    ],
     "GET /api/v2/workspaces/{workspace_id}/targets": [
         200,
         {
@@ -2854,6 +3496,503 @@ RESPONSE_EXAMPLES = {
             ("url"): ("https://app.example.com/"),
         },
     ],
+    "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}/findings/{finding_id}": [
+        200,
+        {
+            ("analysis_id"): ("00000000-0000-4000-8000-000000000035"),
+            ("applicability"): ("undetermined"),
+            ("cvss"): {
+                ("cvssMetricV2"): [
+                    {
+                        ("acInsufInfo"): False,
+                        ("baseSeverity"): ("MEDIUM"),
+                        ("cvssData"): {
+                            ("accessComplexity"): ("LOW"),
+                            ("accessVector"): ("NETWORK"),
+                            ("authentication"): ("NONE"),
+                            ("availabilityImpact"): ("NONE"),
+                            ("baseScore"): 5,
+                            ("confidentialityImpact"): ("PARTIAL"),
+                            ("integrityImpact"): ("NONE"),
+                            ("vectorString"): ("AV:N/AC:L/Au:N/C:P/I:N/A:N"),
+                            ("version"): ("2.0"),
+                        },
+                        ("exploitabilityScore"): 10,
+                        ("impactScore"): 2.9,
+                        ("obtainAllPrivilege"): False,
+                        ("obtainOtherPrivilege"): False,
+                        ("obtainUserPrivilege"): False,
+                        ("source"): ("nvd@nist.gov"),
+                        ("type"): ("Primary"),
+                        ("userInteractionRequired"): False,
+                    }
+                ],
+                ("cvssMetricV30"): [
+                    {
+                        ("cvssData"): {
+                            ("attackComplexity"): ("LOW"),
+                            ("attackVector"): ("NETWORK"),
+                            ("availabilityImpact"): ("NONE"),
+                            ("baseScore"): 5.3,
+                            ("baseSeverity"): ("MEDIUM"),
+                            ("confidentialityImpact"): ("LOW"),
+                            ("integrityImpact"): ("NONE"),
+                            ("privilegesRequired"): ("NONE"),
+                            ("scope"): ("UNCHANGED"),
+                            ("userInteraction"): ("NONE"),
+                            ("vectorString"): ("CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N"),
+                            ("version"): ("3.0"),
+                        },
+                        ("exploitabilityScore"): 3.9,
+                        ("impactScore"): 1.4,
+                        ("source"): ("nvd@nist.gov"),
+                        ("type"): ("Primary"),
+                    }
+                ],
+            },
+            ("evidence"): {
+                ("configurations"): [
+                    {
+                        ("nodes"): [
+                            {
+                                ("cpeMatch"): [
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv340_firmware:1.0.0.30:*:*:*:*"
+                                            ":*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000011"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv340_firmware:1.0.0.33:*:*:*:*"
+                                            ":*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000012"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv340_firmware:1.0.1.9:*:*:*:*:"
+                                            "*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000013"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv340_firmware:1.0.1.16:*:*:*:*"
+                                            ":*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000014"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                ],
+                                ("negate"): False,
+                                ("operator"): ("OR"),
+                            },
+                            {
+                                ("cpeMatch"): [
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:h:cisco:small_business_rv340:-:*:*:*:*:*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000015"
+                                        ),
+                                        ("vulnerable"): False,
+                                    }
+                                ],
+                                ("negate"): False,
+                                ("operator"): ("OR"),
+                            },
+                        ],
+                        ("operator"): ("AND"),
+                    },
+                    {
+                        ("nodes"): [
+                            {
+                                ("cpeMatch"): [
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv345_firmware:1.0.0.30:*:*:*:*"
+                                            ":*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000016"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv345_firmware:1.0.0.33:*:*:*:*"
+                                            ":*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000017"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv345_firmware:1.0.1.9:*:*:*:*:"
+                                            "*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000018"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv345_firmware:1.0.1.16:*:*:*:*"
+                                            ":*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000019"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                ],
+                                ("negate"): False,
+                                ("operator"): ("OR"),
+                            },
+                            {
+                                ("cpeMatch"): [
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:h:cisco:small_business_rv345:-:*:*:*:*:*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000020"
+                                        ),
+                                        ("vulnerable"): False,
+                                    }
+                                ],
+                                ("negate"): False,
+                                ("operator"): ("OR"),
+                            },
+                        ],
+                        ("operator"): ("AND"),
+                    },
+                    {
+                        ("nodes"): [
+                            {
+                                ("cpeMatch"): [
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv345p_firmware:1.0.0.30:*:*:*:"
+                                            "*:*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000021"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv345p_firmware:1.0.0.33:*:*:*:"
+                                            "*:*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000022"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv345p_firmware:1.0.1.9:*:*:*:*"
+                                            ":*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000023"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:o:cisco:small_business_"
+                                            "rv345p_firmware:1.0.1.16:*:*:*:"
+                                            "*:*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000024"
+                                        ),
+                                        ("vulnerable"): True,
+                                    },
+                                ],
+                                ("negate"): False,
+                                ("operator"): ("OR"),
+                            },
+                            {
+                                ("cpeMatch"): [
+                                    {
+                                        ("criteria"): (
+                                            "cpe:2.3:h:cisco:small_business_rv345p:-:*:*:*:*:*:*:*"
+                                        ),
+                                        ("matchCriteriaId"): (
+                                            "00000000-0000-4000-8000-000000000025"
+                                        ),
+                                        ("vulnerable"): False,
+                                    }
+                                ],
+                                ("negate"): False,
+                                ("operator"): ("OR"),
+                            },
+                        ],
+                        ("operator"): ("AND"),
+                    },
+                ],
+                ("cve_id"): ("CVE-2017-6784"),
+                ("descriptions"): [
+                    {
+                        ("lang"): ("en"),
+                        ("value"): (
+                            "A vulnerability in "
+                            "the web interface of"
+                            " the Cisco RV340, "
+                            "RV345, and RV345P "
+                            "Dual WAN Gigabit VPN"
+                            " Routers could allow"
+                            " an unauthenticated,"
+                            " remote attacker to "
+                            "access sensitive "
+                            "data. The attacker "
+                            "could use this "
+                            "information to "
+                            "conduct additional "
+                            "reconnaissance "
+                            "attacks. The "
+                            "vulnerability is due"
+                            " to Cisco WebEx "
+                            "Meetings not "
+                            "sufficiently "
+                            "protecting sensitive"
+                            " data when "
+                            "responding to an "
+                            "HTTP request to the "
+                            "web interface. An "
+                            "attacker could "
+                            "exploit the "
+                            "vulnerability by "
+                            "attempting to use "
+                            "the HTTP protocol "
+                            "and looking at the "
+                            "data in the HTTP "
+                            "responses from the "
+                            "Cisco WebEx Meetings"
+                            " Server. An exploit "
+                            "could allow the "
+                            "attacker to find "
+                            "sensitive "
+                            "information about "
+                            "the application. "
+                            "Cisco Bug IDs: "
+                            "CSCve37988. Known "
+                            "Affected Releases: "
+                            "firmware 1.0.0.30, "
+                            "1.0.0.33, 1.0.1.9, "
+                            "1.0.1.16."
+                        ),
+                    },
+                    {
+                        ("lang"): ("es"),
+                        ("value"): (
+                            "Una vulnerabilidad "
+                            "en la interfaz web "
+                            "de Cisco RV340, "
+                            "RV345, y RV345P Dual"
+                            " WAN Gigabit VPN "
+                            "Routers podría "
+                            "permitir que un "
+                            "atacante remoto sin "
+                            "autenticar acceda a "
+                            "datos sensibles. El "
+                            "atacante podría "
+                            "utilizar esta "
+                            "información para "
+                            "llevar a cabo "
+                            "ataques de "
+                            "reconocimiento "
+                            "adicionales. La "
+                            "vulnerabilidad se "
+                            "debe a que Cisco "
+                            "WebEx Meetings no "
+                            "protege lo "
+                            "suficiente los datos"
+                            " sensibles cuando "
+                            "responde a una "
+                            "petición HTTP a la "
+                            "interfaz web. Un "
+                            "atacante podría "
+                            "explotar la "
+                            "vulnerabilidad "
+                            "tratando de emplear "
+                            "el protocolo HTTP y "
+                            "mirando los datos en"
+                            " las respuestas HTTP"
+                            " provenientes de "
+                            "Cisco WebEx Meetings"
+                            " Server. Un exploit "
+                            "podría permitir que "
+                            "el atacante "
+                            "encuentre "
+                            "información sensible"
+                            " sobre la "
+                            "aplicación. Cisco "
+                            "Bug IDs: CSCve37988."
+                            " Versiones afectadas"
+                            " conocidas: firmware"
+                            " 1.0.0.30, 1.0.0.33,"
+                            " 1.0.1.9, 1.0.1.16."
+                        ),
+                    },
+                ],
+                ("evaluator"): ("cpe-conservative-1"),
+                ("initial_applicability"): ("undetermined"),
+                ("lastModified"): ("2026-11-13T12:00:00.000001Z"),
+                ("observed_version"): ("1.0.0.33"),
+                ("published"): ("2026-11-13T12:00:00.000001Z"),
+                ("references"): [
+                    {
+                        ("source"): ("psirt@cisco.com"),
+                        ("tags"): [("Third Party Advisory"), ("VDB Entry")],
+                        ("url"): ("http://www.securityfocus.com/bid/100402"),
+                    },
+                    {
+                        ("source"): ("psirt@cisco.com"),
+                        ("tags"): [("Third Party Advisory"), ("VDB Entry")],
+                        ("url"): ("http://www.securitytracker.com/id/1039191"),
+                    },
+                    {
+                        ("source"): ("psirt@cisco.com"),
+                        ("tags"): [("Vendor Advisory")],
+                        ("url"): (
+                            "https://tools.cisco."
+                            "com/security/center/"
+                            "content/CiscoSecurit"
+                            "yAdvisory/cisco-sa-2"
+                            "0170816-crr"
+                        ),
+                    },
+                    {
+                        ("source"): ("00000000-0000-4000-8000-000000000010"),
+                        ("tags"): [("Third Party Advisory"), ("VDB Entry")],
+                        ("url"): ("http://www.securityfocus.com/bid/100402"),
+                    },
+                    {
+                        ("source"): ("00000000-0000-4000-8000-000000000010"),
+                        ("tags"): [("Third Party Advisory"), ("VDB Entry")],
+                        ("url"): ("http://www.securitytracker.com/id/1039191"),
+                    },
+                    {
+                        ("source"): ("00000000-0000-4000-8000-000000000010"),
+                        ("tags"): [("Vendor Advisory")],
+                        ("url"): (
+                            "https://tools.cisco."
+                            "com/security/center/"
+                            "content/CiscoSecurit"
+                            "yAdvisory/cisco-sa-2"
+                            "0170816-crr"
+                        ),
+                    },
+                ],
+                ("rule_codes"): [("COMPLEX_CONFIGURATION")],
+                ("selected_cpe"): (
+                    "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"
+                ),
+                ("source"): ("NVD"),
+                ("source_record_sha256"): (
+                    "44f4291d60eadd8cd5cb7cb79816edf401be285bfa494e533cd80226bec24f2c"
+                ),
+                ("truncated"): False,
+                ("vulnStatus"): ("Modified"),
+            },
+            ("external_id"): ("CVE-2017-6784"),
+            "id": ("00000000-0000-4000-8000-000000000036"),
+            ("last_modified_at"): ("2026-11-13T12:00:00.000001Z"),
+            ("published_at"): ("2026-11-13T12:00:00.000001Z"),
+            ("review_evidence"): ("Informacion insuficiente del entorno"),
+            ("review_reason"): ("Revision humana de ejemplo"),
+            ("reviewed_by"): ("00000000-0000-4000-8000-000000000001"),
+            ("severity"): ("medium"),
+            ("status"): ("reviewed"),
+            ("title"): (
+                "A vulnerability in "
+                "the web interface of"
+                " the Cisco RV340, "
+                "RV345, and RV345P "
+                "Dual WAN Gigabit VPN"
+                " Routers could allow"
+                " an unauthenticated,"
+                " remote attacker to "
+                "access sensitive "
+                "data. The attacker "
+                "could use this "
+                "information to "
+                "conduct additional "
+                "reconnaissance "
+                "attacks. The "
+                "vulnerability is due"
+                " to Cisco WebEx "
+                "Meetings not "
+                "sufficiently "
+                "protecting sensitive"
+                " data when "
+                "responding to an "
+                "HTTP request to the "
+                "web interface. An "
+                "attacker could "
+                "exploit the "
+                "vulnerability by "
+                "attempting to use "
+                "the HTTP protocol "
+                "and"
+            ),
+            ("updated_at"): ("2026-11-13T12:00:00.000001Z"),
+        },
+    ],
+    "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}/status": [
+        200,
+        {
+            "component_kind": ("firmware"),
+            "created_at": ("2026-11-13T12:00:00.000001Z"),
+            "created_by": ("00000000-0000-4000-8000-000000000001"),
+            "device_type": ("router"),
+            "id": ("00000000-0000-4000-8000-000000000033"),
+            "inventory_label": None,
+            "manufacturer": ("Cisco"),
+            "model": "RV340",
+            "notes": None,
+            "product": ("small_business_rv340_firmware"),
+            "product_vendor": ("cisco"),
+            "site_label": ("Laboratorio"),
+            "status": "retired",
+            "updated_at": ("2026-11-13T12:00:00.000001Z"),
+            "version": ("1.0.0.33"),
+            "workspace_id": ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
     "POST /api/v1/assets": [
         201,
         {
@@ -3067,6 +4206,78 @@ RESPONSE_EXAMPLES = {
             ("warning_codes"): [("TITLE_TRUNCATED")],
         },
     ],
+    "POST /api/v2/workspaces/{workspace_id}/devices": [
+        201,
+        {
+            "component_kind": "firmware",
+            "created_at": ("2026-11-13T12:00:00.000001Z"),
+            "created_by": ("00000000-0000-4000-8000-000000000001"),
+            "device_type": "router",
+            "id": ("00000000-0000-4000-8000-000000000033"),
+            "inventory_label": None,
+            "manufacturer": "Cisco",
+            "model": "RV340",
+            "notes": None,
+            "product": ("small_business_rv340_firmware"),
+            "product_vendor": "cisco",
+            "site_label": "Laboratorio",
+            "status": "active",
+            "updated_at": ("2026-11-13T12:00:00.000001Z"),
+            "version": "1.0.0.33",
+            "workspace_id": ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
+    "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/analyses": [
+        201,
+        {
+            "completed_at": ("2026-11-13T12:00:00.000001Z"),
+            "coverage": ("complete"),
+            "created_at": ("2026-11-13T12:00:00.000001Z"),
+            "failure_code": None,
+            "id": ("00000000-0000-4000-8000-000000000035"),
+            ("identification_id"): ("00000000-0000-4000-8000-000000000034"),
+            "mode": "fixture",
+            "observed_version": ("1.0.0.33"),
+            "retrieved_count": 1,
+            "selected_cpe": (
+                "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"
+            ),
+            "source": "nvd",
+            "source_timestamp": ("2026-11-13T12:00:00.000001Z"),
+            "status": ("completed"),
+            "stored_count": 1,
+            "total_results": 1,
+            "warning_codes": [("TITLE_TRUNCATED")],
+        },
+    ],
+    (
+        "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/findings/{findi"
+        "ng_id}/recommendations"
+    ): [
+        201,
+        {
+            ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+            ("created_by"): ("00000000-0000-4000-8000-000000000001"),
+            ("finding_id"): ("00000000-0000-4000-8000-000000000036"),
+            ("id"): ("00000000-0000-4000-8000-000000000037"),
+            ("recommendation"): ("Revisar el aviso del fabricante"),
+            ("status"): ("pending"),
+        },
+    ],
+    "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/identifications": [
+        201,
+        {
+            "cpe_name": ("cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"),
+            ("cpe_name_id"): ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
+            ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+            "device_id": ("00000000-0000-4000-8000-000000000033"),
+            "id": ("00000000-0000-4000-8000-000000000034"),
+            "mode": ("fixture"),
+            "reason": ("Revision humana de ejemplo"),
+            ("recorded_by"): ("00000000-0000-4000-8000-000000000001"),
+            ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
     (
         "PUT /api/v2/workspaces/{workspace_id}/applications/{application_id}/techno"
         "logies/{technology_id}/cpe"
@@ -3182,6 +4393,23 @@ REQUEST_EXAMPLES = {
                 ("authorization_status"): ("rejected"),
                 ("expected_updated_at"): ("2026-11-13T12:00:00Z"),
             },
+        }
+    },
+    "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}/findings/{finding_id}": {
+        ("local"): {
+            ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            ("value"): {
+                ("applicability"): ("undetermined"),
+                ("evidence"): ("Informacion insuficiente del entorno"),
+                ("expected_updated_at"): ("2026-11-13T12:00:00Z"),
+                ("reason"): ("Revision humana de ejemplo"),
+            },
+        }
+    },
+    "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}/status": {
+        "local": {
+            "summary": ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            "value": {("status"): ("retired")},
         }
     },
     "POST /api/v1/assets": {
@@ -3305,6 +4533,40 @@ REQUEST_EXAMPLES = {
                 ("product"): ("small_business_rv340_firmware"),
                 ("vendor"): ("cisco"),
                 ("version"): ("1.0.0.33"),
+            },
+        }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/devices": {
+        "local": {
+            "summary": ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            "value": {
+                "component_kind": ("firmware"),
+                "device_type": ("router"),
+                "manufacturer": ("Cisco"),
+                "model": "RV340",
+                "product": ("small_business_rv340_firmware"),
+                "product_vendor": ("cisco"),
+                "site_label": ("Laboratorio"),
+                "version": ("1.0.0.33"),
+            },
+        }
+    },
+    (
+        "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/findings/{findi"
+        "ng_id}/recommendations"
+    ): {
+        ("local"): {
+            ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            ("value"): {("recommendation"): ("Revisar el aviso del fabricante")},
+        }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/identifications": {
+        "local": {
+            ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            ("value"): {
+                ("cpe_name_id"): ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
+                ("expected_identification_id"): None,
+                ("reason"): ("Revision humana de ejemplo"),
             },
         }
     },

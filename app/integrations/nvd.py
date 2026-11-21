@@ -119,14 +119,36 @@ class NVDPage(BaseModel):
     products: list[Entry] = Field(max_length=20)
 
 
+class RetryableNVDCall(APIError):
+    """A transient upstream response that permits one bounded retry."""
+
+
 class NVDClient:
-    def __init__(self, api_key=None, timeout=10, transport=None, quota=None):
-        self.api_key = api_key
+    def __init__(self, api_key=None, timeout=10, transport=None, quota=None, *, live=None):
+        self.live = live
+        self.api_key = api_key if live is not False else None
         self.timeout = timeout
         self.transport = transport
         self.quota = quota or Quota()
 
     def _content(self, url, params):
+        # Internal callers use a constant route. Block accidental new origins as well.
+        if url not in {NVD_URL, "https://services.nvd.nist.gov/rest/json/cves/2.0"}:
+            raise APIError(502, "NVD_INVALID_ORIGIN", "Origen NVD no permitido")
+        if self.live is False and self.transport is None:
+            raise APIError(503, "NVD_MODE_REQUIRED", "Activa un modo NVD expl?cito")
+        try:
+            return self._content_once(url, params)
+        except RetryableNVDCall:
+            if self.live is not True:
+                raise
+            delay = self.quota.wait_seconds()
+            if delay > 7:
+                raise
+            time.sleep(delay)
+            return self._content_once(url, params)
+
+    def _content_once(self, url, params):
         self.quota.reserve()
         headers = {"Accept": "application/json", "Accept-Encoding": "identity"}
         if self.api_key:
@@ -143,6 +165,14 @@ class NVDClient:
                 ) as client,
                 client.stream("GET", url, params=params, headers=headers) as response,
             ):
+                if (
+                    self.live is True
+                    and response.status_code in {500, 502, 503, 504}
+                    and not response.headers.get("Retry-After")
+                ):
+                    raise RetryableNVDCall(
+                        503, "NVD_UNAVAILABLE", "NVD temporalmente no disponible"
+                    )
                 if response.status_code in {403, 429} or response.status_code >= 500:
                     self.quota.backoff(response.headers.get("Retry-After"))
                     raise APIError(
@@ -165,7 +195,11 @@ class NVDClient:
                         )
             return content
         except httpx.TimeoutException:
-            raise APIError(504, "NVD_TIMEOUT", "NVD excedió el tiempo de espera") from None
+            raise RetryableNVDCall(504, "NVD_TIMEOUT", "NVD excedió el tiempo de espera") from None
+        except httpx.TransportError:
+            raise RetryableNVDCall(
+                503, "NVD_UNAVAILABLE", "NVD temporalmente no disponible"
+            ) from None
         except httpx.HTTPError:
             raise APIError(503, "NVD_UNAVAILABLE", "NVD temporalmente no disponible") from None
         except (ValidationError, ValueError):

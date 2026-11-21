@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from scripts.v2_development import ROOT, PersistentV2, private_json, process_identity
 
-PROFILE = re.compile(r"rc1(?:-restore(?:-[0-9a-f]{8})?)?")
+PROFILE = re.compile(r"rc[12](?:-restore(?:-[0-9a-f]{8})?)?")
 
 
 def guard(profile, config):
@@ -25,6 +25,7 @@ def guard(profile, config):
         any(type(p) is not int or not 1024 <= p <= 65535 for p in ports)
         or len(set(ports)) != 3
         or set(ports) & {55434, 8000, 5173}
+        or (profile.startswith("rc2") and set(ports) & {55438, 8004, 5177})
     ):
         raise RuntimeError("RC1 ports must be separate from personal development")
     return {
@@ -74,7 +75,7 @@ def main():
             found = True
     if not found:
         raise RuntimeError("Owned RC1 API must be running explicitly in fixture mode")
-    primary = ROOT / ".local/rc1"
+    primary = ROOT / ".local" / args.profile.split("-")[0]
     state_path = primary / "demo-access.json"
     if args.phase == "create":
         if state_path.exists():
@@ -102,9 +103,7 @@ def main():
         RC1_GUARD_FILE=str(guard_path), RC1_STATE_FILE=str(state_path), RC1_PHASE=args.phase
     )
     result = subprocess.run(["npm", "run", "test:e2e:rc1"], cwd=frontend, env=environment)
-    print(
-        "RC1 acceptance completed; demo credentials remain in private .local/rc1/demo-access.json"
-    )
+    print("Browser acceptance completed; demo credentials remain in the private profile directory")
     return result.returncode
 
 
