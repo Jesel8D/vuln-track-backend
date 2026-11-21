@@ -16,7 +16,8 @@ from app.api.router import Identity
 from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
 from app.schemas.cpe import Candidate, CandidateList, SearchInput, parse_cpe, unbind_component
-from app.services.applicability import encoded, evidence_for
+from app.services.applicability import encoded
+from app.services.nvd_findings import finding_rows
 
 logger = logging.getLogger("vulntrack.v2.nvd")
 router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/applications/{application_id}")
@@ -120,29 +121,6 @@ def _authorize(session, workspace_id, application_id, role="owner", actor_id=Non
     )
     if not found:
         raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
-
-
-def _severity(metrics):
-    for key in ("cvssMetricV40", "cvssMetricV31", "cvssMetricV30", "cvssMetricV2"):
-        values = metrics.get(key)
-        if isinstance(values, list) and values and isinstance(values[0], dict):
-            data = values[0].get("cvssData", {})
-            severity = data.get("baseSeverity") or values[0].get("baseSeverity")
-            if isinstance(severity, str):
-                normalized = severity.casefold()
-                if normalized in {"critical", "high", "medium", "low", "none"}:
-                    return normalized
-    return "unknown"
-
-
-def _contains_nul(value):
-    if isinstance(value, str):
-        return "\x00" in value
-    if isinstance(value, dict):
-        return any(_contains_nul(key) or _contains_nul(item) for key, item in value.items())
-    if isinstance(value, list):
-        return any(_contains_nul(item) for item in value)
-    return False
 
 
 @router.get("/cpe-candidates", response_model=CandidateList)
@@ -278,7 +256,8 @@ def analyze_technology(
             )
         previous = (
             session.execute(
-                text("""SELECT id, request_hash, status, coverage, total_results, stored_count
+                text("""SELECT id, request_hash, status, coverage, total_results, stored_count,
+                    COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND initiated_by=:actor AND request_key=:key"""),
                 {"workspace": workspace_id, "actor": user.id, "key": key},
@@ -318,7 +297,11 @@ def analyze_technology(
                 "key": key,
                 "digest": request_hash,
                 "params": json.dumps(
-                    {"cpeName": technology["selected_cpe"], "resultsPerPage": 100}
+                    {
+                        "cpeName": technology["selected_cpe"],
+                        "resultsPerPage": 100,
+                        "nvd_mode": request.app.state.nvd_mode,
+                    }
                 ),
             },
         )
@@ -344,52 +327,9 @@ def analyze_technology(
 
         # No SQL transaction/connection is held during the external request.
         page = request.app.state.cve.page(technology["selected_cpe"], 0, 100)
-        page_cves = [
-            entry.cve.model_dump(mode="json", exclude_none=True) for entry in page.vulnerabilities
-        ]
-        warnings = []
-        rows = []
-        for record in page_cves:
-            if _contains_nul(record):
-                raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta CVE NVD no válida")
-            applicability, evidence = evidence_for(
-                technology["selected_cpe"], technology["version"], record
-            )
-            if evidence.get("truncated"):
-                warnings.append("EVIDENCE_BUDGET_REACHED")
-            descriptions = record.get("descriptions", [])
-            title = next(
-                (item.get("value") for item in descriptions if item.get("lang") == "en"), None
-            )
-            if isinstance(title, str):
-                normalized_title = " ".join(title.split())
-                if len(normalized_title) > 500:
-                    warnings.append("TITLE_TRUNCATED")
-                # Display title is bounded; evidence_for retains original descriptions.
-                title = normalized_title[:500].rstrip()
-            else:
-                title = None
-            metrics = record.get("metrics") or None
-            if metrics and len(encoded(metrics)) > 24000:
-                warnings.append("METRICS_OMITTED")
-                metrics = None
-            rows.append(
-                {
-                    "id": uuid4(),
-                    "workspace": workspace_id,
-                    "analysis": run_id,
-                    "external_id": record["id"],
-                    "title": title or None,
-                    "severity": _severity(record.get("metrics") or {}),
-                    "cvss": json.dumps(metrics) if metrics else None,
-                    "applicability": applicability,
-                    "evidence": json.dumps(evidence),
-                    "published": datetime.fromisoformat(record["published"].replace("Z", "+00:00")),
-                    "modified": datetime.fromisoformat(
-                        record["lastModified"].replace("Z", "+00:00")
-                    ),
-                }
-            )
+        page_cves, rows, warnings = finding_rows(
+            page, technology["selected_cpe"], technology["version"]
+        )
         complete = page.totalResults <= len(page_cves)
         if not complete:
             warnings.append("PAGE_BUDGET_REACHED")
@@ -404,7 +344,7 @@ def analyze_technology(
                         VALUES (:id,:workspace,:analysis,:external_id,:title,:severity,
                         CAST(:cvss AS jsonb),:applicability,CAST(:evidence AS
                         jsonb),:published,:modified)"""),
-                    row,
+                    {**row, "workspace": workspace_id, "analysis": run_id},
                 )
             ids = [record["id"] for record in page_cves]
             manifest = [
@@ -451,6 +391,7 @@ def analyze_technology(
     return {
         "id": str(run_id),
         "status": "completed",
+        "nvd_mode": request.app.state.nvd_mode,
         "coverage": "complete" if complete else "partial",
         "total_results": page.totalResults,
         "retrieved_count": len(page_cves),
@@ -495,7 +436,8 @@ def get_analysis(
             session.execute(
                 text("""SELECT
                 id,status,coverage,total_results,retrieved_count,stored_count,page_count,
-                warning_codes,failure_code,source_timestamp,created_at,started_at,completed_at
+                warning_codes,failure_code,source_timestamp,created_at,started_at,completed_at,
+                COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id"""),
                 {"workspace": workspace_id, "application": application_id, "id": run_id},
@@ -526,7 +468,8 @@ def list_analyses(
             session.execute(
                 text("""SELECT r.id,r.technology_id,t.product,t.version,r.status,r.coverage,
                 r.total_results,r.retrieved_count,r.stored_count,r.page_count,r.warning_codes,
-                r.failure_code,r.source_timestamp,r.created_at,r.started_at,r.completed_at
+                r.failure_code,r.source_timestamp,r.created_at,r.started_at,r.completed_at,
+                COALESCE(r.query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs r
                 JOIN vulntrack.technologies t
                   ON t.workspace_id=r.workspace_id AND t.application_id=r.application_id

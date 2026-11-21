@@ -20,6 +20,7 @@ from pathlib import Path
 from sqlalchemy import URL, create_engine, text
 
 from app.core.config import Settings
+from app.db.verify_devices import verify_devices_schema
 from app.db.verify_schema import CVE_REVISION, verify_schema
 from app.db.verify_verification import verify_verification_schema
 from app.main import create_app
@@ -327,7 +328,17 @@ class PersistentV2:
         ]:
             self.sql((self.reference / relative).read_text())
         command(
-            [sys.executable, "-m", "alembic", "-c", "alembic-verification.ini", "upgrade", "head"],
+            [
+                sys.executable,
+                "-m",
+                "alembic",
+                "-c",
+                "alembic-verification.ini",
+                "upgrade",
+                "head"
+                if self.profile == "rc2" or self.profile.startswith("rc2-")
+                else "v2_0001_target_verification",
+            ],
             env=env,
         )
         self.api_role()
@@ -349,6 +360,8 @@ class PersistentV2:
                 verify_schema(connection, CVE_REVISION)
                 if connection.scalar(text("SELECT to_regnamespace('vulntrack_verification')")):
                     verify_verification_schema(connection)
+                if self.profile == "rc2" or self.profile.startswith("rc2-"):
+                    verify_devices_schema(connection)
                 checks = [
                     connection.scalar(text("SELECT version_num FROM public.alembic_version"))
                     == CVE_REVISION
@@ -688,11 +701,22 @@ def fixture_application(settings):
 def create_development_app():
     stack = PersistentV2(os.environ.get("VULNTRACK_V2_PROFILE", "development"))
     settings = stack.settings()
-    return (
-        fixture_application(settings)
-        if os.environ.get("VULNTRACK_V2_NVD_MODE", "fixture") == "fixture"
-        else create_app(settings)
-    )
+    if os.environ.get("VULNTRACK_V2_NVD_MODE", "fixture") == "fixture":
+        return fixture_application(settings)
+    key = stack.directory / "nvd-api-key"
+    if key.exists():
+        if key.is_symlink() or not key.is_file() or key.stat().st_mode & 0o077:
+            raise RuntimeError("NVD API key file must be private (0600)")
+        settings = Settings.model_validate(
+            {
+                **settings.model_dump(),
+                "nvd_api_key": key.read_text().strip() or None,
+                "nvd_mode": "live",
+            }
+        )
+    else:
+        settings = settings.model_copy(update={"nvd_mode": "live"})
+    return create_app(settings)
 
 
 def main():

@@ -1,5 +1,6 @@
 """Workspace dashboard using the latest completed NVD run per technology."""
 
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Request
@@ -12,8 +13,26 @@ from app.db.workspace_context import workspace_session
 router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/dashboard")
 
 
+source_router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/nvd-dashboard")
+
+
 @router.get("")
 def dashboard(workspace_id: UUID, user: Identity, request: Request):
+    return dashboard_data(workspace_id, user, request)
+
+
+@source_router.get("/{nvd_mode}")
+def dashboard_by_source(
+    workspace_id: UUID,
+    nvd_mode: Literal["fixture", "live", "unknown"],
+    user: Identity,
+    request: Request,
+):
+    return dashboard_data(workspace_id, user, request, nvd_mode)
+
+
+def dashboard_data(workspace_id, user, request, nvd_mode=None):
+    params = {"workspace": workspace_id, "mode": nvd_mode}
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
@@ -25,9 +44,14 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
         ):
             raise APIError(404, "WORKSPACE_NOT_FOUND", "Workspace no disponible")
 
+        # Bound the queries before deduplication. Device runs occupy a separate schema.
+        source_predicate = (
+            "(CAST(:mode AS text) IS NULL OR "
+            "COALESCE(query_parameters->>'nvd_mode','unknown')=:mode)"
+        )
         summary = (
             session.execute(
-                text("""SELECT
+                text(f"""SELECT
                 (SELECT count(*) FROM vulntrack.applications
                  WHERE workspace_id=:workspace AND status='active') AS applications_total,
                 (SELECT count(*) FROM vulntrack.application_targets
@@ -41,13 +65,15 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
                  WHERE workspace_id=:workspace AND confidence='user_confirmed'
                    AND selected_cpe IS NOT NULL) AS confirmed_cpe_total,
                 (SELECT count(*) FROM vulntrack.application_analysis_runs
-                 WHERE workspace_id=:workspace) AS analyses_total,
+                 WHERE workspace_id=:workspace AND {source_predicate}) AS analyses_total,
                 (SELECT count(*) FROM vulntrack.application_analysis_runs
-                 WHERE workspace_id=:workspace AND status IN ('queued','running')) AS
+                 WHERE workspace_id=:workspace AND {source_predicate}
+                   AND status IN ('queued','running')) AS
                  analyses_in_progress,
                 (SELECT count(*) FROM vulntrack.application_analysis_runs
-                 WHERE workspace_id=:workspace AND status='failed') AS analyses_failed"""),
-                {"workspace": workspace_id},
+                 WHERE workspace_id=:workspace AND {source_predicate}
+                   AND status='failed') AS analyses_failed"""),
+                params,
             )
             .mappings()
             .one()
@@ -55,10 +81,10 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
 
         latest_stats = (
             session.execute(
-                text("""WITH latest AS (
+                text(f"""WITH latest AS (
                 SELECT DISTINCT ON (technology_id) id,technology_id
                 FROM vulntrack.application_analysis_runs
-                WHERE workspace_id=:workspace AND status='completed'
+                WHERE workspace_id=:workspace AND {source_predicate} AND status='completed'
                 ORDER BY technology_id,created_at DESC,id DESC
             )
             SELECT count(f.id) AS findings_total,
@@ -73,7 +99,7 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
                 count(DISTINCT latest.technology_id) AS technologies_with_completed_analysis
             FROM latest LEFT JOIN vulntrack.application_findings f
               ON f.workspace_id=:workspace AND f.analysis_id=latest.id"""),
-                {"workspace": workspace_id},
+                params,
             )
             .mappings()
             .one()
@@ -81,7 +107,7 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
 
         recent_analyses = (
             session.execute(
-                text("""SELECT r.id,r.application_id,a.name AS application_name,
+                text(f"""SELECT r.id,r.application_id,a.name AS application_name,
                 r.technology_id,t.product,t.version,r.status,r.coverage,r.stored_count,
                 r.warning_codes,r.created_at,r.completed_at,
                 (SELECT count(*) FROM vulntrack.application_findings f
@@ -92,9 +118,9 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
                 JOIN vulntrack.technologies t
                   ON t.workspace_id=r.workspace_id AND t.application_id=r.application_id
                  AND t.id=r.technology_id
-                WHERE r.workspace_id=:workspace
+                WHERE r.workspace_id=:workspace AND {source_predicate}
                 ORDER BY r.created_at DESC,r.id DESC LIMIT 5"""),
-                {"workspace": workspace_id},
+                params,
             )
             .mappings()
             .all()
@@ -102,10 +128,10 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
 
         priority_findings = (
             session.execute(
-                text("""WITH latest AS (
+                text(f"""WITH latest AS (
                 SELECT DISTINCT ON (technology_id) id,technology_id,application_id
                 FROM vulntrack.application_analysis_runs
-                WHERE workspace_id=:workspace AND status='completed'
+                WHERE workspace_id=:workspace AND {source_predicate} AND status='completed'
                 ORDER BY technology_id,created_at DESC,id DESC
             )
             SELECT f.id,f.external_id,f.title,f.severity,f.applicability,f.status,
@@ -122,7 +148,7 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
             ORDER BY CASE f.severity WHEN 'critical' THEN 0 WHEN 'high' THEN 1
                 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END,
                 f.observed_at DESC,f.external_id LIMIT 5"""),
-                {"workspace": workspace_id},
+                params,
             )
             .mappings()
             .all()
@@ -130,7 +156,7 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
 
         trend = (
             session.execute(
-                text("""WITH months AS (
+                text(f"""WITH months AS (
                 SELECT generate_series(
                     date_trunc('month',clock_timestamp()) - interval '5 months',
                     date_trunc('month',clock_timestamp()), interval '1 month'
@@ -138,10 +164,10 @@ def dashboard(workspace_id: UUID, user: Identity, request: Request):
             )
             SELECT months.month,count(r.id) AS analyses
             FROM months LEFT JOIN vulntrack.application_analysis_runs r
-              ON r.workspace_id=:workspace AND r.created_at >= months.month
+              ON r.workspace_id=:workspace AND {source_predicate} AND r.created_at >= months.month
              AND r.created_at < months.month + interval '1 month'
             GROUP BY months.month ORDER BY months.month"""),
-                {"workspace": workspace_id},
+                params,
             )
             .mappings()
             .all()

@@ -133,6 +133,7 @@ def fixture_app(settings, *, original_and=True, original_title=False):
     app.state.identifications.nvd = app.state.nvd
     app.state.cve = CVEClient(transport=httpx.MockTransport(upstream), quota=quota)
     app.state.cve_worker.client = app.state.cve
+    app.state.nvd_mode = "fixture"
     return app
 
 

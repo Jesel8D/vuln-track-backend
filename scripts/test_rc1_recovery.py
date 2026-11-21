@@ -1,5 +1,6 @@
 """Actual isolated RC1 restart, private backup, NEW-volume restore and browser checks."""
 
+import argparse
 import hashlib
 import json
 import os
@@ -136,6 +137,26 @@ def snapshot(client, base, data):
             raise RuntimeError("RC1 foreign resource leaked")
         if client.get(app + "/technologies", headers=headers).status_code != 200:
             raise RuntimeError("RC1 own resource unavailable after pooled reuse")
+    if data.get("device_dataset"):
+        saved = data["device_dataset"]
+        device = base + f"/api/v2/workspaces/{data['workspace']}/devices/" + saved["device_id"]
+        device_dto = {
+            "device_id": saved["device_id"],
+            "detail": read(device),
+            "identifications": read(device + "/identifications"),
+            "runs": read(device + "/analyses"),
+        }
+        run_id = saved["runs"]["items"][0]["id"]
+        device_dto["findings"] = read(device + "/analyses/" + run_id + "/findings")
+        finding_id = saved["findings"]["items"][0]["id"]
+        device_dto["recommendations"] = read(
+            device + "/findings/" + finding_id + "/recommendations"
+        )
+        if device_dto != saved:
+            raise RuntimeError("RC2 device inventory or history changed")
+        if client.get(device, headers={"Authorization": second}).status_code != 404:
+            raise RuntimeError("Restored device accessed from another workspace")
+        actual["device"] = device_dto
     return token, hashlib.sha256(json.dumps(actual, sort_keys=True).encode()).hexdigest()
 
 
@@ -160,13 +181,16 @@ def browser(profile, phase):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=["rc1", "rc2"], default="rc1")
+    profile = parser.parse_args().profile
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     result_path = ARTIFACTS / "recovery-results.json"
     result_path.unlink(missing_ok=True)
-    data = json.loads((ROOT / ".local/rc1/demo-access.json").read_text())
+    data = json.loads((ROOT / ".local" / profile / "demo-access.json").read_text())
     if not data.get("dataset") or not data.get("secondaryWorkspace"):
         raise RuntimeError("Complete RC1 browser A/C acceptance before recovery")
-    stack = PersistentV2("rc1")
+    stack = PersistentV2(profile)
     original = wait_ready(stack)
     checks = []
     restored = None
@@ -190,7 +214,7 @@ def main():
             == 200
         )
         checks.append("existing JWT remains valid after restart with the same private keys")
-        browser("rc1", "resume")
+        browser(profile, "resume")
         checks.append("existing-user browser journey succeeds after full restart")
         archive = stack.backup()
         manifest = json.loads(archive.with_name("manifest.json").read_text())
@@ -204,8 +228,11 @@ def main():
         checks.append(
             "sensitive RC1 backup checksum, private permissions and Git exclusion verified"
         )
-        profile = "rc1-restore-" + secrets.token_hex(4)
-        restored = PersistentV2(profile, pg_port=55439, api_port=8005, web_port=5178)
+        restore_profile = profile + "-restore-" + secrets.token_hex(4)
+        ports = (55441, 8007, 5180) if profile == "rc2" else (55439, 8005, 5178)
+        restored = PersistentV2(
+            restore_profile, pg_port=ports[0], api_port=ports[1], web_port=ports[2]
+        )
         try:
             assert restored.inspect("volume", restored.volume) is None
             restored.restore(archive)
@@ -234,7 +261,7 @@ def main():
                 "old JWT rejected on restored profile while normal password login succeeds"
             )
             checks.append("multiuser isolation and pooled connection reuse rechecked after restore")
-            browser(profile, "restore")
+            browser(restore_profile, "restore")
             checks.append("existing-user browser journey succeeds against restored API and web")
         finally:
             if restored.config.get("phase") == "ready":

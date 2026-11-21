@@ -1,0 +1,656 @@
+"""Devices retain workspace authorization, identity snapshots and separate history."""
+
+import json
+import logging
+from contextlib import contextmanager
+from typing import Annotated
+from uuid import UUID, uuid4
+
+from fastapi import APIRouter, Query, Request
+from pydantic import ValidationError
+from sqlalchemy import text
+
+from app.api.router import Identity
+from app.api.v2_nvd import IdempotencyKey
+from app.core.errors import APIError
+from app.db.workspace_context import workspace_session
+from app.schemas.cpe import CandidateList, SearchInput
+from app.schemas.devices import (
+    DeviceCreate,
+    DeviceFindingReview,
+    DeviceIdentificationCreate,
+    DeviceRecommendationCreate,
+    DeviceStatus,
+    DeviceStatusUpdate,
+    DeviceType,
+)
+from app.services.device_identity import validate_device_candidate
+from app.services.nvd_findings import finding_rows
+
+router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/devices", tags=["Dispositivos RC2"])
+logger = logging.getLogger(__name__)
+Limit = Annotated[int, Query(ge=1, le=100)]
+Offset = Annotated[int, Query(ge=0, le=1000000)]
+DEVICE_SCOPE = "workspace_id=:workspace AND device_id=:device"
+RUN_FIELDS = """id, identification_id, selected_cpe, observed_version, mode, source,
+    CASE WHEN status='running' AND created_at < statement_timestamp()-interval '2 minutes'
+      THEN 'failed' ELSE status END AS status,
+    coverage, total_results, retrieved_count, stored_count, warning_codes,
+    CASE WHEN status='running' AND created_at < statement_timestamp()-interval '2 minutes'
+      THEN 'INTERRUPTED' ELSE failure_code END AS failure_code,
+    source_timestamp, created_at, completed_at"""
+FINDING_FIELDS = """id, analysis_id, external_id, title, severity, cvss, evidence, applicability,
+    status, published_at, last_modified_at, reviewed_by, review_reason,
+    review_evidence, updated_at"""
+RECOMMENDATION_FIELDS = "id, finding_id, created_by, recommendation, status, created_at"
+
+
+@contextmanager
+def access(request, actor, workspace, *, write=False):
+    settings = request.app.state.settings
+    with workspace_session(
+        request.app.state.session_factory, settings, actor, workspace
+    ) as session:
+        roles = ["owner", "editor"] if write else ["owner", "editor", "viewer"]
+        if not session.scalar(
+            text("SELECT vulntrack.has_workspace_role(:workspace, CAST(:roles AS text[]))"),
+            {"workspace": workspace, "roles": roles},
+        ):
+            raise APIError(404, "DEVICE_SCOPE_UNAVAILABLE", "Inventario no disponible")
+        yield session
+
+
+def one(session, sql, params, code="DEVICE_NOT_FOUND"):
+    row = session.execute(text(sql), params).mappings().first()
+    if row is None:
+        raise APIError(404, code, "Recurso de dispositivo no disponible")
+    return dict(row)
+
+
+def device(session, scope, *, write=False):
+    row = one(
+        session,
+        """
+        SELECT * FROM vulntrack_devices.devices WHERE workspace_id=:workspace AND id=:device
+    """,
+        scope,
+    )
+    if write and row["status"] != "active":
+        raise APIError(409, "DEVICE_RETIRED", "El dispositivo está retirado")
+    return row
+
+
+def lock_device(session, scope):
+    session.execute(
+        text("SELECT pg_advisory_xact_lock(hashtextextended(CAST(:device AS text), 24))"),
+        scope,
+    )
+
+
+def current_identification(session, scope):
+    row = (
+        session.execute(
+            text(f"""
+        SELECT * FROM vulntrack_devices.identifications WHERE {DEVICE_SCOPE}
+        ORDER BY created_at DESC, id DESC LIMIT 1
+    """),
+            scope,
+        )
+        .mappings()
+        .first()
+    )
+    return dict(row) if row else None
+
+
+def audit(session, scope, action, resource, identifier):
+    session.execute(
+        text("""
+        INSERT INTO vulntrack.audit_events(workspace_id,actor_id,action,object_type,object_id)
+        VALUES (:workspace,:actor,:action,:resource,:identifier)
+    """),
+        {**scope, "action": action, "resource": resource, "identifier": identifier},
+    )
+
+
+def page(session, *, select, table, where, sort, scope, limit, offset):
+    # SQL fragments are constants supplied by this module. Only bound values come from requests.
+    items = session.execute(
+        text(
+            f"SELECT {select} FROM {table} WHERE {where} "
+            f"ORDER BY {sort} LIMIT :limit OFFSET :offset"
+        ),
+        {**scope, "limit": limit, "offset": offset},
+    ).mappings()
+    total = session.scalar(text(f"SELECT count(*) FROM {table} WHERE {where}"), scope)
+    return {
+        "items": [dict(row) for row in items],
+        "page": {"limit": limit, "offset": offset, "total": total},
+    }
+
+
+@router.post("", status_code=201)
+def create_device(workspace_id: UUID, payload: DeviceCreate, user: Identity, request: Request):
+    scope = {"workspace": workspace_id, "actor": user.id, "id": uuid4(), **payload.model_dump()}
+    with access(request, user.id, workspace_id, write=True) as session:
+        result = one(
+            session,
+            """
+            INSERT INTO vulntrack_devices.devices
+                (id,workspace_id,created_by,device_type,manufacturer,model,product_vendor,
+                 product,component_kind,version,site_label,inventory_label,notes)
+            VALUES (:id,:workspace,:actor,:device_type,:manufacturer,:model,:product_vendor,
+                    :product,:component_kind,:version,:site_label,:inventory_label,:notes)
+            RETURNING *
+        """,
+            scope,
+        )
+        audit(session, scope, "device.created", "device", result["id"])
+        return result
+
+
+@router.get("")
+def list_devices(
+    workspace_id: UUID,
+    user: Identity,
+    request: Request,
+    q: Annotated[str, Query(max_length=120)] = "",
+    device_type: DeviceType | None = None,
+    status: DeviceStatus | None = None,
+    limit: Limit = 20,
+    offset: Offset = 0,
+):
+    if any(ord(character) < 32 for character in q):
+        raise APIError(422, "SEARCH_INVALID", "Texto de búsqueda inválido")
+    scope = {"workspace": workspace_id, "q": q.strip(), "type": device_type, "status": status}
+    with access(request, user.id, workspace_id) as session:
+        return page(
+            session,
+            select="""d.*, EXISTS(SELECT 1 FROM vulntrack_devices.identifications i
+                WHERE i.workspace_id=d.workspace_id AND i.device_id=d.id) AS cpe_confirmed""",
+            table="vulntrack_devices.devices d",
+            where="""workspace_id=:workspace AND (CAST(:type AS text) IS NULL OR device_type=:type)
+                  AND (CAST(:status AS text) IS NULL OR status=:status)
+                  AND (strpos(lower(manufacturer),lower(:q))>0
+                       OR strpos(lower(model),lower(:q))>0)""",
+            sort="created_at DESC,id DESC",
+            scope=scope,
+            limit=limit,
+            offset=offset,
+        )
+
+
+@router.get("/{device_id}")
+def get_device(workspace_id: UUID, device_id: UUID, user: Identity, request: Request):
+    scope = {"workspace": workspace_id, "device": device_id}
+    with access(request, user.id, workspace_id) as session:
+        return {
+            **device(session, scope),
+            "current_identification": current_identification(session, scope),
+        }
+
+
+@router.patch("/{device_id}/status")
+def update_status(
+    workspace_id: UUID,
+    device_id: UUID,
+    payload: DeviceStatusUpdate,
+    user: Identity,
+    request: Request,
+):
+    scope = {
+        "workspace": workspace_id,
+        "device": device_id,
+        "actor": user.id,
+        "status": payload.status,
+    }
+    with access(request, user.id, workspace_id, write=True) as session:
+        lock_device(session, scope)
+        result = one(
+            session,
+            """
+            UPDATE vulntrack_devices.devices SET status=:status,updated_at=clock_timestamp()
+            WHERE workspace_id=:workspace AND id=:device RETURNING *
+        """,
+            scope,
+        )
+        audit(session, scope, "device.status_changed", "device", device_id)
+        return result
+
+
+@router.get("/{device_id}/cpe-candidates", response_model=CandidateList)
+def cpe_candidates(
+    workspace_id: UUID,
+    device_id: UUID,
+    user: Identity,
+    request: Request,
+    query: Annotated[str, Query(min_length=2, max_length=200)],
+    limit: Annotated[int, Query(ge=1, le=20)] = 10,
+    offset: Annotated[int, Query(ge=0, le=10000)] = 0,
+):
+    scope = {"workspace": workspace_id, "device": device_id}
+    with access(request, user.id, workspace_id) as session:
+        device(session, scope)
+    try:
+        search = SearchInput(query=query, limit=limit, offset=offset)
+    except ValidationError:
+        raise APIError(422, "SEARCH_INVALID", "Texto de b?squeda inv?lido") from None
+    return request.app.state.nvd.search(user.id, search)
+
+
+@router.post("/{device_id}/identifications", status_code=201)
+def confirm_identification(
+    workspace_id: UUID,
+    device_id: UUID,
+    payload: DeviceIdentificationCreate,
+    user: Identity,
+    request: Request,
+):
+    scope = {"workspace": workspace_id, "device": device_id, "actor": user.id}
+    with access(request, user.id, workspace_id, write=True) as session:
+        row = device(session, scope, write=True)
+        if row["version"] is None:
+            raise APIError(
+                409, "VERSION_REQUIRED", "Registra una versión conocida antes de confirmar"
+            )
+
+    candidate, _ = request.app.state.nvd.resolve(user.id, payload.cpe_name_id)
+    with access(request, user.id, workspace_id, write=True) as session:
+        device(session, scope, write=True)
+        lock_device(session, scope)
+        row = device(session, scope, write=True)
+        current = current_identification(session, scope)
+        if (current["id"] if current else None) != payload.expected_identification_id:
+            raise APIError(409, "CPE_SELECTION_CHANGED", "La identificación vigente cambió")
+        validate_device_candidate(row, candidate)
+        result = one(
+            session,
+            """
+            INSERT INTO vulntrack_devices.identifications
+                (id,workspace_id,device_id,recorded_by,cpe_name,cpe_name_id,mode,reason,created_at)
+            VALUES (:id,:workspace,:device,:actor,:name,:name_id,:mode,:reason,clock_timestamp())
+            RETURNING *
+        """,
+            {
+                **scope,
+                "id": uuid4(),
+                "name": candidate.cpe_name,
+                "name_id": candidate.cpe_name_id,
+                "mode": request.app.state.nvd_mode,
+                "reason": payload.reason,
+            },
+        )
+        session.execute(
+            text("""
+            UPDATE vulntrack_devices.devices SET updated_at=clock_timestamp()
+            WHERE workspace_id=:workspace AND id=:device
+        """),
+            scope,
+        )
+        audit(session, scope, "device.cpe_confirmed", "device_identification", result["id"])
+        return result
+
+
+@router.get("/{device_id}/identifications")
+def list_identifications(
+    workspace_id: UUID,
+    device_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Limit = 20,
+    offset: Offset = 0,
+):
+    scope = {"workspace": workspace_id, "device": device_id}
+    with access(request, user.id, workspace_id) as session:
+        device(session, scope)
+        return page(
+            session,
+            select="*",
+            table="vulntrack_devices.identifications",
+            where=DEVICE_SCOPE,
+            sort="created_at DESC,id DESC",
+            scope=scope,
+            limit=limit,
+            offset=offset,
+        )
+
+
+def run(session, scope):
+    return one(
+        session,
+        f"""
+        SELECT {RUN_FIELDS} FROM vulntrack_devices.runs WHERE {DEVICE_SCOPE} AND id=:run
+    """,
+        scope,
+        "DEVICE_RUN_NOT_FOUND",
+    )
+
+
+@router.post("/{device_id}/analyses", status_code=201)
+def analyze_device(
+    workspace_id: UUID,
+    device_id: UUID,
+    user: Identity,
+    request: Request,
+    idempotency_key: IdempotencyKey,
+):
+    scope = {
+        "workspace": workspace_id,
+        "device": device_id,
+        "actor": user.id,
+        "key": UUID(idempotency_key),
+        "run": uuid4(),
+    }
+    mode = request.app.state.nvd_mode
+    with access(request, user.id, workspace_id, write=True) as session:
+        device(session, scope, write=True)
+        lock_device(session, scope)
+        row = device(session, scope, write=True)
+        before = session.scalar(
+            text(f"""
+            SELECT id FROM vulntrack_devices.runs
+            WHERE {DEVICE_SCOPE} AND initiated_by=:actor AND request_key=:key
+        """),
+            scope,
+        )
+        if before:
+            return run(session, {**scope, "run": before})
+        selected = current_identification(session, scope)
+        if not selected or row["version"] is None:
+            raise APIError(409, "CPE_CONFIRMATION_REQUIRED", "Confirma un CPE con versión conocida")
+        if selected["mode"] != mode:
+            raise APIError(
+                409, "CPE_MODE_CHANGED", "Vuelve a confirmar el CPE en el modo NVD actual"
+            )
+        session.execute(
+            text(f"""
+            UPDATE vulntrack_devices.runs SET status='failed', failure_code='INTERRUPTED',
+                completed_at=clock_timestamp()
+            WHERE {DEVICE_SCOPE} AND status='running' AND created_at < now()-interval '2 minutes'
+        """),
+            scope,
+        )
+        if session.scalar(
+            text(f"""
+            SELECT id FROM vulntrack_devices.runs WHERE {DEVICE_SCOPE} AND status='running'
+        """),
+            scope,
+        ):
+            raise APIError(
+                409, "ANALYSIS_IN_PROGRESS", "Ya existe una consulta activa para este dispositivo"
+            )
+        request.app.state.nvd.quota.check_user(user.id, "cve")
+        session.execute(
+            text("""
+            INSERT INTO vulntrack_devices.runs (id,workspace_id,device_id,identification_id,
+                initiated_by,request_key,selected_cpe,observed_version,mode)
+            VALUES (:run,:workspace,:device,:identification,:actor,:key,:cpe,:version,:mode)
+        """),
+            {
+                **scope,
+                "identification": selected["id"],
+                "cpe": selected["cpe_name"],
+                "version": row["version"],
+                "mode": mode,
+            },
+        )
+        audit(session, scope, "device.analysis_requested", "device_analysis", scope["run"])
+
+    # NVD is called without any database connection or transaction.
+    try:
+        upstream = request.app.state.cve.page(selected["cpe_name"], 0, 100)
+        records, findings, warnings = finding_rows(upstream, selected["cpe_name"], row["version"])
+        partial = upstream.totalResults > len(records)
+        if partial:
+            warnings.append("PAGE_BUDGET_REACHED")
+        with access(request, user.id, workspace_id, write=True) as session:
+            lock_device(session, scope)
+            if not session.scalar(
+                text(f"""
+                SELECT id FROM vulntrack_devices.runs
+                WHERE {DEVICE_SCOPE} AND id=:run AND status='running'
+                AND created_at >= now()-interval '2 minutes'
+            """),
+                scope,
+            ):
+                raise APIError(409, "ANALYSIS_INTERRUPTED", "La consulta dejó de estar activa")
+            for entry in findings:
+                session.execute(
+                    text("""
+                    INSERT INTO vulntrack_devices.findings (id,workspace_id,device_id,analysis_id,
+                        external_id,title,severity,cvss,applicability,evidence,
+                        published_at,last_modified_at)
+                    VALUES (:id,:workspace,:device,:run,:external_id,:title,:severity,
+                            CAST(:cvss AS jsonb),:applicability,
+                            CAST(:evidence AS jsonb),:published,:modified)
+                """),
+                    {**entry, **scope},
+                )
+            session.execute(
+                text(f"""
+                UPDATE vulntrack_devices.runs SET status='completed',coverage=:coverage,
+                    completed_at=clock_timestamp(), total_results=:total,
+                    retrieved_count=:retrieved,
+                    stored_count=:stored, source_timestamp=:timestamp,
+                    warning_codes=CAST(:warnings AS jsonb)
+                WHERE {DEVICE_SCOPE} AND id=:run AND status='running'
+            """),
+                {
+                    **scope,
+                    "coverage": "partial" if partial else "complete",
+                    "total": upstream.totalResults,
+                    "retrieved": len(records),
+                    "stored": len(findings),
+                    "timestamp": upstream.timestamp,
+                    "warnings": json.dumps(sorted(set(warnings))),
+                },
+            )
+            return run(session, scope)
+    except Exception as exc:
+        code = exc.code if isinstance(exc, APIError) else "PROCESSING_ERROR"
+        try:
+            with access(request, user.id, workspace_id, write=True) as session:
+                session.execute(
+                    text(f"""
+                    UPDATE vulntrack_devices.runs SET status='failed',
+                        completed_at=clock_timestamp(),
+                        failure_code=:code WHERE {DEVICE_SCOPE} AND id=:run AND status='running'
+                """),
+                    {**scope, "code": code},
+                )
+        except Exception:
+            logger.error("device_analysis_failed_to_finalize run_id=%s", scope["run"])
+        if isinstance(exc, APIError):
+            raise
+        logger.error(
+            "device_analysis_processing_error run_id=%s type=%s", scope["run"], type(exc).__name__
+        )
+        raise APIError(
+            503, "NVD_PROCESSING_FAILED", "No se pudo completar la consulta NVD"
+        ) from None
+
+
+@router.get("/{device_id}/analyses")
+def list_analyses(
+    workspace_id: UUID,
+    device_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Limit = 20,
+    offset: Offset = 0,
+):
+    scope = {"workspace": workspace_id, "device": device_id}
+    with access(request, user.id, workspace_id) as session:
+        device(session, scope)
+        return page(
+            session,
+            select=RUN_FIELDS,
+            table="vulntrack_devices.runs",
+            where=DEVICE_SCOPE,
+            sort="created_at DESC,id DESC",
+            scope=scope,
+            limit=limit,
+            offset=offset,
+        )
+
+
+@router.get("/{device_id}/analyses/{run_id}")
+def get_analysis(
+    workspace_id: UUID, device_id: UUID, run_id: UUID, user: Identity, request: Request
+):
+    with access(request, user.id, workspace_id) as session:
+        return run(session, {"workspace": workspace_id, "device": device_id, "run": run_id})
+
+
+@router.get("/{device_id}/analyses/{run_id}/findings")
+def list_findings(
+    workspace_id: UUID,
+    device_id: UUID,
+    run_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Limit = 20,
+    offset: Offset = 0,
+):
+    scope = {"workspace": workspace_id, "device": device_id, "run": run_id}
+    with access(request, user.id, workspace_id) as session:
+        run(session, scope)
+        return page(
+            session,
+            select=FINDING_FIELDS,
+            table="vulntrack_devices.findings",
+            where=DEVICE_SCOPE + " AND analysis_id=:run",
+            sort="external_id,id",
+            scope=scope,
+            limit=limit,
+            offset=offset,
+        )
+
+
+def finding(session, scope):
+    return one(
+        session,
+        f"""
+        SELECT {FINDING_FIELDS} FROM vulntrack_devices.findings WHERE {DEVICE_SCOPE} AND id=:finding
+    """,
+        scope,
+        "DEVICE_FINDING_NOT_FOUND",
+    )
+
+
+@router.patch("/{device_id}/findings/{finding_id}")
+def review_finding(
+    workspace_id: UUID,
+    device_id: UUID,
+    finding_id: UUID,
+    payload: DeviceFindingReview,
+    user: Identity,
+    request: Request,
+):
+    scope = {
+        "workspace": workspace_id,
+        "device": device_id,
+        "finding": finding_id,
+        "actor": user.id,
+        **payload.model_dump(),
+    }
+    with access(request, user.id, workspace_id, write=True) as session:
+        finding(session, scope)
+        result = (
+            session.execute(
+                text(f"""
+            UPDATE vulntrack_devices.findings SET applicability=:applicability, status='reviewed',
+                reviewed_by=:actor, review_reason=:reason, review_evidence=:evidence,
+                updated_at=clock_timestamp()
+            WHERE {DEVICE_SCOPE} AND id=:finding AND status='open'
+              AND updated_at=:expected_updated_at
+            RETURNING {FINDING_FIELDS}
+        """),
+                scope,
+            )
+            .mappings()
+            .first()
+        )
+        if result is None:
+            raise APIError(
+                409, "REVIEW_CONFLICT", "El hallazgo ya cambió. Actualiza antes de revisar."
+            )
+        audit(session, scope, "device.finding_reviewed", "device_finding", finding_id)
+        return dict(result)
+
+
+@router.get("/{device_id}/findings/{finding_id}/recommendations")
+def list_recommendations(
+    workspace_id: UUID,
+    device_id: UUID,
+    finding_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Limit = 20,
+    offset: Offset = 0,
+):
+    scope = {"workspace": workspace_id, "device": device_id, "finding": finding_id}
+    with access(request, user.id, workspace_id) as session:
+        finding(session, scope)
+        return page(
+            session,
+            select=RECOMMENDATION_FIELDS,
+            table="vulntrack_devices.recommendations",
+            where=DEVICE_SCOPE + " AND finding_id=:finding",
+            sort="created_at DESC,id DESC",
+            scope=scope,
+            limit=limit,
+            offset=offset,
+        )
+
+
+@router.post("/{device_id}/findings/{finding_id}/recommendations", status_code=201)
+def create_recommendation(
+    workspace_id: UUID,
+    device_id: UUID,
+    finding_id: UUID,
+    payload: DeviceRecommendationCreate,
+    user: Identity,
+    request: Request,
+    idempotency_key: IdempotencyKey,
+):
+    scope = {
+        "workspace": workspace_id,
+        "device": device_id,
+        "finding": finding_id,
+        "actor": user.id,
+        "key": UUID(idempotency_key),
+        "id": uuid4(),
+        **payload.model_dump(),
+    }
+    with access(request, user.id, workspace_id, write=True) as session:
+        finding(session, scope)
+        lock_device(session, scope)
+        existing = (
+            session.execute(
+                text(f"""
+            SELECT {RECOMMENDATION_FIELDS} FROM vulntrack_devices.recommendations
+            WHERE {DEVICE_SCOPE} AND finding_id=:finding AND created_by=:actor AND request_key=:key
+        """),
+                scope,
+            )
+            .mappings()
+            .first()
+        )
+        if existing:
+            if existing["recommendation"] != payload.recommendation:
+                raise APIError(409, "IDEMPOTENCY_CONFLICT", "Clave utilizada con otra solicitud")
+            return dict(existing)
+        result = one(
+            session,
+            f"""
+            INSERT INTO vulntrack_devices.recommendations
+                (id,workspace_id,device_id,finding_id,created_by,request_key,recommendation)
+            VALUES (:id,:workspace,:device,:finding,:actor,:key,:recommendation)
+            RETURNING {RECOMMENDATION_FIELDS}
+        """,
+            scope,
+        )
+        audit(
+            session, scope, "device.recommendation_created", "device_recommendation", result["id"]
+        )
+        return result

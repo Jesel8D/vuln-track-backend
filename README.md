@@ -1,5 +1,11 @@
 # VulnTrack Backend
 
+RC2 experimental agrega [inventario de dispositivos por workspace](docs/V2_RC2_DEVICE_INVENTORY.md)
+y [NVD en vivo bajo demanda](docs/V2_RC2_NVD_LIVE.md). La
+[guía local RC2](docs/V2_RC2_LOCAL_RUN.md) usa el perfil `rc2`, con PostgreSQL
+propio y fixture predeterminado. Los commits compatibles y las verificaciones se
+registran en el [manifiesto RC2](docs/V2_RC2_RELEASE_MANIFEST.md).
+
 RC1: [integración y resultados actuales](docs/V2_RC1_INTEGRATION_REPORT.md),
 [matriz de requisitos](docs/V2_RC1_REQUIREMENTS_MATRIX.md),
 [demostración de 13 minutos](docs/V2_RC1_DEMO_GUIDE.md) y
