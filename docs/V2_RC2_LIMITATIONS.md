@@ -8,9 +8,10 @@ Se preserva la aprobación individual histórica de Jesel y D-001/D-002.
   V2 y no importa datos automáticamente. Un cliente móvil futuro usaría la API
   autenticada de dispositivos. La app móvil está fuera de esta misión.
 - La identificación es manual. La versión desconocida queda como null y el CPE
-  necesita producto, componente y versión verificables. Esta RC2 permite cambiar estado. La edici?n de datos observados,
-  incluida una versi?n conocida despu?s del alta, queda pendiente. La pertenencia de una
-  plataforma adicional a un equipo real se verifica fuera de VulnTrack.
+  necesita producto, componente y versión verificables. Esta RC2 permite cambiar el estado. La
+  edición de datos observados, incluida una versión conocida después del alta, queda pendiente.
+  La pertenencia de una plataforma adicional a un equipo real se verifica
+  fuera de VulnTrack.
 - Los presupuestos de NVD limitan la cobertura. Las consultas de aplicaciones y
   dispositivos muestran la procedencia por ejecución y la cobertura. Dashboard
   conserva recuentos de aplicaciones filtrables por fuente. Los resultados de
