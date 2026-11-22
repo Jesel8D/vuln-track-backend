@@ -1,6 +1,7 @@
 """Bounded NVD acquisition and durable page receipts for the local CPE dictionary."""
 
 import json
+import unicodedata
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from time import sleep
@@ -59,7 +60,7 @@ def utc(instant):
     return instant.replace(tzinfo=instant.tzinfo or UTC).astimezone(UTC)
 
 
-def normalize(entry, mode, scope):
+def normalize(entry, mode, scope, *, source=None):
     if not isinstance(entry, dict) or not isinstance(entry.get("cpe"), dict):
         raise ValueError("invalid_record")
     original = json.dumps(entry, ensure_ascii=True, allow_nan=False)
@@ -75,12 +76,12 @@ def normalize(entry, mode, scope):
     except (ValidationError, ValueError):
         raise ValueError("invalid_record") from None
     vendor, product = vendor.casefold(), product.casefold()
-    if vendor != scope.vendor or (scope.product and product != scope.product):
+    if scope and (vendor != scope.vendor or (scope.product and product != scope.product)):
         raise ValueError("outside_scope")
     created, modified = utc(parsed.created), utc(parsed.lastModified)
     if created > modified:
         raise ValueError("invalid_record")
-    if scope.since and not scope.since <= modified <= scope.until:
+    if scope and scope.since and not scope.since <= modified <= scope.until:
         raise ValueError("outside_window")
     titles = [title.model_dump() for title in parsed.titles]
     title = next(
@@ -96,15 +97,15 @@ def normalize(entry, mode, scope):
         "product": product,
         "version": version,
         "title": title,
-        "search_text": " ".join(
-            [vendor, product, version, *(v["title"] for v in titles)]
+        "search_text": unicodedata.normalize(
+            "NFC", " ".join([vendor, product, version, *(v["title"] for v in titles)])
         ).casefold(),
         "titles": json.dumps(titles),
         "deprecated": parsed.deprecated,
         "deprecated_by": json.dumps([v.model_dump(mode="json") for v in parsed.deprecatedBy]),
         "nvd_created": created,
         "nvd_modified": modified,
-        "source": SOURCE[mode],
+        "source": source or SOURCE[mode],
         "original": original,
     }
 
@@ -113,20 +114,41 @@ def original_for_product(entry):
     return json.dumps(entry["cpe"], ensure_ascii=True, allow_nan=False)
 
 
-UPSERT = text("""
-    INSERT INTO vulntrack_catalog.products
-        (mode,cpe_name_id,cpe_name,part,vendor,product,version,title,search_text,titles,
-         deprecated,deprecated_by,nvd_created,nvd_modified,source,original)
-    VALUES (:mode,:cpe_name_id,:cpe_name,:part,:vendor,:product,:version,:title,:search_text,
-         CAST(:titles AS jsonb),:deprecated,CAST(:deprecated_by AS jsonb),:nvd_created,
-         :nvd_modified,:source,CAST(:original AS jsonb))
+CATALOG_COLUMNS = (
+    "mode",
+    "cpe_name_id",
+    "cpe_name",
+    "part",
+    "vendor",
+    "product",
+    "version",
+    "title",
+    "search_text",
+    "titles",
+    "deprecated",
+    "deprecated_by",
+    "nvd_created",
+    "nvd_modified",
+    "source",
+    "original",
+)
+CATALOG_FIELDS = ",".join(CATALOG_COLUMNS)
+UPSERT_POLICY = """
     ON CONFLICT (mode,cpe_name_id) DO UPDATE SET
       cpe_name=excluded.cpe_name,part=excluded.part,vendor=excluded.vendor,product=excluded.product,
       version=excluded.version,title=excluded.title,search_text=excluded.search_text,titles=excluded.titles,
       deprecated=excluded.deprecated,deprecated_by=excluded.deprecated_by,original=excluded.original,
       nvd_created=excluded.nvd_created,nvd_modified=excluded.nvd_modified,
+      source=excluded.source,
       synchronized_at=statement_timestamp()
     WHERE vulntrack_catalog.products.nvd_modified<=excluded.nvd_modified
+"""
+UPSERT = text(f"""
+    INSERT INTO vulntrack_catalog.products ({CATALOG_FIELDS})
+    VALUES (:mode,:cpe_name_id,:cpe_name,:part,:vendor,:product,:version,:title,:search_text,
+         CAST(:titles AS jsonb),:deprecated,CAST(:deprecated_by AS jsonb),:nvd_created,
+         :nvd_modified,:source,CAST(:original AS jsonb))
+    {UPSERT_POLICY}
     RETURNING cpe_name_id
 """)
 
@@ -148,20 +170,38 @@ def store_page(connection, run, mode, scope, page):
             continue
         items[data["cpe_name_id"]] = data
     connection.execute(text("SELECT pg_advisory_xact_lock(2222, 1)"))
-    stored = 0
+    prior = {}
+    if items:
+        prior = {
+            row["cpe_name_id"]: row
+            for row in connection.execute(
+                text("""
+                SELECT cpe_name_id,original,deprecated FROM vulntrack_catalog.products
+                WHERE mode=:mode AND cpe_name_id=ANY(:ids)
+            """),
+                {"mode": mode, "ids": list(items)},
+            ).mappings()
+        }
+    stored = inserted = changed = deprecated = 0
     for item in items.values():
         if connection.scalar(UPSERT, item) is None:
             discarded["newer_local_copy"] += 1
         else:
             stored += 1
+            before = prior.get(item["cpe_name_id"])
+            inserted += before is None
+            changed += bool(before and before["original"] != json.loads(item["original"]))
+            deprecated += bool(item["deprecated"] and (before is None or not before["deprecated"]))
     offset = page.startIndex
     following = offset + len(page.products)
     finished = following >= page.totalResults
     connection.execute(
         text("""
         INSERT INTO vulntrack_catalog.sync_pages
-        (run_id,page_offset,nvd_timestamp,received_count,stored_count,discarded)
-        VALUES (:id,:offset,:timestamp,:received,:stored,CAST(:discarded AS jsonb))
+        (run_id,page_offset,nvd_timestamp,received_count,stored_count,discarded,
+         new_count,changed_count,deprecated_count)
+        VALUES (:id,:offset,:timestamp,:received,:stored,CAST(:discarded AS jsonb),
+                :inserted,:changed,:deprecated)
     """),
         {
             "id": run,
@@ -170,6 +210,9 @@ def store_page(connection, run, mode, scope, page):
             "received": len(page.products),
             "stored": stored,
             "discarded": json.dumps(discarded),
+            "inserted": inserted,
+            "changed": changed,
+            "deprecated": deprecated,
         },
     )
     connection.execute(
@@ -186,6 +229,28 @@ def store_page(connection, run, mode, scope, page):
         },
     )
     return finished
+
+
+def refresh_summary(connection, mode):
+    connection.execute(text("SELECT pg_advisory_xact_lock(2222, 1)"))
+    connection.execute(
+        text("""
+        UPDATE vulntrack_catalog.summary AS summary
+        SET records=counts.records,vendors=counts.vendors,products=counts.products,
+            last_synchronized_at=counts.latest,refreshed_at=statement_timestamp()
+        FROM (
+            SELECT coalesce(sum(family.records),0)::bigint records,
+                   count(DISTINCT family.vendor) vendors,count(*) products,
+                   max(family.latest) latest
+            FROM (
+                SELECT vendor,product,part,count(*) records,max(synchronized_at) latest
+                FROM vulntrack_catalog.products WHERE mode=:mode GROUP BY vendor,product,part
+            ) family
+        ) counts
+        WHERE summary.mode=:mode
+    """),
+        {"mode": mode},
+    )
 
 
 def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=sleep):
@@ -219,7 +284,7 @@ def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=
                 {"id": run, "mode": mode, "scope": scope.model_dump_json()},
             )
 
-    for _ in range(pages):
+    for page_index in range(pages):
         with engine.begin() as connection:
             row = (
                 connection.execute(
@@ -249,8 +314,13 @@ def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=
                 """),
                     {"code": error.code, "retry": retry_at, "id": run},
                 )
+                if page_index:
+                    refresh_summary(connection, mode)
                 break
-            if store_page(connection, run, mode, scope, page):
+            finished = store_page(connection, run, mode, scope, page)
+            if finished or page_index + 1 == pages:
+                refresh_summary(connection, mode)
+            if finished:
                 break
 
     with engine.connect() as connection:
@@ -262,7 +332,12 @@ def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=
                       WHERE run_id=r.id),0) received,
             COALESCE((SELECT sum(stored_count) FROM vulntrack_catalog.sync_pages
                       WHERE run_id=r.id),0) stored,
-            (SELECT count(*) FROM vulntrack_catalog.sync_pages WHERE run_id=r.id) pages
+            (SELECT count(*) FROM vulntrack_catalog.sync_pages WHERE run_id=r.id) pages,
+            (SELECT sum(new_count) FROM vulntrack_catalog.sync_pages WHERE run_id=r.id) new_records,
+            (SELECT sum(changed_count) FROM vulntrack_catalog.sync_pages
+                      WHERE run_id=r.id) changed_records,
+            (SELECT sum(deprecated_count) FROM vulntrack_catalog.sync_pages
+                      WHERE run_id=r.id) deprecated_records
           FROM vulntrack_catalog.sync_runs r WHERE r.id=:id
         """),
                 {"id": run},

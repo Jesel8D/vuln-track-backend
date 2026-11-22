@@ -76,7 +76,10 @@ def main():
     verified = load("verification-contract.json")
     rc2 = load("rc2-contract.json")
     rc22 = load("rc22-contract.json")
-    added = {key: verified[key] | rc2[key] | rc22[key] for key in ("operations", "schemas")}
+    rc23 = load("rc23-contract.json")
+    added = {
+        key: verified[key] | rc2[key] | rc22[key] | rc23[key] for key in ("operations", "schemas")
+    }
     assert {
         key: value
         for key, value in actual_contract["operations"].items()

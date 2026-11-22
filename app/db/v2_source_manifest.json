@@ -9,7 +9,9 @@
     "sql/007_v2_stabilization.sql": "429dd13b912debe685fa45fb319ed0a216120b99d60da9c87c745a52d075e82d",
     "sql/008_v2_target_verification.sql": "8c5c1cb792fd4daa1da187ebc45631af6b27dd2b431b7b6c37373282b76483e3",
     "sql/009_v2_devices.sql": "5955a9bfe9ecec045b9d0386dfbb737e842da478e068e0daadcd9c5df62522ee",
-    "sql/010_v2_cpe_catalog.sql": "ad11624bd975d7f3f987e3ec6168fa58af6436f0697990430eab13adf20924a3"
+    "sql/010_v2_cpe_catalog.sql": "ad11624bd975d7f3f987e3ec6168fa58af6436f0697990430eab13adf20924a3",
+    "sql/011_v2_cpe_feed.sql": "defd355618755d5e372aa317aba2feb61c4b232b2a875247fb2ad08978b3880d",
+    "sql/012_v2_catalog_summary.sql": "c7981c44aae9c3607f2dce4b94cde8b938c49262c5ae8b3d0a3021dd60c35bae"
   },
   "database_base_commit": "0cc4dfd719463fb15eb1689a0f46550d9f204a71",
   "database_branch": "feat/v2-security-verification-database",
@@ -17,5 +19,7 @@
   "rc2_database_commit": "4fae50e8ed92fa1a5325e5cb00c5d497f639e234",
   "rc2_database_branch": "feat/v2-rc2-device-inventory-database",
   "rc22_database_commit": "f0384a85a3cc47e35425b8f90573309213754d50",
-  "rc22_database_branch": "feat/v2-rc22-cpe-catalog-database"
+  "rc22_database_branch": "feat/v2-rc22-cpe-catalog-database",
+  "rc23_database_commit": "c4cb588cc73928556bdcab35b44389370739ef6b",
+  "rc23_database_branch": "feat/v2-rc23-cpe-catalog-storage"
 }

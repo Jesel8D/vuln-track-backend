@@ -3170,7 +3170,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "maxLength": 120,
+              "maxLength": 1024,
               "default": "",
               "title": "Q"
             }
@@ -3206,6 +3206,22 @@
               "maxLength": 120,
               "default": "",
               "title": "Version"
+            }
+          },
+          {
+            "name": "deprecated",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Deprecated"
             }
           },
           {

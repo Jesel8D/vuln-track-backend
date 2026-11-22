@@ -213,7 +213,9 @@ def browser(profile, phase):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["rc1", "rc2", "rc2-catalog"], default="rc1")
+    parser.add_argument(
+        "--profile", choices=["rc1", "rc2", "rc2-catalog", "rc2-catalog23"], default="rc1"
+    )
     profile = parser.parse_args().profile
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     result_path = ARTIFACTS / "recovery-results.json"
@@ -262,6 +264,7 @@ def main():
         restore_profile = profile + "-restore-" + secrets.token_hex(4)
         ports = {
             "rc2-catalog": (55445, 8011, 5184),
+            "rc2-catalog23": (55447, 8013, 5186),
             "rc2": (55441, 8007, 5180),
             "rc1": (55439, 8005, 5178),
         }[profile]

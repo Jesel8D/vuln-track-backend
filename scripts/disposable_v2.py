@@ -192,6 +192,8 @@ class DisposableV2:
                     "tests/007_v2_verification.sql",
                     "tests/008_v2_devices.sql",
                     "tests/009_v2_cpe_catalog.sql",
+                    "tests/010_v2_cpe_feed.sql",
+                    "tests/011_v2_catalog_summary.sql",
                 ):
                     result = self.apply(relative)
                     print(
