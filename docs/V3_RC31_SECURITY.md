@@ -1,0 +1,8 @@
+# Seguridad del catálogo y del registro
+
+- El adaptador acepta una URL explícita de PostgreSQL psycopg en loopback y usa transacciones de solo lectura. Comprueba que el login carece de roles heredados y privilegios de administración, escritura o lectura sobre tablas ajenas al catálogo. Los permisos admitidos cubren `products`, `summary`, `sync_runs` y `feed_imports`.
+- La API ejecuta SQL fijo con parámetros, devuelve páginas acotadas y conserva el límite de búsqueda. El pool externo tiene hasta tres conexiones, espera de un segundo en el pool, conexión de hasta dos segundos y límite SQL de dos segundos. Los errores de conexión y permisos se muestran sin credenciales, host ni trazas.
+- La selección y la confirmación vuelven a resolver el UUID en la misma fuente y cotejan modo, cadena, fecha y compatibilidad. La identidad así observada queda registrada en la base local. La fuente externa y la base privada son servidores independientes. El adaptador captura la evidencia leída durante la confirmación; las actualizaciones administrativas posteriores de la fuente pueden afectar búsquedas futuras.
+- La procedencia de un CPE y el modo de CVE se muestran por separado. Confirmar un CPE oficial mientras el servidor funciona en fixture conserva su procedencia y bloquea una consulta específica en un modo incompatible.
+- El registro conserva JWT, workspace, roles y RLS. Las revisiones de RC3 siguen inmutables. El dato de hardware es una referencia de catálogo y no verifica un equipo.
+- ZAP, verificación remota y escaneo permanecen bloqueados. La única fuente externa implementada aquí es el PostgreSQL local autorizado.
