@@ -10,6 +10,7 @@ from sqlalchemy import text
 
 from app.api.router import Identity
 from app.core.errors import APIError
+from app.schemas.cpe import parse_cpe, unbind_component
 from app.services.cpe_catalog import SOURCE, Mode
 
 
@@ -63,8 +64,7 @@ def listing(request, mode, part, q, limit, offset, *, select, where="", order, *
     }
     pattern = search_argument(q)
     params = {"mode": mode, "part": part, "q": pattern, "prefix": pattern[1:], **values}
-    with request.app.state.engine.connect() as connection:
-        connection.execute(text("SET LOCAL statement_timeout=2000"))
+    with request.app.state.catalog_reader.connect(mode) as connection:
         rows = (
             connection.execute(
                 text(f"""
@@ -101,8 +101,8 @@ def listing(request, mode, part, q, limit, offset, *, select, where="", order, *
 
 @router.get("/status")
 def status(request: Request, user: Identity, mode: Mode = "live"):
-    with request.app.state.engine.connect() as connection:
-        connection.execute(text("SET LOCAL statement_timeout=2000"))
+    reader = request.app.state.catalog_reader
+    with reader.connect(mode) as connection:
         counts = (
             connection.execute(
                 text("""
@@ -146,6 +146,7 @@ def status(request: Request, user: Identity, mode: Mode = "live"):
         **counts,
         "mode": mode,
         "source": SOURCE[mode],
+        "catalog_backend": "external_readonly" if reader.is_external(mode) else "local",
         "coverage": "complete" if complete else ("partial" if counts["records"] else "empty"),
         "feed": dict(feed) if feed else None,
         "stale": bool(last and datetime.now(UTC) - last > timedelta(days=7)),
@@ -288,12 +289,26 @@ def catalog_row(executor, mode, name_id):
         .one_or_none()
     )
     if not row:
-        raise APIError(404, "CATALOG_CPE_NOT_FOUND", "Identificador ausente del catálogo local")
+        raise APIError(404, "CATALOG_CPE_NOT_FOUND", "Identificador ausente del catálogo")
+    try:
+        part, vendor, product, version = map(unbind_component, parse_cpe(row["cpe_name"])[:4])
+        if (part, vendor.casefold(), product.casefold(), version) != (
+            row["part"],
+            row["vendor"],
+            row["product"],
+            row["version"],
+        ):
+            raise ValueError
+    except (ValueError, TypeError):
+        raise APIError(
+            503,
+            "CATALOG_SOURCE_INCONSISTENT",
+            "El registro del catálogo es inconsistente",
+        ) from None
     return dict(row)
 
 
 @router.get("/candidates/{cpe_name_id}")
 def detail(request: Request, user: Identity, cpe_name_id: UUID, mode: Mode = "live"):
-    with request.app.state.engine.connect() as connection:
-        connection.execute(text("SET LOCAL statement_timeout=2000"))
+    with request.app.state.catalog_reader.connect(mode) as connection:
         return catalog_row(connection, mode, cpe_name_id)
