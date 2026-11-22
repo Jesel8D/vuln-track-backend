@@ -7087,6 +7087,425 @@
           ]
         }
       ]
+    },
+    {
+      "name": "12 · Catálogo CPE local (fixture)",
+      "item": [
+        {
+          "id": "e08b5e62-e155-50e6-a781-4f99fd186b9f",
+          "name": "RC22 Estado fuente fixture",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/cpe-catalog/status?mode=fixture",
+            "description": "Caso negativo sobre una ruta real"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/cpe-catalog/status?mode=fixture",
+                "description": "Caso negativo sobre una ruta real"
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"records\": 1,\n  \"vendors\": 1,\n  \"products\": 1,\n  \"last_synchronized_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"mode\": \"fixture\",\n  \"source\": \"nvd-captured-fixture\",\n  \"coverage\": \"partial\",\n  \"stale\": false,\n  \"last_run\": {\n    \"scope\": {\n      \"since\": null,\n      \"until\": null,\n      \"vendor\": \"cisco\",\n      \"product\": \"small_business_rv340_firmware\"\n    },\n    \"status\": \"complete\",\n    \"total_reported\": 1,\n    \"next_offset\": 1,\n    \"updated_at\": \"2026-11-13T12:00:00.000001Z\",\n    \"error_code\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "16f61dd8-4b31-5a8d-bd03-d9ca9d3134ac",
+          "name": "RC22 Fabricantes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/cpe-catalog/vendors?mode=fixture&q=cisco",
+            "description": "Caso negativo sobre una ruta real"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/cpe-catalog/vendors?mode=fixture&q=cisco",
+                "description": "Caso negativo sobre una ruta real"
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"vendor\": \"cisco\"\n    }\n  ],\n  \"page\": {\n    \"limit\": 15,\n    \"offset\": 0,\n    \"total\": 1\n  },\n  \"mode\": \"fixture\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "c7c49a9e-6adc-556c-bd3e-0b36f154c533",
+          "name": "RC22 Productos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/cpe-catalog/products?mode=fixture&vendor=cisco&q=RV340",
+            "description": "Caso negativo sobre una ruta real"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/cpe-catalog/products?mode=fixture&vendor=cisco&q=RV340",
+                "description": "Caso negativo sobre una ruta real"
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"vendor\": \"cisco\",\n      \"product\": \"small_business_rv340_firmware\",\n      \"part\": \"o\",\n      \"title\": \"Cisco Small Business RV340 Firmware 1.0.0.33\"\n    }\n  ],\n  \"page\": {\n    \"limit\": 15,\n    \"offset\": 0,\n    \"total\": 1\n  },\n  \"mode\": \"fixture\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "8891a579-f6ad-5581-be86-0cabf47bed5c",
+          "name": "RC22 Versiones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/cpe-catalog/versions?mode=fixture&vendor=cisco&product=small_business_rv340_firmware&part=o",
+            "description": "Caso negativo sobre una ruta real"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/cpe-catalog/versions?mode=fixture&vendor=cisco&product=small_business_rv340_firmware&part=o",
+                "description": "Caso negativo sobre una ruta real"
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"version\": \"1.0.0.33\",\n      \"deprecated\": false\n    }\n  ],\n  \"page\": {\n    \"limit\": 15,\n    \"offset\": 0,\n    \"total\": 1\n  },\n  \"mode\": \"fixture\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "7dfa20ac-754c-5329-8d30-31ad92c3ba01",
+          "name": "RC22 Candidatos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/cpe-catalog/candidates?mode=fixture&vendor=cisco&product=small_business_rv340_firmware&part=o",
+            "description": "Caso negativo sobre una ruta real"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.collectionVariables.set('catalog_fixture_id', data.items[0].cpe_name_id);",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/cpe-catalog/candidates?mode=fixture&vendor=cisco&product=small_business_rv340_firmware&part=o",
+                "description": "Caso negativo sobre una ruta real"
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"cpe_name_id\": \"c817e5ba-62c1-41e7-a15c-fb851fea761e\",\n      \"cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*\",\n      \"part\": \"o\",\n      \"vendor\": \"cisco\",\n      \"product\": \"small_business_rv340_firmware\",\n      \"version\": \"1.0.0.33\",\n      \"title\": \"Cisco Small Business RV340 Firmware 1.0.0.33\",\n      \"titles\": [\n        {\n          \"lang\": \"en\",\n          \"title\": \"Cisco Small Business RV340 Firmware 1.0.0.33\"\n        }\n      ],\n      \"deprecated\": false,\n      \"deprecated_by\": [],\n      \"nvd_created\": \"2026-11-13T12:00:00.000001Z\",\n      \"nvd_modified\": \"2026-11-13T12:00:00.000001Z\",\n      \"synchronized_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"source\": \"nvd-captured-fixture\",\n      \"mode\": \"fixture\"\n    }\n  ],\n  \"page\": {\n    \"limit\": 15,\n    \"offset\": 0,\n    \"total\": 1\n  },\n  \"mode\": \"fixture\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "4bfd98e5-52d4-505f-9724-4c1f9a618cd9",
+          "name": "RC22 Detalle CPE",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/cpe-catalog/candidates/{{catalog_fixture_id}}?mode=fixture",
+            "description": "Caso negativo sobre una ruta real"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/cpe-catalog/candidates/{{catalog_fixture_id}}?mode=fixture",
+                "description": "Caso negativo sobre una ruta real"
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"cpe_name_id\": \"c817e5ba-62c1-41e7-a15c-fb851fea761e\",\n  \"cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*\",\n  \"part\": \"o\",\n  \"vendor\": \"cisco\",\n  \"product\": \"small_business_rv340_firmware\",\n  \"version\": \"1.0.0.33\",\n  \"title\": \"Cisco Small Business RV340 Firmware 1.0.0.33\",\n  \"titles\": [\n    {\n      \"lang\": \"en\",\n      \"title\": \"Cisco Small Business RV340 Firmware 1.0.0.33\"\n    }\n  ],\n  \"deprecated\": false,\n  \"deprecated_by\": [],\n  \"nvd_created\": \"2026-11-13T12:00:00.000001Z\",\n  \"nvd_modified\": \"2026-11-13T12:00:00.000001Z\",\n  \"synchronized_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"source\": \"nvd-captured-fixture\",\n  \"mode\": \"fixture\"\n}"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -25,8 +25,8 @@ def validate_device_candidate(device, candidate):
         part != PARTS[device["component_kind"]]
         or not words(vendor)
         or not words(product)
-        or words(vendor) != words(device["product_vendor"])
-        or words(product) != words(device["product"])
+        or words(vendor) != words(device["product_vendor"] or "")
+        or words(product) != words(device["product"] or "")
     ):
         raise APIError(
             409, "CPE_PRODUCT_MISMATCH", "El componente, fabricante o producto NVD no coincide"

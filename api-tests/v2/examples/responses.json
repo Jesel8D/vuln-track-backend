@@ -3470,5 +3470,149 @@
         }
       ]
     }
+  },
+  "RC22 Estado fuente fixture": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "records": 1,
+      "vendors": 1,
+      "products": 1,
+      "last_synchronized_at": "2026-11-13T12:00:00.000001Z",
+      "mode": "fixture",
+      "source": "nvd-captured-fixture",
+      "coverage": "partial",
+      "stale": false,
+      "last_run": {
+        "scope": {
+          "since": null,
+          "until": null,
+          "vendor": "cisco",
+          "product": "small_business_rv340_firmware"
+        },
+        "status": "complete",
+        "total_reported": 1,
+        "next_offset": 1,
+        "updated_at": "2026-11-13T12:00:00.000001Z",
+        "error_code": null
+      }
+    }
+  },
+  "RC22 Fabricantes": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "vendor": "cisco"
+        }
+      ],
+      "page": {
+        "limit": 15,
+        "offset": 0,
+        "total": 1
+      },
+      "mode": "fixture"
+    }
+  },
+  "RC22 Productos": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "vendor": "cisco",
+          "product": "small_business_rv340_firmware",
+          "part": "o",
+          "title": "Cisco Small Business RV340 Firmware 1.0.0.33"
+        }
+      ],
+      "page": {
+        "limit": 15,
+        "offset": 0,
+        "total": 1
+      },
+      "mode": "fixture"
+    }
+  },
+  "RC22 Versiones": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "version": "1.0.0.33",
+          "deprecated": false
+        }
+      ],
+      "page": {
+        "limit": 15,
+        "offset": 0,
+        "total": 1
+      },
+      "mode": "fixture"
+    }
+  },
+  "RC22 Candidatos": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
+          "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+          "part": "o",
+          "vendor": "cisco",
+          "product": "small_business_rv340_firmware",
+          "version": "1.0.0.33",
+          "title": "Cisco Small Business RV340 Firmware 1.0.0.33",
+          "titles": [
+            {
+              "lang": "en",
+              "title": "Cisco Small Business RV340 Firmware 1.0.0.33"
+            }
+          ],
+          "deprecated": false,
+          "deprecated_by": [],
+          "nvd_created": "2026-11-13T12:00:00.000001Z",
+          "nvd_modified": "2026-11-13T12:00:00.000001Z",
+          "synchronized_at": "2026-11-13T12:00:00.000001Z",
+          "source": "nvd-captured-fixture",
+          "mode": "fixture"
+        }
+      ],
+      "page": {
+        "limit": 15,
+        "offset": 0,
+        "total": 1
+      },
+      "mode": "fixture"
+    }
+  },
+  "RC22 Detalle CPE": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
+      "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
+      "part": "o",
+      "vendor": "cisco",
+      "product": "small_business_rv340_firmware",
+      "version": "1.0.0.33",
+      "title": "Cisco Small Business RV340 Firmware 1.0.0.33",
+      "titles": [
+        {
+          "lang": "en",
+          "title": "Cisco Small Business RV340 Firmware 1.0.0.33"
+        }
+      ],
+      "deprecated": false,
+      "deprecated_by": [],
+      "nvd_created": "2026-11-13T12:00:00.000001Z",
+      "nvd_modified": "2026-11-13T12:00:00.000001Z",
+      "synchronized_at": "2026-11-13T12:00:00.000001Z",
+      "source": "nvd-captured-fixture",
+      "mode": "fixture"
+    }
   }
 }

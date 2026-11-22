@@ -1,0 +1,262 @@
+"""Authenticated, bounded reads of the locally synchronized dictionary."""
+
+import unicodedata
+from datetime import UTC, datetime, timedelta
+from typing import Annotated, Literal
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Query, Request
+from sqlalchemy import text
+
+from app.api.router import Identity
+from app.core.errors import APIError
+from app.services.cpe_catalog import SOURCE, Mode
+
+
+def admit_catalog(request: Request, user: Identity):
+    request.app.state.catalog_reads.check_user(user.id, "catalog_read", limit=90)
+
+
+router = APIRouter(
+    prefix="/api/v2/cpe-catalog", tags=["Catálogo CPE"], dependencies=[Depends(admit_catalog)]
+)
+Part = Literal["h", "o", "a"]
+Search = Annotated[str, Query(max_length=120)]
+Limit = Annotated[int, Query(ge=1, le=30)]
+Offset = Annotated[int, Query(ge=0, le=10000)]
+RECORD = """
+    cpe_name_id,cpe_name,part,vendor,product,version,title,titles,
+    deprecated,deprecated_by,nvd_created,nvd_modified,synchronized_at,source,mode
+"""
+LITERAL_VERSION = "version <> '-' AND strpos(version,'*')=0 AND strpos(version,'?')=0"
+
+
+def normalized_text(q):
+    normalized = unicodedata.normalize("NFC", q.strip())
+    if any(unicodedata.category(c) in {"Cc", "Cs"} for c in normalized):
+        raise APIError(422, "SEARCH_INVALID", "Texto de búsqueda inválido")
+    return normalized
+
+
+def search_argument(q):
+    return (
+        "%"
+        + normalized_text(q).casefold().replace("!", "!!").replace("%", "!%").replace("_", "!_")
+        + "%"
+    )
+
+
+def listing(request, mode, part, q, limit, offset, *, select, where="", order, **scope):
+    query = (
+        """
+        WHERE mode=:mode AND (CAST(:part AS text) IS NULL OR part=:part)
+    """
+        + where
+    )
+    values = {
+        key: normalized_text(value) if key == "version" else normalized_text(value).casefold()
+        for key, value in scope.items()
+    }
+    params = {"mode": mode, "part": part, "q": search_argument(q), **values}
+    with request.app.state.engine.connect() as connection:
+        connection.execute(text("SET LOCAL statement_timeout=2000"))
+        rows = (
+            connection.execute(
+                text(f"""
+                SELECT *, count(*) OVER() AS matched FROM
+                  (SELECT {select} FROM vulntrack_catalog.products {query}) p
+                ORDER BY {order} LIMIT :limit OFFSET :offset
+            """),
+                params | {"limit": limit, "offset": offset},
+            )
+            .mappings()
+            .all()
+        )
+        if rows:
+            total = rows[0]["matched"]
+        elif offset:
+            total = connection.scalar(
+                text(f"""
+                SELECT count(*) FROM (SELECT {select} FROM vulntrack_catalog.products {query}) p
+            """),
+                params,
+            )
+        else:
+            total = 0
+    return {
+        "items": [{key: val for key, val in row.items() if key != "matched"} for row in rows],
+        "page": {"limit": limit, "offset": offset, "total": total},
+        "mode": mode,
+    }
+
+
+@router.get("/status")
+def status(request: Request, user: Identity, mode: Mode = "live"):
+    with request.app.state.engine.connect() as connection:
+        connection.execute(text("SET LOCAL statement_timeout=2000"))
+        counts = (
+            connection.execute(
+                text("""
+            SELECT count(*) records,count(DISTINCT vendor) vendors,
+                   count(DISTINCT (vendor,product,part)) products,
+                   max(synchronized_at) last_synchronized_at
+            FROM vulntrack_catalog.products WHERE mode=:mode
+        """),
+                {"mode": mode},
+            )
+            .mappings()
+            .one()
+        )
+        latest = (
+            connection.execute(
+                text("""
+            SELECT scope,status,total_reported,next_offset,updated_at,error_code
+            FROM vulntrack_catalog.sync_runs WHERE mode=:mode
+            ORDER BY updated_at DESC,id DESC LIMIT 1
+        """),
+                {"mode": mode},
+            )
+            .mappings()
+            .one_or_none()
+        )
+    last = counts["last_synchronized_at"]
+    return {
+        **counts,
+        "mode": mode,
+        "source": SOURCE[mode],
+        "coverage": "partial" if counts["records"] else "empty",
+        "stale": bool(last and datetime.now(UTC) - last > timedelta(days=7)),
+        "last_run": dict(latest) if latest else None,
+    }
+
+
+@router.get("/vendors")
+def vendors(
+    request: Request,
+    user: Identity,
+    mode: Mode = "live",
+    part: Part | None = None,
+    q: Search = "",
+    limit: Limit = 15,
+    offset: Offset = 0,
+):
+    return listing(
+        request,
+        mode,
+        part,
+        q,
+        limit,
+        offset,
+        select="DISTINCT vendor",
+        where="AND vendor LIKE :q ESCAPE '!'",
+        order="vendor",
+    )
+
+
+@router.get("/products")
+def products(
+    request: Request,
+    user: Identity,
+    vendor: Search,
+    mode: Mode = "live",
+    part: Part | None = None,
+    q: Search = "",
+    limit: Limit = 15,
+    offset: Offset = 0,
+):
+    return listing(
+        request,
+        mode,
+        part,
+        q,
+        limit,
+        offset,
+        select="vendor,product,part,min(title) AS title",
+        where="AND vendor=:vendor AND search_text LIKE :q ESCAPE '!' GROUP BY vendor,product,part",
+        order="product,part",
+        vendor=vendor,
+    )
+
+
+@router.get("/versions")
+def versions(
+    request: Request,
+    user: Identity,
+    vendor: Search,
+    product: Search,
+    mode: Mode = "live",
+    part: Part | None = None,
+    q: Search = "",
+    limit: Limit = 15,
+    offset: Offset = 0,
+):
+    return listing(
+        request,
+        mode,
+        part,
+        q,
+        limit,
+        offset,
+        select="version,bool_and(deprecated) AS deprecated",
+        where=f"""AND vendor=:vendor AND product=:product AND {LITERAL_VERSION}
+                  AND lower(version) LIKE :q ESCAPE '!' GROUP BY version""",
+        order="version",
+        vendor=vendor,
+        product=product,
+    )
+
+
+@router.get("/candidates")
+def candidates(
+    request: Request,
+    user: Identity,
+    mode: Mode = "live",
+    part: Part | None = None,
+    q: Search = "",
+    vendor: Search = "",
+    product: Search = "",
+    version: Search = "",
+    limit: Limit = 15,
+    offset: Offset = 0,
+):
+    return listing(
+        request,
+        mode,
+        part,
+        q,
+        limit,
+        offset,
+        select=RECORD,
+        where="""
+        AND (:vendor='' OR vendor=:vendor) AND (:product='' OR product=:product)
+        AND (:version='' OR version=:version) AND search_text LIKE :q ESCAPE '!'
+    """,
+        order="deprecated,vendor,product,version,cpe_name_id",
+        vendor=vendor,
+        product=product,
+        version=version,
+    )
+
+
+def catalog_row(executor, mode, name_id):
+    row = (
+        executor.execute(
+            text(f"""
+        SELECT {RECORD} FROM vulntrack_catalog.products
+        WHERE mode=:mode AND cpe_name_id=:id
+    """),
+            {"mode": mode, "id": name_id},
+        )
+        .mappings()
+        .one_or_none()
+    )
+    if not row:
+        raise APIError(404, "CATALOG_CPE_NOT_FOUND", "Identificador ausente del catálogo local")
+    return dict(row)
+
+
+@router.get("/candidates/{cpe_name_id}")
+def detail(request: Request, user: Identity, cpe_name_id: UUID, mode: Mode = "live"):
+    with request.app.state.engine.connect() as connection:
+        connection.execute(text("SET LOCAL statement_timeout=2000"))
+        return catalog_row(connection, mode, cpe_name_id)

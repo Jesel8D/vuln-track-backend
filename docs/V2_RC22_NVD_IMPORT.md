@@ -1,0 +1,15 @@
+# Adquisición oficial CPE bajo demanda
+
+La sincronización explícita usa el cliente HTTPS ya existente, sin redirecciones ni proxies heredados, con cuota, timeout, credencial opcional, límite de cuerpo y manejo de Retry-After. La entrada administrativa admite identificadores exactos de fabricante y familia. Construye el filtro CPE de NVD a partir de componentes validados. Se vuelven a comprobar los valores devueltos. NVD usa keywordSearch para títulos y referencias, por lo que se utiliza cpeMatchString para acotar la adquisición. [Documentación CPE API 2.0](https://nvd.nist.gov/developers/products)
+
+La descarga del 21 de noviembre de 2026, hora de Ciudad de México, usó una página de hasta 20 elementos con `cpe:2.3:*:cisco:small_business_rv340_firmware`. Sin clave, la API oficial devolvió **4** registros, se almacenaron **4**, con **1 fabricante y 1 familia**, y hubo **0 descartes**. Fecha UTC de finalización registrada `2026-11-22T00:25:02Z`. La captura NVD preexistente se importó como **fixture**, con 1 registro separado. Los porcentajes de cobertura del diccionario y de los equipos del usuario son desconocidos.
+
+La importación permite 1–5 páginas por invocación, conserva cada recibo de página atómicamente con el siguiente offset y reanuda un alcance anterior con `--resume UUID`. Una respuesta inconsistente o un total distinto detiene esa ejecución y conserva el catálogo previamente cargado. Cuando corresponda, iniciar un alcance nuevo. Los cambios incrementales usan `--modified-from` y `--modified-through` con zona horaria y ventana de hasta 120 días. Usar un pequeño solapamiento de ventanas y conservar el último intervalo completado. El UPSERT por modo y UUID ignora las versiones anteriores a la última modificación local.
+
+El perfil serializa la operación live y el launcher live. Conserva el próximo instante permitido y la espera de NVD al cambiar de proceso. Fixture puede consultarse desde React con el API en ejecución. No hay sincronización recurrente.
+
+## Diccionario completo
+
+NVD publica el feed JSON 2.0 del diccionario en GZ/ZIP y un archivo META con fecha, tamaños y SHA-256 del JSON descomprimido. Se leyó solo el META oficial. Anunció **85 329 096 bytes en GZ**, **85 333 324 en ZIP** y **914 798 391 bytes descomprimidos**. La publicación es nocturna cuando hay cambios. [Feeds oficiales](https://nvd.nist.gov/vuln/data-feeds) · [META del diccionario](https://nvd.nist.gov/feeds/json/cpe/2.0/nvdcpe-2.0.meta)
+
+RC2.2 ejecuta la modalidad acotada. La importación completa queda como mecanismo de evolución con un área de staging. Reservar espacio para el archivo comprimido, tabla temporal, índices y WAL. Usar GZ y un analizador JSON en streaming por entradas de `products`. Mientras se descomprime, verificar tamaño, SHA-256 y límites por entrada. Reutilizar la normalización CPE, validar la cabecera y mantener recibos por lote. Publicar un conjunto nuevo solo al terminar la validación del archivo completo. Una ejecución fallida conserva la generación activa. El espacio de PostgreSQL y memoria del feed completo quedan pendientes de medición. No se descargó el feed ni el catálogo de CVE.

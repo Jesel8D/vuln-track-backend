@@ -1096,6 +1096,113 @@ RESPONSE_EXAMPLES = {
             "updated_at": "2026-11-13T12:00:00.000001Z",
         },
     ],
+    "GET /api/v2/cpe-catalog/candidates": [
+        200,
+        {
+            "items": [
+                {
+                    "cpe_name": (
+                        "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"
+                    ),
+                    "cpe_name_id": ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
+                    "deprecated": False,
+                    "deprecated_by": [],
+                    "mode": "fixture",
+                    "nvd_created": ("2026-11-13T12:00:00.000001Z"),
+                    "nvd_modified": ("2026-11-13T12:00:00.000001Z"),
+                    "part": "o",
+                    "product": ("small_business_rv340_firmware"),
+                    "source": "nvd-captured-fixture",
+                    "synchronized_at": ("2026-11-13T12:00:00.000001Z"),
+                    "title": ("Cisco Small Business RV340 Firmware 1.0.0.33"),
+                    "titles": [
+                        {"lang": "en", "title": ("Cisco Small Business RV340 Firmware 1.0.0.33")}
+                    ],
+                    "vendor": "cisco",
+                    "version": "1.0.0.33",
+                }
+            ],
+            "mode": "fixture",
+            "page": {"limit": 15, "offset": 0, "total": 1},
+        },
+    ],
+    "GET /api/v2/cpe-catalog/candidates/{cpe_name_id}": [
+        200,
+        {
+            "cpe_name": ("cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"),
+            "cpe_name_id": ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
+            "deprecated": False,
+            "deprecated_by": [],
+            "mode": "fixture",
+            "nvd_created": ("2026-11-13T12:00:00.000001Z"),
+            "nvd_modified": ("2026-11-13T12:00:00.000001Z"),
+            "part": "o",
+            "product": ("small_business_rv340_firmware"),
+            "source": "nvd-captured-fixture",
+            "synchronized_at": ("2026-11-13T12:00:00.000001Z"),
+            "title": ("Cisco Small Business RV340 Firmware 1.0.0.33"),
+            "titles": [{"lang": "en", "title": ("Cisco Small Business RV340 Firmware 1.0.0.33")}],
+            "vendor": "cisco",
+            "version": "1.0.0.33",
+        },
+    ],
+    "GET /api/v2/cpe-catalog/products": [
+        200,
+        {
+            "items": [
+                {
+                    "part": "o",
+                    "product": "small_business_rv340_firmware",
+                    "title": ("Cisco Small Business RV340 Firmware 1.0.0.33"),
+                    "vendor": "cisco",
+                }
+            ],
+            "mode": "fixture",
+            "page": {"limit": 15, "offset": 0, "total": 1},
+        },
+    ],
+    "GET /api/v2/cpe-catalog/status": [
+        200,
+        {
+            "coverage": "partial",
+            "last_run": {
+                "error_code": None,
+                "next_offset": 1,
+                "scope": {
+                    "product": ("small_business_rv340_firmware"),
+                    "since": None,
+                    "until": None,
+                    "vendor": "cisco",
+                },
+                "status": "complete",
+                "total_reported": 1,
+                "updated_at": ("2026-11-13T12:00:00.000001Z"),
+            },
+            "last_synchronized_at": "2026-11-13T12:00:00.000001Z",
+            "mode": "fixture",
+            "products": 1,
+            "records": 1,
+            "source": "nvd-captured-fixture",
+            "stale": False,
+            "vendors": 1,
+        },
+    ],
+    "GET /api/v2/cpe-catalog/vendors": [
+        200,
+        {
+            "items": [{"vendor": "cisco"}],
+            "mode": "fixture",
+            "page": {"limit": 15, "offset": 0, "total": 1},
+        },
+    ],
+    "GET /api/v2/cpe-catalog/versions": [
+        200,
+        {
+            "items": [{"deprecated": False, "version": "1.0.0.33"}],
+            "mode": "fixture",
+            "page": {"limit": 15, "offset": 0, "total": 1},
+        },
+    ],
     "GET /api/v2/workspaces": [
         200,
         {

@@ -157,6 +157,37 @@ def snapshot(client, base, data):
         if client.get(device, headers={"Authorization": second}).status_code != 404:
             raise RuntimeError("Restored device accessed from another workspace")
         actual["device"] = device_dto
+    if data.get("catalog_dataset"):
+        saved_catalog = data["catalog_dataset"]
+        assisted = (
+            base + f"/api/v2/workspaces/{data['workspace']}/devices/" + saved_catalog["device_id"]
+        )
+        detail = read(assisted)
+        assert detail["current_identification"] == saved_catalog["identification"]
+        runs = read(assisted + "/analyses")
+        completed = runs["items"][0]
+        assert completed["mode"] == "fixture" and completed["status"] == "completed"
+        findings = read(assisted + "/analyses/" + completed["id"] + "/findings")
+        finding = findings["items"][0]
+        assert finding["applicability"] == "undetermined" and finding["status"] == "reviewed"
+        recommendations = read(assisted + "/findings/" + finding["id"] + "/recommendations")
+        assert recommendations["items"]
+        actual["assisted_device"] = {
+            "device": detail,
+            "runs": runs,
+            "findings": findings,
+            "recommendations": recommendations,
+        }
+        assert client.get(assisted, headers={"Authorization": second}).status_code == 404
+        catalog = base + "/api/v2/cpe-catalog/candidates/"
+        assert (
+            read(catalog + saved_catalog["entry"]["cpe_name_id"] + "?mode=fixture")
+            == saved_catalog["entry"]
+        )
+        assert (
+            read(base + "/api/v2/cpe-catalog/status?mode=live")["records"]
+            == saved_catalog["live_count"]
+        )
     return token, hashlib.sha256(json.dumps(actual, sort_keys=True).encode()).hexdigest()
 
 
@@ -182,7 +213,7 @@ def browser(profile, phase):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--profile", choices=["rc1", "rc2"], default="rc1")
+    parser.add_argument("--profile", choices=["rc1", "rc2", "rc2-catalog"], default="rc1")
     profile = parser.parse_args().profile
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     result_path = ARTIFACTS / "recovery-results.json"
@@ -229,7 +260,11 @@ def main():
             "sensitive RC1 backup checksum, private permissions and Git exclusion verified"
         )
         restore_profile = profile + "-restore-" + secrets.token_hex(4)
-        ports = (55441, 8007, 5180) if profile == "rc2" else (55439, 8005, 5178)
+        ports = {
+            "rc2-catalog": (55445, 8011, 5184),
+            "rc2": (55441, 8007, 5180),
+            "rc1": (55439, 8005, 5178),
+        }[profile]
         restored = PersistentV2(
             restore_profile, pg_port=ports[0], api_port=ports[1], web_port=ports[2]
         )

@@ -996,6 +996,23 @@ add(RC2, "RC2 Retirar dispositivo", "PATCH", DEVICE + "/status", body={"status":
 add(RC2, "RC2 Dashboard por fuente", "GET", BASE + "/nvd-dashboard/{{nvd_mode}}")
 
 
+CAT = "/api/v2/cpe-catalog"
+RC22 = "12 · Catálogo CPE local (fixture)"
+FAMILY = "vendor=cisco&product=small_business_rv340_firmware&part=o"
+add(RC22, "RC22 Estado fuente fixture", "GET", CAT + "/status?mode=fixture")
+add(RC22, "RC22 Fabricantes", "GET", CAT + "/vendors?mode=fixture&q=cisco")
+add(RC22, "RC22 Productos", "GET", CAT + "/products?mode=fixture&vendor=cisco&q=RV340")
+add(RC22, "RC22 Versiones", "GET", CAT + "/versions?mode=fixture&" + FAMILY)
+add(
+    RC22,
+    "RC22 Candidatos",
+    "GET",
+    CAT + "/candidates?mode=fixture&" + FAMILY,
+    capture=f"{SET}('catalog_fixture_id', data.items[0].cpe_name_id);",
+)
+add(RC22, "RC22 Detalle CPE", "GET", CAT + "/candidates/{{catalog_fixture_id}}?mode=fixture")
+
+
 def dump(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
@@ -1034,6 +1051,8 @@ def main():
                     if m[1] in {"analysis_id", "asset_analysis_id", "device_run_id"}
                     else "finding_id"
                     if m[1] in {"asset_finding_id", "device_finding_id"}
+                    else "cpe_name_id"
+                    if m[1] == "catalog_fixture_id"
                     else m[1]
                 )
                 + "}"
@@ -1154,7 +1173,7 @@ def main():
             }
         ]
         pre = req["pre"]
-        if req["folder"].startswith(("10", "11")):
+        if req["folder"].startswith(("10", "11", "12")):
             pre = (
                 "if (pm.variables.get('target_mode') === 'persistent-development') "
                 "{ pm.execution.skipRequest(); return; }\n" + pre
@@ -1327,6 +1346,8 @@ def main():
                         if m[1] in {"analysis_id", "asset_analysis_id", "device_run_id"}
                         else "finding_id"
                         if m[1] in {"asset_finding_id", "device_finding_id"}
+                        else "cpe_name_id"
+                        if m[1] == "catalog_fixture_id"
                         else m[1]
                     )
                     + "}"

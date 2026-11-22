@@ -1,20 +1,22 @@
 """Devices retain workspace authorization, identity snapshots and separate history."""
 
+import hashlib
 import json
 import logging
 from contextlib import contextmanager
 from typing import Annotated
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Header, Query, Request
 from pydantic import ValidationError
 from sqlalchemy import text
 
+from app.api.cpe_catalog import catalog_row
 from app.api.router import Identity
 from app.api.v2_nvd import IdempotencyKey
 from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
-from app.schemas.cpe import CandidateList, SearchInput
+from app.schemas.cpe import Candidate, CandidateList, SearchInput
 from app.schemas.devices import (
     DeviceCreate,
     DeviceFindingReview,
@@ -128,10 +130,134 @@ def page(session, *, select, table, where, sort, scope, limit, offset):
     }
 
 
+def register_identification(session, scope, candidate, mode, reason, evidence=None):
+    result = one(
+        session,
+        """
+        INSERT INTO vulntrack_devices.identifications
+            (id,workspace_id,device_id,recorded_by,cpe_name,cpe_name_id,mode,reason,catalog_evidence,
+             created_at)
+        VALUES (:id,:workspace,:device,:actor,:name,:name_id,:mode,:reason,CAST(:evidence AS jsonb),
+                clock_timestamp())
+        RETURNING *
+    """,
+        {
+            **scope,
+            "id": uuid4(),
+            "name": candidate.cpe_name,
+            "name_id": candidate.cpe_name_id,
+            "mode": mode,
+            "reason": reason,
+            "evidence": json.dumps(evidence) if evidence else None,
+        },
+    )
+    session.execute(
+        text("""
+        UPDATE vulntrack_devices.devices SET updated_at=clock_timestamp()
+        WHERE workspace_id=:workspace AND id=:device
+    """),
+        scope,
+    )
+    audit(session, scope, "device.cpe_confirmed", "device_identification", result["id"])
+    return result
+
+
+def assisted_identity(session, scope, selection):
+    session.execute(text("SELECT pg_advisory_xact_lock_shared(2222, 1)"))
+    row = catalog_row(session, selection.mode, selection.cpe_name_id)
+    if (
+        row["deprecated"]
+        or row["cpe_name"] != selection.expected_cpe_name
+        or row["nvd_modified"] != selection.expected_nvd_modified
+    ):
+        raise APIError(409, "CATALOG_CPE_CHANGED", "Vuelve a seleccionar un CPE vigente")
+    if scope["product_vendor"] not in (None, row["vendor"]) or scope["product"] not in (
+        None,
+        row["product"],
+    ):
+        raise APIError(409, "CPE_PRODUCT_MISMATCH", "El producto seleccionado cambio")
+    scope.update(product_vendor=row["vendor"], product=row["product"])
+    if len(scope["product_vendor"]) > 120 or len(scope["product"]) > 160:
+        raise APIError(
+            422, "CATALOG_VALUE_UNSUPPORTED", "Identificador de producto demasiado largo"
+        )
+    if row["version"] == "-" or any(mark in row["version"] for mark in "*?"):
+        raise APIError(409, "VERSION_REQUIRED", "Selecciona una versión concreta y observada")
+    candidate = Candidate.model_validate(row)
+    validate_device_candidate(scope, candidate)
+    return candidate, {
+        "source": row["source"],
+        "nvd_modified": row["nvd_modified"].isoformat(),
+        "synchronized_at": row["synchronized_at"].isoformat(),
+        "observed_version": scope["version"],
+    }
+
+
 @router.post("", status_code=201)
-def create_device(workspace_id: UUID, payload: DeviceCreate, user: Identity, request: Request):
-    scope = {"workspace": workspace_id, "actor": user.id, "id": uuid4(), **payload.model_dump()}
+def create_device(
+    workspace_id: UUID,
+    payload: DeviceCreate,
+    user: Identity,
+    request: Request,
+    idempotency_key: Annotated[UUID | None, Header(alias="Idempotency-Key")] = None,
+):
+    selection = payload.catalog_selection
+    if selection and idempotency_key is None:
+        raise APIError(
+            422, "IDEMPOTENCY_REQUIRED", "Idempotency-Key requerido para el alta asistida"
+        )
+    scope = {
+        "workspace": workspace_id,
+        "actor": user.id,
+        "id": uuid4(),
+        **payload.model_dump(exclude={"catalog_selection"}),
+    }
     with access(request, user.id, workspace_id, write=True) as session:
+        if idempotency_key:
+            receipt = {
+                **scope,
+                "key": idempotency_key,
+                "fingerprint": hashlib.sha256(payload.model_dump_json().encode()).hexdigest(),
+            }
+            session.execute(
+                text("SELECT pg_advisory_xact_lock(hashtextextended(:lock, 2222))"),
+                {"lock": f"{workspace_id}/{user.id}/{idempotency_key}"},
+            )
+            previous = (
+                session.execute(
+                    text("""
+                SELECT fingerprint,device_id,identification_id
+                FROM vulntrack_catalog_private.device_registrations
+                WHERE workspace_id=:workspace AND actor_id=:actor AND request_key=:key
+            """),
+                    receipt,
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if previous:
+                if previous["fingerprint"] != receipt["fingerprint"]:
+                    raise APIError(
+                        409, "IDEMPOTENCY_CONFLICT", "La clave ya se uso con otros datos"
+                    )
+                replay = {
+                    **scope,
+                    "device": previous["device_id"],
+                    "identity": previous["identification_id"],
+                }
+                result = device(session, replay)
+                if previous["identification_id"]:
+                    result["current_identification"] = one(
+                        session,
+                        """
+                        SELECT * FROM vulntrack_devices.identifications
+                        WHERE workspace_id=:workspace AND device_id=:device AND id=:identity
+                    """,
+                        replay,
+                    )
+                return result
+        if selection:
+            candidate, evidence = assisted_identity(session, scope, selection)
         result = one(
             session,
             """
@@ -145,6 +271,27 @@ def create_device(workspace_id: UUID, payload: DeviceCreate, user: Identity, req
             scope,
         )
         audit(session, scope, "device.created", "device", result["id"])
+        identification = None
+        if selection:
+            created_scope = {**scope, "device": result["id"]}
+            identification = register_identification(
+                session, created_scope, candidate, selection.mode, selection.reason, evidence
+            )
+            result = device(session, created_scope)
+            result["current_identification"] = identification
+        if idempotency_key:
+            session.execute(
+                text("""
+                INSERT INTO vulntrack_catalog_private.device_registrations
+                  (workspace_id,actor_id,request_key,fingerprint,device_id,identification_id)
+                VALUES (:workspace,:actor,:key,:fingerprint,:device,:identification)
+            """),
+                {
+                    **receipt,
+                    "device": result["id"],
+                    "identification": identification["id"] if identification else None,
+                },
+            )
         return result
 
 
@@ -233,7 +380,7 @@ def cpe_candidates(
     try:
         search = SearchInput(query=query, limit=limit, offset=offset)
     except ValidationError:
-        raise APIError(422, "SEARCH_INVALID", "Texto de b?squeda inv?lido") from None
+        raise APIError(422, "SEARCH_INVALID", "Texto de búsqueda inválido") from None
     return request.app.state.nvd.search(user.id, search)
 
 
@@ -262,32 +409,9 @@ def confirm_identification(
         if (current["id"] if current else None) != payload.expected_identification_id:
             raise APIError(409, "CPE_SELECTION_CHANGED", "La identificación vigente cambió")
         validate_device_candidate(row, candidate)
-        result = one(
-            session,
-            """
-            INSERT INTO vulntrack_devices.identifications
-                (id,workspace_id,device_id,recorded_by,cpe_name,cpe_name_id,mode,reason,created_at)
-            VALUES (:id,:workspace,:device,:actor,:name,:name_id,:mode,:reason,clock_timestamp())
-            RETURNING *
-        """,
-            {
-                **scope,
-                "id": uuid4(),
-                "name": candidate.cpe_name,
-                "name_id": candidate.cpe_name_id,
-                "mode": request.app.state.nvd_mode,
-                "reason": payload.reason,
-            },
+        return register_identification(
+            session, scope, candidate, request.app.state.nvd_mode, payload.reason
         )
-        session.execute(
-            text("""
-            UPDATE vulntrack_devices.devices SET updated_at=clock_timestamp()
-            WHERE workspace_id=:workspace AND id=:device
-        """),
-            scope,
-        )
-        audit(session, scope, "device.cpe_confirmed", "device_identification", result["id"])
-        return result
 
 
 @router.get("/{device_id}/identifications")

@@ -21,11 +21,15 @@ from sqlalchemy import event
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
+from sqlalchemy import create_engine  # noqa: E402
+
 from app.core.config import Settings  # noqa: E402
 from app.integrations.nvd import NVDClient, Quota  # noqa: E402
 from app.integrations.nvd_cve import CVEClient  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.services.cpe_catalog import CatalogScope, synchronize  # noqa: E402
 from scripts.disposable_v2 import DisposableV2  # noqa: E402
+from scripts.sync_cpe_catalog import fixture_client  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 
@@ -173,6 +177,17 @@ def main():
     artifacts = HERE / ".artifacts"
     artifacts.mkdir(mode=0o700, exist_ok=True)
     with DisposableV2(args.installation) as stack:
+        engine = create_engine(stack.url("postgres"), hide_parameters=True)
+        try:
+            result = synchronize(
+                engine,
+                fixture_client(),
+                "fixture",
+                scope=CatalogScope(vendor="cisco", product="small_business_rv340_firmware"),
+            )
+            assert result["status"] == "complete" and result["stored"] == 1
+        finally:
+            engine.dispose()
         settings = Settings(
             _env_file=None,
             environment="test",
