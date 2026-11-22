@@ -77,8 +77,10 @@ def main():
     rc2 = load("rc2-contract.json")
     rc22 = load("rc22-contract.json")
     rc23 = load("rc23-contract.json")
+    rc3 = load("rc3-contract.json")
     added = {
-        key: verified[key] | rc2[key] | rc22[key] | rc23[key] for key in ("operations", "schemas")
+        key: verified[key] | rc2[key] | rc22[key] | rc23[key] | rc3[key]
+        for key in ("operations", "schemas")
     }
     assert {
         key: value
@@ -211,7 +213,7 @@ def main():
             if request["error"]:
                 assert sample["body"]["error"]["code"] == request["error"]
     assert covered == set(ops), set(ops) - covered
-    assert len(ops) == 65 and len(builder.REQUESTS) == 92
+    assert len(ops) == 69 and len(builder.REQUESTS) == 104
     for env in [
         "local.postman_environment.json",
         "test.postman_environment.json",
@@ -234,7 +236,7 @@ def main():
             (
                 "VALIDATED: OpenAPI 3.1; Postman 2.1; ",
                 f"{len(ops)}",
-                " operations (44 RC1 + 15 RC2 + 6 RC2.2); ",
+                " operations (65 legacy + 4 RC3); ",
                 f"{len(builder.REQUESTS)}",
                 " requests; ",
                 f"{checked_bodies}",

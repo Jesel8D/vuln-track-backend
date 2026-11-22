@@ -1,11 +1,12 @@
 """RC2 device inputs. The server derives actor, status and workspace."""
 
+import re
 import unicodedata
 from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, StringConstraints, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StringConstraints, field_validator
 
 Text120 = Annotated[str, StringConstraints(strict=True, min_length=1, max_length=120)]
 DeviceType = Literal["router", "switch", "server"]
@@ -64,6 +65,61 @@ class DeviceCreate(DeviceInput):
 
 class DeviceStatusUpdate(DeviceInput):
     status: DeviceStatus
+
+
+RecordVersion = Annotated[int, Field(strict=True, ge=1, le=9007199254740991)]
+EditReason = Annotated[str, StringConstraints(strict=True, min_length=1, max_length=500)]
+
+
+class DeviceEdit(DeviceInput):
+    expected_record_version: RecordVersion
+    reason: EditReason
+    confirm_sensitive: StrictBool = False
+    device_type: DeviceType | None = None
+    manufacturer: Text120 | None = None
+    model: Text120 | None = None
+    site_label: Text120 | None = None
+    inventory_label: Text120 | None = None
+    notes: Annotated[str, StringConstraints(strict=True, min_length=1, max_length=1000)] | None = (
+        None
+    )
+    status: DeviceStatus | None = None
+    component_kind: ComponentKind | None = None
+    product_vendor: Text120 | None = None
+    product: Annotated[str, StringConstraints(strict=True, min_length=1, max_length=160)] | None = (
+        None
+    )
+    version: Text120 | None = None
+
+    @field_validator(
+        "device_type", "manufacturer", "model", "site_label", "status", "component_kind"
+    )
+    @classmethod
+    def reject_explicit_null(cls, value):
+        if value is None:
+            raise ValueError("Este campo requiere un valor")
+        return value
+
+    @field_validator("version")
+    @classmethod
+    def check_version(cls, value):
+        return DeviceCreate.unknown_is_null(value)
+
+    @field_validator("reason", "notes")
+    @classmethod
+    def no_obvious_credentials(cls, value):
+        if value and re.search(
+            r"(?i)(?:password|contraseña|api[_ -]?key|token)\s*[:=]\s*\S"
+            r"|-----BEGIN [A-Z ]*PRIVATE KEY-----|\beyJ[\w-]+\.[\w-]+\.[\w-]+",
+            value,
+        ):
+            raise ValueError("Solo se admite texto sin credenciales")
+        return value
+
+
+class DeviceReidentification(CatalogSelection):
+    expected_record_version: RecordVersion
+    expected_identification_id: UUID | None
 
 
 class DeviceIdentificationCreate(DeviceInput):

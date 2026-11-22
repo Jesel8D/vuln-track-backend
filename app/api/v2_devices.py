@@ -19,14 +19,23 @@ from app.db.workspace_context import workspace_session
 from app.schemas.cpe import Candidate, CandidateList, SearchInput
 from app.schemas.devices import (
     DeviceCreate,
+    DeviceEdit,
     DeviceFindingReview,
     DeviceIdentificationCreate,
     DeviceRecommendationCreate,
+    DeviceReidentification,
     DeviceStatus,
     DeviceStatusUpdate,
     DeviceType,
 )
-from app.services.device_identity import validate_device_candidate
+from app.services.device_identity import validate_device_candidate, validate_device_cpe
+from app.services.device_revisions import (
+    EDITABLE,
+    edit_device,
+    edit_reason,
+    present_run,
+    require_version,
+)
 from app.services.nvd_findings import finding_rows
 
 router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/devices", tags=["Dispositivos RC2"])
@@ -40,7 +49,15 @@ RUN_FIELDS = """id, identification_id, selected_cpe, observed_version, mode, sou
     coverage, total_results, retrieved_count, stored_count, warning_codes,
     CASE WHEN status='running' AND created_at < statement_timestamp()-interval '2 minutes'
       THEN 'INTERRUPTED' ELSE failure_code END AS failure_code,
-    source_timestamp, created_at, completed_at"""
+    source_timestamp, created_at, completed_at, evaluated_technology,
+    (SELECT i.identity_generation FROM vulntrack_devices.identifications i
+      WHERE i.workspace_id=runs.workspace_id AND i.device_id=runs.device_id
+        AND i.id=runs.identification_id) AS identity_generation,
+    EXISTS(SELECT 1 FROM vulntrack_devices.devices d
+      JOIN vulntrack_devices.identifications i ON i.workspace_id=d.workspace_id
+        AND i.device_id=d.id AND i.identity_generation=d.identity_generation
+      WHERE d.workspace_id=runs.workspace_id AND d.id=runs.device_id
+        AND i.id=runs.identification_id) AS is_current_technology"""
 FINDING_FIELDS = """id, analysis_id, external_id, title, severity, cvss, evidence, applicability,
     status, published_at, last_modified_at, reviewed_by, review_reason,
     review_evidence, updated_at"""
@@ -94,6 +111,8 @@ def current_identification(session, scope):
         session.execute(
             text(f"""
         SELECT * FROM vulntrack_devices.identifications WHERE {DEVICE_SCOPE}
+        AND identity_generation=(SELECT identity_generation FROM vulntrack_devices.devices
+                                  WHERE workspace_id=:workspace AND id=:device)
         ORDER BY created_at DESC, id DESC LIMIT 1
     """),
             scope,
@@ -162,7 +181,7 @@ def register_identification(session, scope, candidate, mode, reason, evidence=No
     return result
 
 
-def assisted_identity(session, scope, selection):
+def selected_catalog_candidate(session, selection):
     session.execute(text("SELECT pg_advisory_xact_lock_shared(2222, 1)"))
     row = catalog_row(session, selection.mode, selection.cpe_name_id)
     if (
@@ -171,6 +190,13 @@ def assisted_identity(session, scope, selection):
         or row["nvd_modified"] != selection.expected_nvd_modified
     ):
         raise APIError(409, "CATALOG_CPE_CHANGED", "Vuelve a seleccionar un CPE vigente")
+    if row["version"] == "-" or any(mark in row["version"] for mark in "*?"):
+        raise APIError(409, "VERSION_REQUIRED", "Selecciona una versión concreta y observada")
+    return row
+
+
+def assisted_identity(session, scope, selection):
+    row = selected_catalog_candidate(session, selection)
     if scope["product_vendor"] not in (None, row["vendor"]) or scope["product"] not in (
         None,
         row["product"],
@@ -181,8 +207,6 @@ def assisted_identity(session, scope, selection):
         raise APIError(
             422, "CATALOG_VALUE_UNSUPPORTED", "Identificador de producto demasiado largo"
         )
-    if row["version"] == "-" or any(mark in row["version"] for mark in "*?"):
-        raise APIError(409, "VERSION_REQUIRED", "Selecciona una versión concreta y observada")
     candidate = Candidate.model_validate(row)
     validate_device_candidate(scope, candidate)
     return candidate, {
@@ -313,7 +337,8 @@ def list_devices(
         return page(
             session,
             select="""d.*, EXISTS(SELECT 1 FROM vulntrack_devices.identifications i
-                WHERE i.workspace_id=d.workspace_id AND i.device_id=d.id) AS cpe_confirmed""",
+                WHERE i.workspace_id=d.workspace_id AND i.device_id=d.id
+                AND i.identity_generation=d.identity_generation) AS cpe_confirmed""",
             table="vulntrack_devices.devices d",
             where="""workspace_id=:workspace AND (CAST(:type AS text) IS NULL OR device_type=:type)
                   AND (CAST(:status AS text) IS NULL OR status=:status)
@@ -326,13 +351,119 @@ def list_devices(
         )
 
 
+def device_detail(session, scope):
+    return one(
+        session,
+        """
+        SELECT d.*, to_jsonb(i) AS current_identification,
+            CASE WHEN i.id IS NOT NULL THEN 'confirmed'
+                 WHEN d.identity_generation > 1 THEN 'needs_review'
+                 ELSE 'pending' END AS cpe_review_state
+        FROM vulntrack_devices.devices d
+        LEFT JOIN LATERAL (
+            SELECT * FROM vulntrack_devices.identifications
+            WHERE workspace_id=d.workspace_id AND device_id=d.id
+              AND identity_generation=d.identity_generation
+            ORDER BY created_at DESC,id DESC LIMIT 1
+        ) i ON TRUE
+        WHERE d.workspace_id=:workspace AND d.id=:device
+    """,
+        scope,
+    )
+
+
 @router.get("/{device_id}")
 def get_device(workspace_id: UUID, device_id: UUID, user: Identity, request: Request):
+    with access(request, user.id, workspace_id) as session:
+        return device_detail(session, {"workspace": workspace_id, "device": device_id})
+
+
+@router.patch(
+    "/{device_id}", responses={409: {"description": "Conflicto o confirmación pendiente"}}
+)
+def revise_device(
+    workspace_id: UUID,
+    device_id: UUID,
+    payload: DeviceEdit,
+    user: Identity,
+    request: Request,
+):
+    scope = {"workspace": workspace_id, "device": device_id}
+    with access(request, user.id, workspace_id, write=True) as session:
+        lock_device(session, scope)
+        edit_device(session, device(session, scope), scope, payload)
+        return device_detail(session, scope)
+
+
+@router.get("/{device_id}/revisions")
+def list_revisions(
+    workspace_id: UUID,
+    device_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Limit = 20,
+    offset: Offset = 0,
+):
     scope = {"workspace": workspace_id, "device": device_id}
     with access(request, user.id, workspace_id) as session:
+        device(session, scope)
+        return page(
+            session,
+            select="*",
+            table="vulntrack_devices.revisions",
+            where=DEVICE_SCOPE,
+            sort="new_version DESC",
+            scope=scope,
+            limit=limit,
+            offset=offset,
+        )
+
+
+@router.get("/{device_id}/revisions/compare")
+def compare_revisions(
+    workspace_id: UUID,
+    device_id: UUID,
+    user: Identity,
+    request: Request,
+    from_version: Annotated[int, Query(ge=1, le=9007199254740991)],
+    to_version: Annotated[int, Query(ge=1, le=9007199254740991)],
+):
+    scope = {"workspace": workspace_id, "device": device_id, "from": from_version, "to": to_version}
+    with access(request, user.id, workspace_id) as session:
+        row = device(session, scope)
+        if from_version > to_version:
+            raise APIError(422, "DEVICE_REVISION_ORDER", "Elige un intervalo ascendente")
+        if to_version > row["record_version"]:
+            raise APIError(404, "DEVICE_REVISION_NOT_FOUND", "La revisión no está disponible")
+
+        def values(version):
+            if version == row["record_version"]:
+                return {field: row[field] for field in EDITABLE if field != "notes"}
+            return session.scalar(
+                text(f"""
+                SELECT CASE WHEN :version=1 THEN previous_values ELSE new_values END
+                FROM vulntrack_devices.revisions WHERE {DEVICE_SCOPE}
+                  AND new_version=greatest(2,:version)
+            """),
+                {**scope, "version": version},
+            )
+
+        previous, latest = values(from_version), values(to_version)
+        fields = [name for name in previous if previous[name] != latest[name]]
+        if session.scalar(
+            text(f"""
+            SELECT EXISTS(SELECT 1 FROM vulntrack_devices.revisions WHERE {DEVICE_SCOPE}
+               AND new_version > :from AND new_version <= :to AND 'notes'=ANY(changed_fields))
+        """),
+            scope,
+        ):
+            fields.append("notes")
         return {
-            **device(session, scope),
-            "current_identification": current_identification(session, scope),
+            "from_version": from_version,
+            "to_version": to_version,
+            "previous_values": previous,
+            "new_values": latest,
+            "changed_fields": fields,
         }
 
 
@@ -352,6 +483,7 @@ def update_status(
     }
     with access(request, user.id, workspace_id, write=True) as session:
         lock_device(session, scope)
+        edit_reason(session, "Cambio de estado por la ruta de inventario")
         result = one(
             session,
             """
@@ -395,6 +527,7 @@ def confirm_identification(
     scope = {"workspace": workspace_id, "device": device_id, "actor": user.id}
     with access(request, user.id, workspace_id, write=True) as session:
         row = device(session, scope, write=True)
+        expected_record = row["record_version"]
         if row["version"] is None:
             raise APIError(
                 409, "VERSION_REQUIRED", "Registra una versión conocida antes de confirmar"
@@ -405,12 +538,46 @@ def confirm_identification(
         device(session, scope, write=True)
         lock_device(session, scope)
         row = device(session, scope, write=True)
+        require_version(row, expected_record)
         current = current_identification(session, scope)
         if (current["id"] if current else None) != payload.expected_identification_id:
             raise APIError(409, "CPE_SELECTION_CHANGED", "La identificación vigente cambió")
         validate_device_candidate(row, candidate)
         return register_identification(
             session, scope, candidate, request.app.state.nvd_mode, payload.reason
+        )
+
+
+@router.post(
+    "/{device_id}/reidentification",
+    status_code=201,
+    responses={409: {"description": "Candidato o revisión en conflicto"}},
+)
+def reidentify_device(
+    workspace_id: UUID,
+    device_id: UUID,
+    payload: DeviceReidentification,
+    user: Identity,
+    request: Request,
+):
+    scope = {"workspace": workspace_id, "device": device_id, "actor": user.id}
+    with access(request, user.id, workspace_id, write=True) as session:
+        lock_device(session, scope)
+        row = device(session, scope, write=True)
+        require_version(row, payload.expected_record_version)
+        current = current_identification(session, scope)
+        if (current["id"] if current else None) != payload.expected_identification_id:
+            raise APIError(409, "CPE_SELECTION_CHANGED", "La identificación vigente cambió")
+        record = selected_catalog_candidate(session, payload)
+        candidate = Candidate.model_validate(record)
+        validate_device_candidate(row, candidate)
+        evidence = {
+            "source": record["source"],
+            "nvd_modified": record["nvd_modified"].isoformat(),
+            "cpe_name_id": str(candidate.cpe_name_id),
+        }
+        return register_identification(
+            session, scope, candidate, payload.mode, payload.reason, evidence
         )
 
 
@@ -439,13 +606,15 @@ def list_identifications(
 
 
 def run(session, scope):
-    return one(
-        session,
-        f"""
+    return present_run(
+        one(
+            session,
+            f"""
         SELECT {RUN_FIELDS} FROM vulntrack_devices.runs WHERE {DEVICE_SCOPE} AND id=:run
     """,
-        scope,
-        "DEVICE_RUN_NOT_FOUND",
+            scope,
+            "DEVICE_RUN_NOT_FOUND",
+        )
     )
 
 
@@ -481,6 +650,7 @@ def analyze_device(
         selected = current_identification(session, scope)
         if not selected or row["version"] is None:
             raise APIError(409, "CPE_CONFIRMATION_REQUIRED", "Confirma un CPE con versión conocida")
+        validate_device_cpe(row, selected["cpe_name"])
         if selected["mode"] != mode:
             raise APIError(
                 409, "CPE_MODE_CHANGED", "Vuelve a confirmar el CPE en el modo NVD actual"
@@ -605,7 +775,7 @@ def list_analyses(
     scope = {"workspace": workspace_id, "device": device_id}
     with access(request, user.id, workspace_id) as session:
         device(session, scope)
-        return page(
+        result = page(
             session,
             select=RUN_FIELDS,
             table="vulntrack_devices.runs",
@@ -615,6 +785,8 @@ def list_analyses(
             limit=limit,
             offset=offset,
         )
+        result["items"] = [present_run(item) for item in result["items"]]
+        return result
 
 
 @router.get("/{device_id}/analyses/{run_id}")

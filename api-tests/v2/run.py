@@ -27,7 +27,13 @@ from app.core.config import Settings  # noqa: E402
 from app.integrations.nvd import NVDClient, Quota  # noqa: E402
 from app.integrations.nvd_cve import CVEClient  # noqa: E402
 from app.main import create_app  # noqa: E402
-from app.services.cpe_catalog import CatalogScope, synchronize  # noqa: E402
+from app.services.cpe_catalog import (  # noqa: E402
+    UPSERT,
+    CatalogScope,
+    normalize,
+    refresh_summary,
+    synchronize,
+)
 from scripts.disposable_v2 import DisposableV2  # noqa: E402
 from scripts.sync_cpe_catalog import fixture_client  # noqa: E402
 
@@ -186,6 +192,12 @@ def main():
                 scope=CatalogScope(vendor="cisco", product="small_business_rv340_firmware"),
             )
             assert result["status"] == "complete" and result["stored"] == 1
+            alternate = json.loads(
+                (ROOT / "tests/fixtures/rc3_rv340_alternate_cpe.json").read_text()
+            )
+            with engine.begin() as connection:
+                connection.execute(UPSERT, normalize(alternate, "fixture", None))
+                refresh_summary(connection, "fixture")
         finally:
             engine.dispose()
         settings = Settings(

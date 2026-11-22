@@ -18,7 +18,10 @@ from scripts.v2_development import DB, SOURCES, PersistentV2
 GIB = 1024**3
 PROFILE = "rc2-catalog24"
 ARCHIVE = "database.dump.gpg"
-BASE_SOURCES = {path: digest for path, digest in SOURCES.items() if not path.startswith("sql/013_")}
+RC24_SOURCES = {path: digest for path, digest in SOURCES.items() if not path.startswith("sql/014_")}
+BASE_SOURCES = {
+    path: digest for path, digest in RC24_SOURCES.items() if not path.startswith("sql/013_")
+}
 
 
 class RecoveryError(RuntimeError):
@@ -148,7 +151,7 @@ def check(directory, key):
         manifest["format"] != 2
         or manifest["database"] != DB
         or manifest["postgres_major"] != 16
-        or manifest["sources"] not in (SOURCES, BASE_SOURCES)
+        or manifest["sources"] not in (SOURCES, RC24_SOURCES, BASE_SOURCES)
         or type(manifest["database_bytes"]) is not int
         or manifest["database_bytes"] <= 0
         or manifest["ciphertext_bytes"] != regular(archive).st_size
@@ -187,6 +190,7 @@ def main():
     parser.add_argument("action", choices=("backup", "verify", "restore"))
     parser.add_argument("--directory", required=True, type=Path)
     parser.add_argument("--key-file", required=True, type=Path)
+    parser.add_argument("--profile", choices=(PROFILE, "rc3"), default=PROFILE)
     args = parser.parse_args()
     os.umask(0o077)
     directory = args.directory.absolute()
@@ -196,26 +200,29 @@ def main():
     if args.action == "verify":
         manifest = check(directory, key)
     else:
-        stack = PersistentV2(PROFILE, pg_port=55448, api_port=8014, web_port=5187)
+        profile = args.profile
+        ports = (55450, 8016, 5189) if profile == "rc3" else (55448, 8014, 5187)
+        volume = (
+            "vulntrack_v2_rc3_pgdata" if profile == "rc3" else "vulntrack_v2_rc2_catalog24_pgdata"
+        )
+        stack = PersistentV2(profile, pg_port=ports[0], api_port=ports[1], web_port=ports[2])
         if (
             stack.volume,
             stack.config["pg_port"],
             stack.config["api_port"],
             stack.config["web_port"],
-        ) != (
-            "vulntrack_v2_rc2_catalog24_pgdata",
-            55448,
-            8014,
-            5187,
-        ):
-            raise RecoveryError("Unexpected RC2.4 profile or ports")
+        ) != (volume, *ports):
+            raise RecoveryError("Unexpected owned profile or ports")
         with stack.lock():
             if args.action == "backup":
                 stack.verify()
                 size = int(stack.sql("SELECT pg_database_size(current_database());"))
-                manifest = dump(stack.name, directory, key, PROFILE, size, SOURCES)
+                sources = SOURCES if profile == "rc3" else RC24_SOURCES
+                manifest = dump(stack.name, directory, key, profile, size, sources)
             else:
                 manifest = check(directory, key)
+                if profile != "rc3" and manifest["sources"] == SOURCES:
+                    raise RecoveryError("An RC3 archive requires an RC3 profile")
                 if not Path("/mnt/c").is_mount() or shutil.disk_usage("/mnt/c").free < (
                     2 * manifest["database_bytes"] + GIB
                 ):

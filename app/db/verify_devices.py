@@ -1,4 +1,4 @@
-"""Refuse to serve RC2 on an incomplete devices schema."""
+"""Check legacy device tables and the present revision ledger independently."""
 
 from sqlalchemy import text
 
@@ -16,8 +16,9 @@ def verify_devices_schema(connection):
         WHERE n.nspname='vulntrack_devices' AND c.relkind='r'
     """)
     ).all()
-    if {row[0] for row in rows} != TABLES or any(
-        tuple(row[1:]) != (True, True, True, True, False) for row in rows
+    present = {row[0] for row in rows}
+    if present - {"revisions"} != TABLES or any(
+        tuple(row[1:]) != (True, True, True, row[0] != "revisions", False) for row in rows
     ):
         raise RuntimeError("RC2 devices schema or privileges are incomplete")
     policies = connection.execute(
@@ -31,5 +32,7 @@ def verify_devices_schema(connection):
         for name, cmd in (("scoped_read", "SELECT"), ("scoped_insert", "INSERT"))
     }
     expected.update((table, "scoped_update", "UPDATE") for table in {"devices", "runs", "findings"})
+    if "revisions" in present:
+        expected.add(("revisions", "scoped_read", "SELECT"))
     if set(policies) != expected:
         raise RuntimeError("RC2 devices policies do not match")

@@ -11503,13 +11503,15 @@
                   "created_at": "2026-11-13T12:00:00.000001Z",
                   "created_by": "00000000-0000-4000-8000-000000000001",
                   "device_type": "router",
-                  "id": "00000000-0000-4000-8000-000000000033",
+                  "id": "00000000-0000-4000-8000-000000000038",
+                  "identity_generation": 1,
                   "inventory_label": null,
                   "manufacturer": "Cisco",
                   "model": "RV340",
                   "notes": null,
                   "product": "small_business_rv340_firmware",
                   "product_vendor": "cisco",
+                  "record_version": 1,
                   "site_label": "Laboratorio",
                   "status": "active",
                   "updated_at": "2026-11-13T12:00:00.000001Z",
@@ -12126,6 +12128,994 @@
                   "updated_at": "2026-11-13T12:00:00.000001Z",
                   "version": "1.0.0.33",
                   "workspace_id": "00000000-0000-4000-8000-000000000002"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependencia, esquema o servicio no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Segundos sugeridos antes de reintentar"
+              }
+            }
+          },
+          "401": {
+            "description": "JWT ausente, inválido, expirado o cuenta no autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Bearer"
+              }
+            }
+          },
+          "422": {
+            "description": "Solicitud inválida; no se refleja información sensible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Cuerpo supera el límite configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso no visible o inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "V2 · Workspaces y dashboard"
+        ],
+        "summary": "Revise device",
+        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+        "operationId": "revise_device_api_v2_workspaces__workspace_id__devices__device_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Device Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceEdit"
+              },
+              "examples": {
+                "RC3 Actualizar ubicación": {
+                  "summary": "RC3 Actualizar ubicación",
+                  "value": {
+                    "expected_record_version": 1,
+                    "reason": "Traslado administrativo",
+                    "site_label": "Sala de redes"
+                  }
+                },
+                "RC3 Cambiar firmware": {
+                  "summary": "RC3 Cambiar firmware",
+                  "value": {
+                    "confirm_sensitive": true,
+                    "expected_record_version": 3,
+                    "reason": "Versión verificada",
+                    "version": "1.0.1.16"
+                  }
+                },
+                "RC3 Corregir modelo físico": {
+                  "summary": "RC3 Corregir modelo físico",
+                  "value": {
+                    "confirm_sensitive": true,
+                    "expected_record_version": 2,
+                    "model": "RV340 corregido",
+                    "reason": "Etiqueta física comprobada"
+                  }
+                },
+                "local": {
+                  "summary": "Ejemplo; sustituir variables y secretos locales antes de enviar",
+                  "value": {
+                    "confirm_sensitive": true,
+                    "expected_record_version": 3,
+                    "reason": "Versión verificada",
+                    "version": "1.0.1.16"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ejemplo sintético de prueba desechable",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "component_kind": "firmware",
+                  "cpe_review_state": "needs_review",
+                  "created_at": "2026-11-13T12:00:00.000001Z",
+                  "created_by": "00000000-0000-4000-8000-000000000001",
+                  "current_identification": null,
+                  "device_type": "router",
+                  "id": "00000000-0000-4000-8000-000000000038",
+                  "identity_generation": 2,
+                  "inventory_label": null,
+                  "manufacturer": "Cisco",
+                  "model": "RV340 corregido",
+                  "notes": null,
+                  "product": "small_business_rv340_firmware",
+                  "product_vendor": "cisco",
+                  "record_version": 4,
+                  "site_label": "Sala de redes",
+                  "status": "active",
+                  "updated_at": "2026-11-13T12:00:00.000001Z",
+                  "version": "1.0.1.16",
+                  "workspace_id": "00000000-0000-4000-8000-000000000002"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ejemplo sintético de prueba desechable",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "DEVICE_VERSION_CONFLICT",
+                    "message": "El dispositivo cambió. Recarga y compara.",
+                    "request_id": "example-request-id"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependencia, esquema o servicio no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Segundos sugeridos antes de reintentar"
+              }
+            }
+          },
+          "401": {
+            "description": "JWT ausente, inválido, expirado o cuenta no autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Bearer"
+              }
+            }
+          },
+          "422": {
+            "description": "Solicitud inválida; no se refleja información sensible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Cuerpo supera el límite configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso no visible o inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/workspaces/{workspace_id}/devices/{device_id}/revisions": {
+      "get": {
+        "tags": [
+          "V2 · Workspaces y dashboard"
+        ],
+        "summary": "List revisions",
+        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista.",
+        "operationId": "list_revisions_api_v2_workspaces__workspace_id__devices__device_id__revisions_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Device Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ejemplo sintético de prueba desechable",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "items": [
+                    {
+                      "actor_id": "00000000-0000-4000-8000-000000000001",
+                      "change_kind": "technological",
+                      "changed_fields": [
+                        "version"
+                      ],
+                      "cpe_review_state": "needs_review",
+                      "device_id": "00000000-0000-4000-8000-000000000038",
+                      "id": "00000000-0000-4000-8000-000000000041",
+                      "new_values": {
+                        "component_kind": "firmware",
+                        "device_type": "router",
+                        "inventory_label": null,
+                        "manufacturer": "Cisco",
+                        "model": "RV340 corregido",
+                        "product": "small_business_rv340_firmware",
+                        "product_vendor": "cisco",
+                        "site_label": "Sala de redes",
+                        "status": "active",
+                        "version": "1.0.1.16"
+                      },
+                      "new_version": 4,
+                      "previous_values": {
+                        "component_kind": "firmware",
+                        "device_type": "router",
+                        "inventory_label": null,
+                        "manufacturer": "Cisco",
+                        "model": "RV340 corregido",
+                        "product": "small_business_rv340_firmware",
+                        "product_vendor": "cisco",
+                        "site_label": "Sala de redes",
+                        "status": "active",
+                        "version": "1.0.0.33"
+                      },
+                      "previous_version": 3,
+                      "reason": "Versión verificada",
+                      "recorded_at": "2026-11-13T12:00:00.000001Z",
+                      "related_identification_id": "00000000-0000-4000-8000-000000000039",
+                      "workspace_id": "00000000-0000-4000-8000-000000000002"
+                    },
+                    {
+                      "actor_id": "00000000-0000-4000-8000-000000000001",
+                      "change_kind": "physical",
+                      "changed_fields": [
+                        "model"
+                      ],
+                      "cpe_review_state": "confirmed",
+                      "device_id": "00000000-0000-4000-8000-000000000038",
+                      "id": "00000000-0000-4000-8000-000000000042",
+                      "new_values": {
+                        "component_kind": "firmware",
+                        "device_type": "router",
+                        "inventory_label": null,
+                        "manufacturer": "Cisco",
+                        "model": "RV340 corregido",
+                        "product": "small_business_rv340_firmware",
+                        "product_vendor": "cisco",
+                        "site_label": "Sala de redes",
+                        "status": "active",
+                        "version": "1.0.0.33"
+                      },
+                      "new_version": 3,
+                      "previous_values": {
+                        "component_kind": "firmware",
+                        "device_type": "router",
+                        "inventory_label": null,
+                        "manufacturer": "Cisco",
+                        "model": "RV340",
+                        "product": "small_business_rv340_firmware",
+                        "product_vendor": "cisco",
+                        "site_label": "Sala de redes",
+                        "status": "active",
+                        "version": "1.0.0.33"
+                      },
+                      "previous_version": 2,
+                      "reason": "Etiqueta física comprobada",
+                      "recorded_at": "2026-11-13T12:00:00.000001Z",
+                      "related_identification_id": "00000000-0000-4000-8000-000000000039",
+                      "workspace_id": "00000000-0000-4000-8000-000000000002"
+                    },
+                    {
+                      "actor_id": "00000000-0000-4000-8000-000000000001",
+                      "change_kind": "administrative",
+                      "changed_fields": [
+                        "site_label"
+                      ],
+                      "cpe_review_state": "confirmed",
+                      "device_id": "00000000-0000-4000-8000-000000000038",
+                      "id": "00000000-0000-4000-8000-000000000043",
+                      "new_values": {
+                        "component_kind": "firmware",
+                        "device_type": "router",
+                        "inventory_label": null,
+                        "manufacturer": "Cisco",
+                        "model": "RV340",
+                        "product": "small_business_rv340_firmware",
+                        "product_vendor": "cisco",
+                        "site_label": "Sala de redes",
+                        "status": "active",
+                        "version": "1.0.0.33"
+                      },
+                      "new_version": 2,
+                      "previous_values": {
+                        "component_kind": "firmware",
+                        "device_type": "router",
+                        "inventory_label": null,
+                        "manufacturer": "Cisco",
+                        "model": "RV340",
+                        "product": "small_business_rv340_firmware",
+                        "product_vendor": "cisco",
+                        "site_label": "Laboratorio",
+                        "status": "active",
+                        "version": "1.0.0.33"
+                      },
+                      "previous_version": 1,
+                      "reason": "Traslado administrativo",
+                      "recorded_at": "2026-11-13T12:00:00.000001Z",
+                      "related_identification_id": "00000000-0000-4000-8000-000000000039",
+                      "workspace_id": "00000000-0000-4000-8000-000000000002"
+                    }
+                  ],
+                  "page": {
+                    "limit": 20,
+                    "offset": 0,
+                    "total": 3
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependencia, esquema o servicio no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Segundos sugeridos antes de reintentar"
+              }
+            }
+          },
+          "401": {
+            "description": "JWT ausente, inválido, expirado o cuenta no autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Bearer"
+              }
+            }
+          },
+          "422": {
+            "description": "Solicitud inválida; no se refleja información sensible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Cuerpo supera el límite configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso no visible o inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/workspaces/{workspace_id}/devices/{device_id}/revisions/compare": {
+      "get": {
+        "tags": [
+          "V2 · Workspaces y dashboard"
+        ],
+        "summary": "Compare revisions",
+        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+        "operationId": "compare_revisions_api_v2_workspaces__workspace_id__devices__device_id__revisions_compare_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Device Id"
+            }
+          },
+          {
+            "name": "from_version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "title": "From Version"
+            }
+          },
+          {
+            "name": "to_version",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "title": "To Version"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ejemplo sintético de prueba desechable",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "changed_fields": [
+                    "model",
+                    "version",
+                    "site_label"
+                  ],
+                  "from_version": 1,
+                  "new_values": {
+                    "component_kind": "firmware",
+                    "device_type": "router",
+                    "inventory_label": null,
+                    "manufacturer": "Cisco",
+                    "model": "RV340 corregido",
+                    "product": "small_business_rv340_firmware",
+                    "product_vendor": "cisco",
+                    "site_label": "Sala de redes",
+                    "status": "active",
+                    "version": "1.0.1.16"
+                  },
+                  "previous_values": {
+                    "component_kind": "firmware",
+                    "device_type": "router",
+                    "inventory_label": null,
+                    "manufacturer": "Cisco",
+                    "model": "RV340",
+                    "product": "small_business_rv340_firmware",
+                    "product_vendor": "cisco",
+                    "site_label": "Laboratorio",
+                    "status": "active",
+                    "version": "1.0.0.33"
+                  },
+                  "to_version": 4
                 }
               }
             }
@@ -13066,7 +14056,7 @@
                   "value": {
                     "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
                     "expected_identification_id": null,
-                    "reason": "Revision humana de ejemplo"
+                    "reason": "Observación inicial del firmware"
                   }
                 }
               }
@@ -13080,13 +14070,15 @@
               "application/json": {
                 "schema": {},
                 "example": {
+                  "catalog_evidence": null,
                   "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*",
                   "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
                   "created_at": "2026-11-13T12:00:00.000001Z",
-                  "device_id": "00000000-0000-4000-8000-000000000033",
-                  "id": "00000000-0000-4000-8000-000000000034",
+                  "device_id": "00000000-0000-4000-8000-000000000038",
+                  "id": "00000000-0000-4000-8000-000000000039",
+                  "identity_generation": 1,
                   "mode": "fixture",
-                  "reason": "Revision humana de ejemplo",
+                  "reason": "Observación inicial del firmware",
                   "recorded_by": "00000000-0000-4000-8000-000000000001",
                   "workspace_id": "00000000-0000-4000-8000-000000000002"
                 }
@@ -13591,6 +14583,315 @@
         }
       }
     },
+    "/api/v2/workspaces/{workspace_id}/devices/{device_id}/reidentification": {
+      "post": {
+        "tags": [
+          "V2 · Workspaces y dashboard"
+        ],
+        "summary": "Reidentify device",
+        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+        "operationId": "reidentify_device_api_v2_workspaces__workspace_id__devices__device_id__reidentification_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Device Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceReidentification"
+              },
+              "examples": {
+                "local": {
+                  "summary": "Ejemplo; sustituir variables y secretos locales antes de enviar",
+                  "value": {
+                    "confirmed": true,
+                    "cpe_name_id": "3C67651B-1758-4332-9533-845D56B737C5",
+                    "expected_cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.1.16:*:*:*:*:*:*:*",
+                    "expected_identification_id": null,
+                    "expected_nvd_modified": "2021-04-26T11:30:09.037Z",
+                    "expected_record_version": 4,
+                    "mode": "fixture",
+                    "reason": "CPE compatible revisado"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ejemplo sintético de prueba desechable",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "catalog_evidence": {
+                    "cpe_name_id": "3c67651b-1758-4332-9533-845d56b737c5",
+                    "nvd_modified": "2026-11-13T12:00:00.000001Z",
+                    "source": "nvd-captured-fixture"
+                  },
+                  "cpe_name": "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.1.16:*:*:*:*:*:*:*",
+                  "cpe_name_id": "3c67651b-1758-4332-9533-845d56b737c5",
+                  "created_at": "2026-11-13T12:00:00.000001Z",
+                  "device_id": "00000000-0000-4000-8000-000000000038",
+                  "id": "00000000-0000-4000-8000-000000000044",
+                  "identity_generation": 2,
+                  "mode": "fixture",
+                  "reason": "CPE compatible revisado",
+                  "recorded_by": "00000000-0000-4000-8000-000000000001",
+                  "workspace_id": "00000000-0000-4000-8000-000000000002"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Duplicado, conflicto de idempotencia o versión concurrente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependencia, esquema o servicio no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Segundos sugeridos antes de reintentar"
+              }
+            }
+          },
+          "401": {
+            "description": "JWT ausente, inválido, expirado o cuenta no autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Bearer"
+              }
+            }
+          },
+          "422": {
+            "description": "Solicitud inválida; no se refleja información sensible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Cuerpo supera el límite configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso no visible o inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/workspaces/{workspace_id}/devices/{device_id}/analyses": {
       "post": {
         "tags": [
@@ -13648,9 +14949,20 @@
                   "completed_at": "2026-11-13T12:00:00.000001Z",
                   "coverage": "complete",
                   "created_at": "2026-11-13T12:00:00.000001Z",
+                  "evaluated_technology": {
+                    "basis": "observed",
+                    "component_kind": "firmware",
+                    "identity_generation": 1,
+                    "observed_version": "1.0.0.33",
+                    "product": "small_business_rv340_firmware",
+                    "product_vendor": "cisco",
+                    "record_version": 1
+                  },
                   "failure_code": null,
-                  "id": "00000000-0000-4000-8000-000000000035",
-                  "identification_id": "00000000-0000-4000-8000-000000000034",
+                  "id": "00000000-0000-4000-8000-000000000040",
+                  "identification_id": "00000000-0000-4000-8000-000000000039",
+                  "identity_generation": 1,
+                  "is_current_technology": true,
                   "mode": "fixture",
                   "observed_version": "1.0.0.33",
                   "retrieved_count": 1,
@@ -13959,9 +15271,20 @@
                       "completed_at": "2026-11-13T12:00:00.000001Z",
                       "coverage": "complete",
                       "created_at": "2026-11-13T12:00:00.000001Z",
+                      "evaluated_technology": {
+                        "basis": "observed",
+                        "component_kind": "firmware",
+                        "identity_generation": 1,
+                        "observed_version": "1.0.0.33",
+                        "product": "small_business_rv340_firmware",
+                        "product_vendor": "cisco",
+                        "record_version": 1
+                      },
                       "failure_code": null,
-                      "id": "00000000-0000-4000-8000-000000000035",
-                      "identification_id": "00000000-0000-4000-8000-000000000034",
+                      "id": "00000000-0000-4000-8000-000000000040",
+                      "identification_id": "00000000-0000-4000-8000-000000000039",
+                      "identity_generation": 1,
+                      "is_current_technology": false,
                       "mode": "fixture",
                       "observed_version": "1.0.0.33",
                       "retrieved_count": 1,
@@ -20562,6 +21885,186 @@
         ],
         "title": "DeviceCreate"
       },
+      "DeviceEdit": {
+        "properties": {
+          "expected_record_version": {
+            "type": "integer",
+            "maximum": 9007199254740991.0,
+            "minimum": 1.0,
+            "title": "Expected Record Version"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "confirm_sensitive": {
+            "type": "boolean",
+            "title": "Confirm Sensitive",
+            "default": false
+          },
+          "device_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "router",
+                  "switch",
+                  "server"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Device Type"
+          },
+          "manufacturer": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manufacturer"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "site_label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Site Label"
+          },
+          "inventory_label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inventory Label"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "retired"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "component_kind": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "firmware",
+                  "os",
+                  "software",
+                  "hardware"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Component Kind"
+          },
+          "product_vendor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Vendor"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product"
+          },
+          "version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_record_version",
+          "reason"
+        ],
+        "title": "DeviceEdit"
+      },
       "DeviceFindingReview": {
         "properties": {
           "applicability": {
@@ -20650,6 +22153,76 @@
           "recommendation"
         ],
         "title": "DeviceRecommendationCreate"
+      },
+      "DeviceReidentification": {
+        "properties": {
+          "cpe_name_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cpe Name Id"
+          },
+          "expected_cpe_name": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 8,
+            "title": "Expected Cpe Name"
+          },
+          "expected_nvd_modified": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expected Nvd Modified"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Confirmed"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason"
+          },
+          "expected_record_version": {
+            "type": "integer",
+            "maximum": 9007199254740991.0,
+            "minimum": 1.0,
+            "title": "Expected Record Version"
+          },
+          "expected_identification_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Identification Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cpe_name_id",
+          "expected_cpe_name",
+          "expected_nvd_modified",
+          "mode",
+          "confirmed",
+          "reason",
+          "expected_record_version",
+          "expected_identification_id"
+        ],
+        "title": "DeviceReidentification"
       },
       "DeviceStatusUpdate": {
         "properties": {

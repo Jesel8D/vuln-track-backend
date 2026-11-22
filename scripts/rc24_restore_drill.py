@@ -137,7 +137,7 @@ def drill(directory, key):
           FROM (SELECT mode,count(*) records FROM vulntrack_catalog.products GROUP BY mode) totals
         """,
         )
-        return {
+        report = {
             "volume": volume,
             "catalog": json.loads(summary),
             "roles_and_rls": int(
@@ -146,6 +146,26 @@ def drill(directory, key):
             "database_bytes": int(sql(name, "SELECT pg_database_size(current_database())")),
             "seconds": round(time.monotonic() - begin, 2),
         }
+        if (
+            sql(name, "SELECT to_regclass('vulntrack_devices.revisions') IS NOT NULL").strip()
+            == b"t"
+        ):
+            report["device_evidence"] = json.loads(
+                sql(
+                    name,
+                    """
+                SELECT json_build_object(
+                    'devices', (SELECT count(*) FROM vulntrack_devices.devices),
+                    'revisions', (SELECT count(*) FROM vulntrack_devices.revisions),
+                    'identifications', (SELECT count(*) FROM vulntrack_devices.identifications),
+                    'runs', (SELECT count(*) FROM vulntrack_devices.runs),
+                    'findings', (SELECT count(*) FROM vulntrack_devices.findings),
+                    'recommendations', (SELECT count(*) FROM vulntrack_devices.recommendations)
+                )
+            """,
+                )
+            )
+        return report
     finally:
         run("docker", "stop", "--time", "10", name)
 
