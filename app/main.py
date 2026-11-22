@@ -37,6 +37,7 @@ from app.integrations.nvd_cve import CVEClient
 from app.services.analyses import AnalysisService
 from app.services.assets import AssetService
 from app.services.authorization import AssetAuthorization
+from app.services.catalog_reader import CatalogReader
 from app.services.cpe import IdentificationService
 from app.services.cve_worker import CVEWorker
 from app.services.registration import RegistrationService
@@ -47,6 +48,7 @@ logger = logging.getLogger("vulntrack")
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     engine = build_engine(settings)
+    catalog_reader = CatalogReader(engine, settings.cpe_catalog_read_url)
 
     @asynccontextmanager
     async def lifespan(app):
@@ -56,11 +58,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             yield
         finally:
             app.state.cve_worker.close()
+            catalog_reader.close()
             engine.dispose()
 
     app = FastAPI(title="VulnTrack API", version="0.2.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.engine = engine
+    app.state.catalog_reader = catalog_reader
     app.state.session_factory = build_session_factory(engine)
     app.state.assets = AssetService(app.state.session_factory, AssetAuthorization())
     app.state.nvd_mode = "live" if settings.nvd_mode == "live" else "unknown"

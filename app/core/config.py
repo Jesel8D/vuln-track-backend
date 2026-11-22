@@ -80,6 +80,7 @@ class Settings(BaseSettings):
     cve_worker_enabled: bool = True
     nvd_mode: Literal["disabled", "live"] = "disabled"
     nvd_api_key: SecretStr | None = Field(default=None, repr=False)
+    cpe_catalog_read_url: SecretStr | None = Field(default=None, repr=False)
     nvd_timeout_seconds: int = Field(default=10, ge=1, le=20)
     login_attempts_per_minute: int = Field(default=10, ge=1, le=100)
     workspace_hmac_key: SecretStr | None = Field(default=None, repr=False)

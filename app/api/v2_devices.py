@@ -181,9 +181,13 @@ def register_identification(session, scope, candidate, mode, reason, evidence=No
     return result
 
 
-def selected_catalog_candidate(session, selection):
-    session.execute(text("SELECT pg_advisory_xact_lock_shared(2222, 1)"))
-    row = catalog_row(session, selection.mode, selection.cpe_name_id)
+def selected_catalog_candidate(session, selection, reader):
+    if reader.is_external(selection.mode):
+        with reader.connect(selection.mode) as connection:
+            row = catalog_row(connection, selection.mode, selection.cpe_name_id)
+    else:
+        session.execute(text("SELECT pg_advisory_xact_lock_shared(2222, 1)"))
+        row = catalog_row(session, selection.mode, selection.cpe_name_id)
     if (
         row["deprecated"]
         or row["cpe_name"] != selection.expected_cpe_name
@@ -195,8 +199,8 @@ def selected_catalog_candidate(session, selection):
     return row
 
 
-def assisted_identity(session, scope, selection):
-    row = selected_catalog_candidate(session, selection)
+def assisted_identity(session, scope, selection, reader):
+    row = selected_catalog_candidate(session, selection, reader)
     if scope["product_vendor"] not in (None, row["vendor"]) or scope["product"] not in (
         None,
         row["product"],
@@ -281,7 +285,9 @@ def create_device(
                     )
                 return result
         if selection:
-            candidate, evidence = assisted_identity(session, scope, selection)
+            candidate, evidence = assisted_identity(
+                session, scope, selection, request.app.state.catalog_reader
+            )
         result = one(
             session,
             """
@@ -568,7 +574,7 @@ def reidentify_device(
         current = current_identification(session, scope)
         if (current["id"] if current else None) != payload.expected_identification_id:
             raise APIError(409, "CPE_SELECTION_CHANGED", "La identificación vigente cambió")
-        record = selected_catalog_candidate(session, payload)
+        record = selected_catalog_candidate(session, payload, request.app.state.catalog_reader)
         candidate = Candidate.model_validate(record)
         validate_device_candidate(row, candidate)
         evidence = {

@@ -187,11 +187,13 @@ class PersistentV2:
         }
         files = ["-f", str(COMPOSE)]
         subnet = os.environ.get(
-            "VULNTRACK_RC3_DOCKER_SUBNET"
+            "VULNTRACK_RC31_DOCKER_SUBNET"
+            if self.profile == "rc3-catalog31"
+            else "VULNTRACK_RC3_DOCKER_SUBNET"
             if self.profile == "rc3"
             else "VULNTRACK_RC24_DOCKER_SUBNET"
         )
-        if self.profile in {"rc2-catalog24", "rc3"} and subnet:
+        if self.profile in {"rc2-catalog24", "rc3", "rc3-catalog31"} and subnet:
             from ipaddress import IPv4Network
 
             network = IPv4Network(subnet)
@@ -353,7 +355,7 @@ class PersistentV2:
                 "alembic-verification.ini",
                 "upgrade",
                 "head"
-                if self.profile == "rc3"
+                if self.profile in {"rc3", "rc3-catalog31"}
                 else "v2_0006_cpe_quarantine"
                 if self.profile.startswith("rc2-catalog24")
                 else "v2_0005_cpe_summary"
@@ -385,12 +387,16 @@ class PersistentV2:
                 verify_schema(connection, CVE_REVISION)
                 if connection.scalar(text("SELECT to_regnamespace('vulntrack_verification')")):
                     verify_verification_schema(connection)
-                if self.profile in {"rc2", "rc3"} or self.profile.startswith("rc2-"):
+                if self.profile in {"rc2", "rc3", "rc3-catalog31"} or self.profile.startswith(
+                    "rc2-"
+                ):
                     verify_devices_schema(connection)
-                if self.profile == "rc3" or self.profile.startswith("rc2-catalog"):
+                if self.profile in {"rc3", "rc3-catalog31"} or self.profile.startswith(
+                    "rc2-catalog"
+                ):
                     verify_catalog_schema(connection)
                 if self.profile.startswith(
-                    ("rc2-catalog23", "rc2-catalog24")
+                    ("rc2-catalog23", "rc2-catalog24", "rc3-catalog31")
                 ) and not connection.scalar(
                     text(
                         "SELECT to_regclass('vulntrack_catalog.feed_imports') IS NOT NULL "
@@ -399,12 +405,13 @@ class PersistentV2:
                 ):
                     raise RuntimeError("Catalog metadata missing")
                 if (
-                    self.profile == "rc3" or self.profile.startswith("rc2-catalog24")
+                    self.profile in {"rc3", "rc3-catalog31"}
+                    or self.profile.startswith("rc2-catalog24")
                 ) and not connection.scalar(
                     text("SELECT to_regclass('vulntrack_catalog.feed_quarantine') IS NOT NULL")
                 ):
                     raise RuntimeError("RC2.4 catalog quarantine missing")
-                if self.profile == "rc3" and not connection.scalar(
+                if self.profile in {"rc3", "rc3-catalog31"} and not connection.scalar(
                     text("SELECT to_regclass('vulntrack_devices.revisions') IS NOT NULL")
                 ):
                     raise RuntimeError("RC3 device revisions missing")
@@ -489,12 +496,28 @@ class PersistentV2:
     def settings(self, *, worker=True):
         if self.config["phase"] != "ready":
             raise RuntimeError("Initialize owned development database first")
+        catalog_url = None
+        if self.profile == "rc3-catalog31":
+            source = self.directory / "catalog-reader.url"
+            if source.is_symlink() or (
+                source.exists()
+                and (
+                    not source.is_file()
+                    or source.stat().st_uid != os.getuid()
+                    or source.stat().st_mode & 0o077
+                    or source.stat().st_size > 4096
+                )
+            ):
+                raise RuntimeError("Catalog URL requires a private owner-only file")
+            if source.exists():
+                catalog_url = source.read_text().strip() or None
         return Settings(
             _env_file=None,
             environment="development",
             database_url=self.url(API_ROLE),
             token_secret=self.config["token_secret"],
             workspace_hmac_key=self.config["workspace_hmac_key"],
+            cpe_catalog_read_url=catalog_url,
             registration_enabled=True,
             cve_worker_enabled=worker,
             cors_origins=[f"http://127.0.0.1:{self.config['web_port']}"],
