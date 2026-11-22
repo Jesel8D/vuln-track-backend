@@ -20,7 +20,7 @@ from scripts.v2_development import (
     private_json,
 )
 
-PROFILE = "rc2-catalog"
+PROFILE = "rc2-catalog23"
 
 
 def fixture_client():

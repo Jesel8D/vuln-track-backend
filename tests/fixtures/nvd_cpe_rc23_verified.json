@@ -1,0 +1,100 @@
+{
+  "source": "NVD API or official tar prefix, captured for offline tests",
+  "products": [
+    {
+      "cpe": {
+        "titles": [
+          {
+            "lang": "en",
+            "title": "Apache Software Foundation Apache HTTP Server 1.0.2"
+          }
+        ],
+        "cpeName": "cpe:2.3:a:apache:http_server:1.0.2:*:*:*:*:*:*:*",
+        "created": "2007-08-23T21:16:59.567",
+        "cpeNameId": "03C104C2-F4E2-4EB2-9BEC-42430D7035CD",
+        "deprecated": false,
+        "lastModified": "2008-04-01T14:08:38.377"
+      }
+    },
+    {
+      "cpe": {
+        "refs": [
+          {
+            "ref": "http://old-releases.ubuntu.com/releases/",
+            "type": "Version"
+          }
+        ],
+        "titles": [
+          {
+            "lang": "en",
+            "title": "Canonical Ubuntu Linux 10.04.2"
+          }
+        ],
+        "cpeName": "cpe:2.3:o:canonical:ubuntu_linux:10.04.2:*:*:*:*:*:*:*",
+        "created": "2018-05-14T15:58:57.983",
+        "cpeNameId": "0060707D-A754-40B8-84F9-315F31440A69",
+        "deprecated": false,
+        "lastModified": "2018-05-14T15:58:57.983"
+      }
+    },
+    {
+      "cpe": {
+        "refs": [
+          {
+            "ref": "https://www.dell.com/support/kbdoc/en-us/000187958/dsa-2021-103-dell-emc-poweredge-server-security-update-for-bios-vulnerabilities",
+            "type": "Advisory"
+          },
+          {
+            "ref": "https://github.com/CVEProject/cvelist/blob/master/2021/21xxx/CVE-2021-21554.json",
+            "type": "Advisory"
+          }
+        ],
+        "titles": [
+          {
+            "lang": "en",
+            "title": "Dell PowerEdge R740"
+          }
+        ],
+        "cpeName": "cpe:2.3:h:dell:poweredge_r740:-:*:*:*:*:*:*:*",
+        "created": "2021-06-22T11:50:04.367",
+        "cpeNameId": "D7D36624-9E23-4862-BD1B-5EE1A1639A46",
+        "deprecated": false,
+        "lastModified": "2021-06-23T13:23:37.220"
+      }
+    },
+    {
+      "cpe": {
+        "titles": [
+          {
+            "lang": "en",
+            "title": "Juniper JUNOS 8.3"
+          }
+        ],
+        "cpeName": "cpe:2.3:o:juniper:junos:8.3:*:*:*:*:*:*:*",
+        "created": "2011-04-29T19:06:34.420",
+        "cpeNameId": "00380D67-3341-4ED0-8E42-F75267ED89DE",
+        "deprecated": false,
+        "lastModified": "2011-05-06T16:05:30.747"
+      }
+    },
+    {
+      "cpe": {
+        "deprecated": false,
+        "cpeName": "cpe:2.3:a:3com:3cdaemon:-:*:*:*:*:*:*:*",
+        "cpeNameId": "BAE41D20-D4AF-4AF0-AA7D-3BD04DA402A7",
+        "lastModified": "2011-01-12T14:35:43.723",
+        "created": "2007-08-23T21:05:57.937",
+        "titles": [
+          {
+            "title": "3Com 3CDaemon",
+            "lang": "en"
+          },
+          {
+            "title": "スリーコム 3CDaemon",
+            "lang": "ja"
+          }
+        ]
+      }
+    }
+  ]
+}

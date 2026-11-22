@@ -22,6 +22,8 @@ router = APIRouter(
 )
 Part = Literal["h", "o", "a"]
 Search = Annotated[str, Query(max_length=120)]
+FullSearch = Annotated[str, Query(max_length=1024)]
+SEARCH_WINDOW = 500
 Limit = Annotated[int, Query(ge=1, le=30)]
 Offset = Annotated[int, Query(ge=0, le=10000)]
 RECORD = """
@@ -54,38 +56,45 @@ def listing(request, mode, part, q, limit, offset, *, select, where="", order, *
         + where
     )
     values = {
-        key: normalized_text(value) if key == "version" else normalized_text(value).casefold()
+        key: normalized_text(value)
+        if key in {"version", "exact"}
+        else normalized_text(value).casefold()
         for key, value in scope.items()
     }
-    params = {"mode": mode, "part": part, "q": search_argument(q), **values}
+    pattern = search_argument(q)
+    params = {"mode": mode, "part": part, "q": pattern, "prefix": pattern[1:], **values}
     with request.app.state.engine.connect() as connection:
         connection.execute(text("SET LOCAL statement_timeout=2000"))
         rows = (
             connection.execute(
                 text(f"""
-                SELECT *, count(*) OVER() AS matched FROM
-                  (SELECT {select} FROM vulntrack_catalog.products {query}) p
-                ORDER BY {order} LIMIT :limit OFFSET :offset
-            """),
-                params | {"limit": limit, "offset": offset},
+            WITH matches AS MATERIALIZED (
+                SELECT {select} FROM vulntrack_catalog.products {query}
+                ORDER BY {order} LIMIT :window
+            )
+            SELECT coalesce(jsonb_agg(to_jsonb(page)), '[]'::jsonb) AS items,
+                   (SELECT count(*) FROM matches) AS total
+            FROM (SELECT * FROM matches ORDER BY {order}
+                  LIMIT :limit OFFSET :offset) page
+        """),
+                params
+                | {
+                    "limit": min(limit, max(0, SEARCH_WINDOW - offset)),
+                    "offset": min(offset, SEARCH_WINDOW),
+                    "window": SEARCH_WINDOW + 1,
+                },
             )
             .mappings()
-            .all()
+            .one()
         )
-        if rows:
-            total = rows[0]["matched"]
-        elif offset:
-            total = connection.scalar(
-                text(f"""
-                SELECT count(*) FROM (SELECT {select} FROM vulntrack_catalog.products {query}) p
-            """),
-                params,
-            )
-        else:
-            total = 0
     return {
-        "items": [{key: val for key, val in row.items() if key != "matched"} for row in rows],
-        "page": {"limit": limit, "offset": offset, "total": total},
+        "items": rows["items"],
+        "page": {
+            "limit": limit,
+            "offset": offset,
+            "total": min(rows["total"], SEARCH_WINDOW),
+            "truncated": rows["total"] > SEARCH_WINDOW,
+        },
         "mode": mode,
     }
 
@@ -97,10 +106,8 @@ def status(request: Request, user: Identity, mode: Mode = "live"):
         counts = (
             connection.execute(
                 text("""
-            SELECT count(*) records,count(DISTINCT vendor) vendors,
-                   count(DISTINCT (vendor,product,part)) products,
-                   max(synchronized_at) last_synchronized_at
-            FROM vulntrack_catalog.products WHERE mode=:mode
+            SELECT records,vendors,products,last_synchronized_at,refreshed_at
+            FROM vulntrack_catalog.summary WHERE mode=:mode
         """),
                 {"mode": mode},
             )
@@ -119,12 +126,28 @@ def status(request: Request, user: Identity, mode: Mode = "live"):
             .mappings()
             .one_or_none()
         )
+        feed = None
+        if mode == "live":
+            feed = (
+                connection.execute(
+                    text("""
+                SELECT digest,source_modified,total_items,next_item,stored,discarded,skipped,
+                       status,updated_at,error_code
+                FROM vulntrack_catalog.feed_imports
+                ORDER BY updated_at DESC LIMIT 1
+            """)
+                )
+                .mappings()
+                .first()
+            )
     last = counts["last_synchronized_at"]
+    complete = feed and feed["status"] == "complete" and not feed["discarded"]
     return {
         **counts,
         "mode": mode,
         "source": SOURCE[mode],
-        "coverage": "partial" if counts["records"] else "empty",
+        "coverage": "complete" if complete else ("partial" if counts["records"] else "empty"),
+        "feed": dict(feed) if feed else None,
         "stale": bool(last and datetime.now(UTC) - last > timedelta(days=7)),
         "last_run": dict(latest) if latest else None,
     }
@@ -148,7 +171,7 @@ def vendors(
         limit,
         offset,
         select="DISTINCT vendor",
-        where="AND vendor LIKE :q ESCAPE '!'",
+        where="AND vendor LIKE :prefix ESCAPE '!'",
         order="vendor",
     )
 
@@ -212,13 +235,24 @@ def candidates(
     user: Identity,
     mode: Mode = "live",
     part: Part | None = None,
-    q: Search = "",
+    q: FullSearch = "",
     vendor: Search = "",
     product: Search = "",
     version: Search = "",
+    deprecated: bool | None = None,
     limit: Limit = 15,
     offset: Offset = 0,
 ):
+    exact = normalized_text(q)
+    cpe_exact = exact.startswith("cpe:2.3:")
+    stale = (
+        " AND deprecated IS TRUE"
+        if deprecated is True
+        else " AND deprecated IS FALSE"
+        if deprecated is False
+        else ""
+    )
+    match = " AND cpe_name=:exact" if cpe_exact else " AND search_text LIKE :q ESCAPE '!'"
     return listing(
         request,
         mode,
@@ -229,8 +263,11 @@ def candidates(
         select=RECORD,
         where="""
         AND (:vendor='' OR vendor=:vendor) AND (:product='' OR product=:product)
-        AND (:version='' OR version=:version) AND search_text LIKE :q ESCAPE '!'
-    """,
+        AND (:version='' OR version=:version)
+    """
+        + match
+        + stale,
+        exact=exact,
         order="deprecated,vendor,product,version,cpe_name_id",
         vendor=vendor,
         product=product,

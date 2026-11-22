@@ -30,3 +30,7 @@ api-tests/v2/.artifacts/
 
 # Persistent V2 development: private config, logs, backups and process records
 .local/
+
+# Volatile RC2.3 dependency links
+/.venv
+/api-tests/v2/node_modules

@@ -337,6 +337,8 @@ class PersistentV2:
                 "alembic-verification.ini",
                 "upgrade",
                 "head"
+                if self.profile.startswith("rc2-catalog23")
+                else "v2_0003_cpe_catalog"
                 if self.profile.startswith("rc2-catalog")
                 else "v2_0002_devices"
                 if self.profile == "rc2" or self.profile.startswith("rc2-")
@@ -367,6 +369,13 @@ class PersistentV2:
                     verify_devices_schema(connection)
                 if self.profile.startswith("rc2-catalog"):
                     verify_catalog_schema(connection)
+                if self.profile.startswith("rc2-catalog23") and not connection.scalar(
+                    text(
+                        "SELECT to_regclass('vulntrack_catalog.feed_imports') IS NOT NULL "
+                        "AND to_regclass('vulntrack_catalog.summary') IS NOT NULL"
+                    )
+                ):
+                    raise RuntimeError("RC2.3 catalog metadata missing")
                 checks = [
                     connection.scalar(text("SELECT version_num FROM public.alembic_version"))
                     == CVE_REVISION
