@@ -1,11 +1,14 @@
-"""Explicit importer for the official dictionary, guarded to the owned RC2.3 profile."""
+"""Explicit importer for the official dictionary, guarded to the owned RC2.4 profile."""
 
 import argparse
+import hashlib
 import json
 import os
 import shutil
 import sys
 import time
+from contextlib import nullcontext
+from datetime import datetime
 from pathlib import Path
 from resource import RUSAGE_SELF, getrusage
 
@@ -13,15 +16,40 @@ import httpx
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.services.cpe_feed import FeedError, download, ingest, read_meta, verify
+from app.services.cpe_feed import FeedError, FeedMeta, download, ingest, read_meta, verify
+from app.services.cpe_quarantine import COUNT, EDITION
 from scripts.v2_development import ROOT, PersistentV2, catalog_live_lock, command
 
-PROFILE = "rc2-catalog23"
+PROFILE = "rc2-catalog24"
 MIB = 1024**2
 WINDOWS_VOLUME = Path("/mnt/c")
 
 
-def measure(engine, stack, meta):
+def local_edition(archive, manifest):
+    if (
+        not archive.is_file()
+        or archive.is_symlink()
+        or not manifest.is_file()
+        or manifest.is_symlink()
+        or manifest.stat().st_size > 16384
+    ):
+        raise FeedError("OFFLINE_EDITION_FILES")
+    data = json.loads(manifest.read_text())
+    meta = FeedMeta(
+        data["json_sha256"],
+        datetime.fromisoformat(data["source_modified"]),
+        data["json_bytes"],
+        data["compressed_bytes"],
+    )
+    if meta != EDITION or data["processed"] != COUNT or archive.stat().st_size != meta.gz_bytes:
+        raise FeedError("OFFLINE_EDITION_NOT_PINNED")
+    with archive.open("rb") as stream:
+        if hashlib.file_digest(stream, "sha256").hexdigest() != data["compressed_sha256"]:
+            raise FeedError("OFFLINE_ARCHIVE_CHECKSUM")
+    return meta
+
+
+def measure(engine, stack, meta, archive=None):
     with engine.connect() as db:
         compatible = db.scalar(
             text("""
@@ -56,7 +84,7 @@ def measure(engine, stack, meta):
     )
     host = shutil.disk_usage(WINDOWS_VOLUME).free if WINDOWS_VOLUME.is_mount() else None
     wsl = shutil.disk_usage(stack.directory).free
-    archive = stack.directory / "cpe-feed" / meta.digest / "dictionary.tar.gz.part"
+    archive = archive or stack.directory / "cpe-feed" / meta.digest / "dictionary.tar.gz.part"
     downloaded = archive.stat().st_size if archive.is_file() and not archive.is_symlink() else 0
     remaining_json = meta.json_bytes
     if checkpoint and checkpoint["total_items"]:
@@ -141,9 +169,13 @@ def stats(engine):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["preflight", "stage", "import", "stats"])
+    parser.add_argument("--archive", type=Path)
+    parser.add_argument("--edition", type=Path)
     args = parser.parse_args()
+    if bool(args.archive) != bool(args.edition) or (args.archive and args.action == "stats"):
+        parser.error("--archive and --edition are used together with preflight, stage or import")
     if not (ROOT / ".local" / PROFILE / "config.json").is_file():
-        raise FeedError("RC23_PROFILE_REQUIRED")
+        raise FeedError("RC24_PROFILE_REQUIRED")
     stack = PersistentV2(PROFILE)
     stack.verify()
     engine = create_engine(stack.url("postgres"), hide_parameters=True)
@@ -151,30 +183,36 @@ def main():
         if args.action == "stats":
             print(json.dumps(stats(engine), default=str, indent=2))
             return 0
-        with (
-            httpx.Client(
+        connection = (
+            nullcontext()
+            if args.archive
+            else httpx.Client(
                 timeout=httpx.Timeout(15, connect=5), follow_redirects=False, trust_env=False
-            ) as client,
-            catalog_live_lock(stack),
-        ):
-            meta = read_meta(client)
-            resources = measure(engine, stack, meta)
+            )
+        )
+        with connection as client, catalog_live_lock(stack):
+            meta = local_edition(args.archive, args.edition) if args.archive else read_meta(client)
+            resources = measure(engine, stack, meta, args.archive)
             print(json.dumps(resources, indent=2), flush=True)
             if args.action == "preflight":
                 return 0
-            if not resources["full_safe"]:
+            if not resources["full_safe"] and (not args.archive or args.action == "import"):
                 raise FeedError("PREFLIGHT_FULL_IMPORT_BLOCKED")
-            base = stack.directory / "cpe-feed"
-            base.mkdir(mode=0o700, exist_ok=True)
-            target = base / meta.digest
-            target.mkdir(mode=0o700, exist_ok=True)
-            if base.is_symlink() or target.is_symlink():
-                raise FeedError("UNSAFE_FEED_DIRECTORY")
-            archive = target / "dictionary.tar.gz.part"
-            if archive.is_symlink() or (archive.exists() and not archive.is_file()):
-                raise FeedError("UNSAFE_FEED_FILE")
             begin = time.monotonic()
-            size = download(client, archive, meta)
+            archive = args.archive
+            if archive:
+                size = meta.gz_bytes
+            else:
+                base = stack.directory / "cpe-feed"
+                base.mkdir(mode=0o700, exist_ok=True)
+                target = base / meta.digest
+                target.mkdir(mode=0o700, exist_ok=True)
+                if base.is_symlink() or target.is_symlink():
+                    raise FeedError("UNSAFE_FEED_DIRECTORY")
+                archive = target / "dictionary.tar.gz.part"
+                if archive.is_symlink() or (archive.exists() and not archive.is_file()):
+                    raise FeedError("UNSAFE_FEED_FILE")
+                size = download(client, archive, meta)
             if args.action == "stage":
                 total = verify(archive, meta)
                 print(
@@ -229,7 +267,7 @@ if __name__ == "__main__":
     os.umask(0o077)
     try:
         raise SystemExit(main())
-    except (FeedError, httpx.HTTPError, OSError, RuntimeError, SQLAlchemyError) as error:
+    except (httpx.HTTPError, OSError, RuntimeError, SQLAlchemyError, KeyError, ValueError) as error:
         reason = str(error) if isinstance(error, FeedError) else type(error).__name__
         print("CPE feed:", reason, file=sys.stderr)
         raise SystemExit(1) from None

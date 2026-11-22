@@ -185,12 +185,22 @@ class PersistentV2:
             "VT_PG_PORT": str(self.config["pg_port"]),
             "VT_PASSWORD_FILE": str(self.directory / "postgres.password"),
         }
+        files = ["-f", str(COMPOSE)]
+        subnet = os.environ.get("VULNTRACK_RC24_DOCKER_SUBNET")
+        if self.profile == "rc2-catalog24" and subnet:
+            from ipaddress import IPv4Network
+
+            network = IPv4Network(subnet)
+            if not network.is_private or network.prefixlen > 28:
+                raise ValueError("RC2.4 subnet must be a private IPv4 network with room for Docker")
+            values["VT_RC24_SUBNET"] = str(network)
+            files.extend(["-f", str(COMPOSE.with_name("compose.rc24-subnet.yaml"))])
         env_file = self.directory / ".env"
         # Only resource metadata/secret FILE PATH, never password values.
         env_file.write_text("".join(f"{key}={value}\n" for key, value in values.items()))
         os.chmod(env_file, 0o600)
         return command(
-            ["docker", "compose", "--env-file", str(env_file), "-f", str(COMPOSE), *args],
+            ["docker", "compose", "--env-file", str(env_file), *files, *args],
             env={**os.environ, **values},
         )
 
@@ -337,6 +347,8 @@ class PersistentV2:
                 "alembic-verification.ini",
                 "upgrade",
                 "head"
+                if self.profile.startswith("rc2-catalog24")
+                else "v2_0005_cpe_summary"
                 if self.profile.startswith("rc2-catalog23")
                 else "v2_0003_cpe_catalog"
                 if self.profile.startswith("rc2-catalog")
@@ -369,13 +381,19 @@ class PersistentV2:
                     verify_devices_schema(connection)
                 if self.profile.startswith("rc2-catalog"):
                     verify_catalog_schema(connection)
-                if self.profile.startswith("rc2-catalog23") and not connection.scalar(
+                if self.profile.startswith(
+                    ("rc2-catalog23", "rc2-catalog24")
+                ) and not connection.scalar(
                     text(
                         "SELECT to_regclass('vulntrack_catalog.feed_imports') IS NOT NULL "
                         "AND to_regclass('vulntrack_catalog.summary') IS NOT NULL"
                     )
                 ):
-                    raise RuntimeError("RC2.3 catalog metadata missing")
+                    raise RuntimeError("Catalog metadata missing")
+                if self.profile.startswith("rc2-catalog24") and not connection.scalar(
+                    text("SELECT to_regclass('vulntrack_catalog.feed_quarantine') IS NOT NULL")
+                ):
+                    raise RuntimeError("RC2.4 catalog quarantine missing")
                 checks = [
                     connection.scalar(text("SELECT version_num FROM public.alembic_version"))
                     == CVE_REVISION
@@ -502,10 +520,7 @@ class PersistentV2:
         return path
 
     def restore(self, archive):
-        if self.config["phase"] != "new" or self.inspect("volume", self.volume) is not None:
-            raise RuntimeError(
-                "Restore requires a NEW profile and absent volume; never overwrite a database"
-            )
+        self.require_fresh_restore()
         archive = archive.resolve()
         manifest = json.loads(archive.with_name("manifest.json").read_text())
         if (
@@ -514,21 +529,7 @@ class PersistentV2:
             or manifest["sha256"] != hashlib.sha256(archive.read_bytes()).hexdigest()
         ):
             raise RuntimeError("Backup manifest, source version or checksum mismatch")
-        self.start_database()
-        self.config["phase"] = "restoring"
-        self.save()
-        self.sql(
-            "CREATE ROLE vulntrack_app NOLOGIN NOSUPERUSER NOCREATEDB "
-            "NOCREATEROLE NOREPLICATION NOBYPASSRLS; CREATE ROLE "
-            "vulntrack_registration NOLOGIN NOSUPERUSER NOCREATEDB "
-            "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
-            "CREATE ROLE vulntrack_verification_owner NOLOGIN NOSUPERUSER NOCREATEDB "
-            "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
-            "CREATE ROLE vulntrack_verification_lab NOLOGIN NOSUPERUSER NOCREATEDB "
-            "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
-        )
-        self.api_role()
-        # Full archive into an empty owned database: no --clean, DROP or source mutations.
+        self.prepare_restore()
         command(
             [
                 "docker",
@@ -545,15 +546,56 @@ class PersistentV2:
             ],
             data=archive.read_bytes(),
         )
+        self.finish_restore()
+
+    def require_fresh_restore(self):
+        if self.config["phase"] != "new" or self.inspect("volume", self.volume) is not None:
+            raise RuntimeError(
+                "Restore requires a NEW profile and absent volume; never overwrite a database"
+            )
+
+    def prepare_restore(self):
+        self.require_fresh_restore()
+        self.start_database()
+        self.config["phase"] = "restoring"
+        self.save()
+        self.sql(
+            "CREATE ROLE vulntrack_app NOLOGIN NOSUPERUSER NOCREATEDB "
+            "NOCREATEROLE NOREPLICATION NOBYPASSRLS; CREATE ROLE "
+            "vulntrack_registration NOLOGIN NOSUPERUSER NOCREATEDB "
+            "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
+            "CREATE ROLE vulntrack_verification_owner NOLOGIN NOSUPERUSER NOCREATEDB "
+            "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
+            "CREATE ROLE vulntrack_verification_lab NOLOGIN NOSUPERUSER NOCREATEDB "
+            "NOCREATEROLE NOREPLICATION NOBYPASSRLS;"
+        )
+        self.api_role()
+
+    def finish_restore(self, *, upgrade_catalog=False):
+        if upgrade_catalog:
+            if self.profile != "rc2-catalog24" or self.config["phase"] != "restoring":
+                raise RuntimeError("Catalog upgrade requires an owned RC2.4 restore")
+            command(
+                [
+                    sys.executable,
+                    "-m",
+                    "alembic",
+                    "-c",
+                    "alembic-verification.ini",
+                    "upgrade",
+                    "head",
+                ],
+                env={**os.environ, "MIGRATION_DATABASE_URL": self.url("postgres")},
+            )
         self.grant_api()
         self.config["workspace_hmac_key"] = (
             self.sql("SELECT encode(hmac_key,'hex') FROM vulntrack_private.context_keys;")
             .decode()
             .strip()
         )
+        self.verify()
         self.config["phase"] = "ready"
         self.save()
-        self.verify()
 
     def stop_processes(self):
         path = self.directory / "runtime.json"

@@ -3,7 +3,6 @@
 import json
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
-from itertools import count
 from pathlib import Path
 from uuid import uuid4
 
@@ -64,11 +63,15 @@ def dictionary(monkeypatch, postgres):
         )
 
     def sync(**kwargs):
-        ticks = count(0, 120)
+        clock = [0.0]
+
+        def wait(seconds):
+            clock[0] += seconds
+
         client = NVDClient(
-            transport=httpx.MockTransport(reply), quota=Quota(clock=lambda: next(ticks))
+            transport=httpx.MockTransport(reply), quota=Quota(clock=lambda: clock[0])
         )
-        return cpe_catalog.synchronize(postgres, client, "fixture", wait=lambda _: None, **kwargs)
+        return cpe_catalog.synchronize(postgres, client, "fixture", wait=wait, **kwargs)
 
     return p, entry, next_entry, offsets, sync
 
@@ -81,13 +84,20 @@ def test_resume_upsert_deprecation_and_discard(monkeypatch, postgres):
     first = sync(scope=SCOPE)
     assert (first["status"], first["stored"], first["next_offset"]) == ("partial", 1, 1)
     setting["error"] = 429
-    failed = sync(resume=first["id"])
+    moment = datetime(2026, 11, 22, tzinfo=UTC)
+    failed = sync(resume=first["id"], now=lambda: moment)
     assert failed["status"] == "failed" and failed["next_offset"] == 1
     assert failed["error_code"] == "NVD_UNAVAILABLE"
+    assert failed["retry_after"] == moment + timedelta(seconds=90)
     setting["error"] = None
-    completed = sync(resume=first["id"])
+    assert (
+        sync(resume=first["id"], now=lambda: failed["retry_after"] - timedelta(seconds=1)) == failed
+    )
+    assert offsets == [0, 1]
+    completed = sync(resume=first["id"], now=lambda: failed["retry_after"])
     assert (completed["status"], completed["stored"], completed["received"]) == ("complete", 1, 2)
     assert offsets == [0, 1, 1]
+    assert completed["discarded_by_reason"] == {"outside_scope": 1}
     with postgres.connect() as connection:
         assert connection.scalar(
             text("""
@@ -204,7 +214,14 @@ def test_catalog_api_atomic_receipt_and_mode(monkeypatch, postgres, api):  # noq
         == 409
     )
     setting["rows"] = [changed]
-    sync(scope=SCOPE)
+    identity_before = client.get(dest + "/identifications", headers=headers).json()
+    runs_before = client.get(dest + "/analyses", headers=headers).json()
+    updates = sync(scope=SCOPE)
+    assert updates["changed_records"] == 1 and updates["deprecated_records"] == 1
+    deprecated = client.get(path + "/" + output["cpe_name_id"], params=req, headers=headers)
+    assert deprecated.json()["deprecated"] is True
+    assert client.get(dest + "/identifications", headers=headers).json() == identity_before
+    assert client.get(dest + "/analyses", headers=headers).json() == runs_before
     assert (
         client.post(
             endpoint, json=payload, headers=headers | {"Idempotency-Key": str(uuid4())}

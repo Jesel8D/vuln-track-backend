@@ -1,4 +1,4 @@
-"""Explicitly synchronize at most five CPE pages into the owned RC2.2 volume."""
+"""Explicitly synchronize at most five CPE pages into the owned RC2.4 volume."""
 
 import argparse
 import json
@@ -20,7 +20,7 @@ from scripts.v2_development import (
     private_json,
 )
 
-PROFILE = "rc2-catalog23"
+PROFILE = "rc2-catalog24"
 
 
 def fixture_client():
@@ -59,7 +59,7 @@ def main():
         )
     )
     if not (ROOT / ".local" / PROFILE / "config.json").is_file():
-        raise RuntimeError("Initialize the owned RC2.2 profile first")
+        raise RuntimeError("Initialize the owned RC2.4 profile first")
     stack = PersistentV2(PROFILE)
     stack.verify()
     engine = create_engine(stack.url("postgres"), hide_parameters=True)
@@ -74,7 +74,7 @@ def main():
                     live=True,
                     quota=CatalogQuota(budget, private_json),
                 )
-                if client.quota.wait_seconds() > 0:
+                if not args.resume and client.quota.wait_seconds() > 0:
                     seconds = int(client.quota.wait_seconds()) + 1
                     raise RuntimeError(f"Wait {seconds} seconds before a new NVD request")
             else:

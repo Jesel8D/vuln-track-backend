@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from scripts.v2_development import ROOT, PersistentV2, private_json, process_identity
 
-PROFILE = re.compile(r"(?:rc[12]|rc2-catalog(?:23)?)(?:-restore(?:-[0-9a-f]{8})?)?")
+PROFILE = re.compile(r"(?:rc[12]|rc2-catalog(?:2[34])?)(?:-restore(?:-[0-9a-f]{8})?)?")
 
 
 def guard(profile, config):
@@ -28,7 +28,11 @@ def guard(profile, config):
         or (profile.startswith("rc2") and set(ports) & {55438, 8004, 5177})
     ):
         raise RuntimeError("RC1 ports must be separate from personal development")
-    if profile.startswith("rc2-catalog23"):
+    if profile.startswith("rc2-catalog24"):
+        expected_ports = [55449, 8015, 5188] if "-restore-" in profile else [55448, 8014, 5187]
+        if ports != expected_ports:
+            raise RuntimeError("RC2.4 requires its isolated catalog ports")
+    elif profile.startswith("rc2-catalog23"):
         expected_ports = [55447, 8013, 5186] if "-restore-" in profile else [55446, 8012, 5185]
         if ports != expected_ports:
             raise RuntimeError("RC2.3 requires its isolated catalog ports")
