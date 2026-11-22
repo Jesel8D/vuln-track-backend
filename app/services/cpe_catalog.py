@@ -253,7 +253,13 @@ def refresh_summary(connection, mode):
     )
 
 
-def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=sleep):
+def current_time():
+    return datetime.now(UTC)
+
+
+def synchronize(
+    engine, client, mode, *, scope=None, resume=None, pages=1, wait=sleep, now=current_time
+):
     if mode not in SOURCE or not 1 <= pages <= 5 or (scope is None) == (resume is None):
         raise ValueError("Choose one scope or run ID and a limit of 1-5 pages")
     if scope:
@@ -289,7 +295,7 @@ def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=
             row = (
                 connection.execute(
                     text("""
-              SELECT next_offset,total_reported,status FROM vulntrack_catalog.sync_runs
+              SELECT next_offset,total_reported,status,retry_after FROM vulntrack_catalog.sync_runs
               WHERE id=:id FOR UPDATE
             """),
                     {"id": run},
@@ -297,7 +303,7 @@ def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=
                 .mappings()
                 .one()
             )
-            if row["status"] == "complete":
+            if row["status"] == "complete" or (row["retry_after"] and now() < row["retry_after"]):
                 break
             # Bound the transaction to one explicit page and protect this resume cursor.
             wait(client.quota.wait_seconds())
@@ -306,7 +312,7 @@ def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=
                 if row["total_reported"] is not None and page.totalResults != row["total_reported"]:
                     raise APIError(409, "CATALOG_RESULT_SET_CHANGED", "Reinicia este alcance")
             except APIError as error:
-                retry_at = datetime.now(UTC) + timedelta(seconds=client.quota.wait_seconds())
+                retry_at = now() + timedelta(seconds=client.quota.wait_seconds())
                 connection.execute(
                     text("""
                     UPDATE vulntrack_catalog.sync_runs SET status='failed',error_code=:code,
@@ -337,7 +343,16 @@ def synchronize(engine, client, mode, *, scope=None, resume=None, pages=1, wait=
             (SELECT sum(changed_count) FROM vulntrack_catalog.sync_pages
                       WHERE run_id=r.id) changed_records,
             (SELECT sum(deprecated_count) FROM vulntrack_catalog.sync_pages
-                      WHERE run_id=r.id) deprecated_records
+                      WHERE run_id=r.id) deprecated_records,
+            coalesce((
+              SELECT jsonb_object_agg(reasons.key,reasons.total)
+              FROM (
+                SELECT error.key,sum(error.value::bigint) AS total
+                FROM vulntrack_catalog.sync_pages p
+                CROSS JOIN LATERAL jsonb_each_text(p.discarded) error
+                WHERE p.run_id=r.id GROUP BY error.key
+              ) reasons
+            ), '{}'::jsonb) AS discarded_by_reason
           FROM vulntrack_catalog.sync_runs r WHERE r.id=:id
         """),
                 {"id": run},

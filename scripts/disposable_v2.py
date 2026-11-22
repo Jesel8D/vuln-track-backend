@@ -31,10 +31,11 @@ def run(*args, **kwargs):
 
 
 class DisposableV2:
-    def __init__(self, installation="existing", *, sql_checks=True):
+    def __init__(self, installation="existing", *, sql_checks=True, verification_revision="head"):
         if installation not in {"existing", "new"}:
             raise ValueError("Unknown installation path")
         self.installation, self.sql_checks = installation, sql_checks
+        self.verification_revision = verification_revision
         self.reference = Path(
             os.environ.get("DATABASE_V2_PATH", ROOT.parent / "vuln-track-database")
         )
@@ -94,9 +95,10 @@ class DisposableV2:
             database=self.database,
         ).render_as_string(hide_password=False)
 
-    def verification_migrate(self):
+    def verification_migrate(self, revision="head"):
+        config = ROOT / "alembic-verification.ini"
         result = subprocess.run(
-            [sys.executable, "-m", "alembic", "-c", "alembic-verification.ini", "upgrade", "head"],
+            [sys.executable, "-m", "alembic", "-c", str(config), "upgrade", revision],
             cwd=ROOT,
             capture_output=True,
             env={**os.environ, "MIGRATION_DATABASE_URL": self.url("postgres")},
@@ -182,7 +184,7 @@ class DisposableV2:
                 # Bootstrap's V2 objects are verified in full before baseline; no blind stamp.
                 self.migrate()
                 self.apply("sql/008_v2_target_verification.sql")
-            self.verification_migrate()
+            self.verification_migrate(self.verification_revision)
             if self.sql_checks:
                 for relative in (
                     "tests/002_v2_security.sql",
@@ -194,6 +196,7 @@ class DisposableV2:
                     "tests/009_v2_cpe_catalog.sql",
                     "tests/010_v2_cpe_feed.sql",
                     "tests/011_v2_catalog_summary.sql",
+                    "tests/012_v2_cpe_feed_quarantine.sql",
                 ):
                     result = self.apply(relative)
                     print(

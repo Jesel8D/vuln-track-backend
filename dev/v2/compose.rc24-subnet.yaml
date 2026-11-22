@@ -1,0 +1,5 @@
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${VT_RC24_SUBNET:?required RC2.4 subnet}
