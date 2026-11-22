@@ -10,6 +10,7 @@ from starlette.exceptions import HTTPException
 
 from app.api.analyses import router as analyses_router
 from app.api.cpe import router as cpe_router
+from app.api.cpe_catalog import router as catalog_router
 from app.api.router import router
 from app.api.v2_dashboard import router as v2_dashboard_router
 from app.api.v2_dashboard import source_router as v2_source_dashboard_router
@@ -31,7 +32,7 @@ from app.core.http import RequestBoundary, error_body
 from app.core.registration import RegistrationGate
 from app.core.security import LoginLimiter
 from app.db.session import build_engine, build_session_factory
-from app.integrations.nvd import NVDClient
+from app.integrations.nvd import NVDClient, Quota
 from app.integrations.nvd_cve import CVEClient
 from app.services.analyses import AnalysisService
 from app.services.assets import AssetService
@@ -63,6 +64,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.session_factory = build_session_factory(engine)
     app.state.assets = AssetService(app.state.session_factory, AssetAuthorization())
     app.state.nvd_mode = "live" if settings.nvd_mode == "live" else "unknown"
+    app.state.catalog_reads = Quota()
     app.state.nvd = NVDClient(
         settings.nvd_api_key, settings.nvd_timeout_seconds, live=settings.nvd_mode == "live"
     )
@@ -225,6 +227,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(router)
     app.include_router(cpe_router)
+    app.include_router(catalog_router)
     app.include_router(analyses_router)
     app.include_router(v2_resources_router)
     app.include_router(v2_nvd_router)

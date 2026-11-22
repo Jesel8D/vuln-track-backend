@@ -20,6 +20,7 @@ from pathlib import Path
 from sqlalchemy import URL, create_engine, text
 
 from app.core.config import Settings
+from app.db.verify_catalog import verify_catalog_schema
 from app.db.verify_devices import verify_devices_schema
 from app.db.verify_schema import CVE_REVISION, verify_schema
 from app.db.verify_verification import verify_verification_schema
@@ -336,6 +337,8 @@ class PersistentV2:
                 "alembic-verification.ini",
                 "upgrade",
                 "head"
+                if self.profile.startswith("rc2-catalog")
+                else "v2_0002_devices"
                 if self.profile == "rc2" or self.profile.startswith("rc2-")
                 else "v2_0001_target_verification",
             ],
@@ -362,6 +365,8 @@ class PersistentV2:
                     verify_verification_schema(connection)
                 if self.profile == "rc2" or self.profile.startswith("rc2-"):
                     verify_devices_schema(connection)
+                if self.profile.startswith("rc2-catalog"):
+                    verify_catalog_schema(connection)
                 checks = [
                     connection.scalar(text("SELECT version_num FROM public.alembic_version"))
                     == CVE_REVISION
@@ -698,25 +703,46 @@ def fixture_application(settings):
     return module.fixture_app(settings, original_and=True)
 
 
+@contextmanager
+def catalog_live_lock(stack):
+    """One live operator per RC2.2 profile, including the live API launcher."""
+    lock_file = stack.directory / "nvd-live.lock"
+    with lock_file.open("a+") as handle:
+        os.chmod(lock_file, 0o600)
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError("RC2.2 live NVD budget in use by another process") from None
+        yield
+
+
+def nvd_live_settings(stack):
+    settings = stack.settings()
+    key = stack.directory / "nvd-api-key"
+    if key.is_symlink() or (key.exists() and (not key.is_file() or key.stat().st_mode & 0o077)):
+        raise RuntimeError("NVD API key file must be private (0600)")
+    return Settings.model_validate(
+        {
+            **settings.model_dump(),
+            "nvd_api_key": key.read_text().strip() or None if key.exists() else None,
+            "nvd_mode": "live",
+        }
+    )
+
+
 def create_development_app():
     stack = PersistentV2(os.environ.get("VULNTRACK_V2_PROFILE", "development"))
     settings = stack.settings()
     if os.environ.get("VULNTRACK_V2_NVD_MODE", "fixture") == "fixture":
         return fixture_application(settings)
-    key = stack.directory / "nvd-api-key"
-    if key.exists():
-        if key.is_symlink() or not key.is_file() or key.stat().st_mode & 0o077:
-            raise RuntimeError("NVD API key file must be private (0600)")
-        settings = Settings.model_validate(
-            {
-                **settings.model_dump(),
-                "nvd_api_key": key.read_text().strip() or None,
-                "nvd_mode": "live",
-            }
-        )
-    else:
-        settings = settings.model_copy(update={"nvd_mode": "live"})
-    return create_app(settings)
+    app = create_app(nvd_live_settings(stack))
+    if stack.profile.startswith("rc2-catalog"):
+        from scripts.catalog_budget import CatalogQuota
+
+        quota = CatalogQuota(stack.directory / "nvd-catalog-budget.json", private_json)
+        app.state.nvd.quota = quota
+        app.state.cve.quota = quota
+    return app
 
 
 def main():
@@ -734,7 +760,11 @@ def main():
         args.profile, pg_port=args.pg_port, api_port=args.api_port, web_port=args.web_port
     )
     if args.command == "up":
-        stack.up(frontend=args.frontend, nvd_mode=args.nvd_mode)
+        if args.nvd_mode == "live" and args.profile.startswith("rc2-catalog"):
+            with catalog_live_lock(stack):
+                stack.up(frontend=args.frontend, nvd_mode=args.nvd_mode)
+        else:
+            stack.up(frontend=args.frontend, nvd_mode=args.nvd_mode)
     elif args.command == "stop":
         stack.stop_processes()
         stack.stop_database()

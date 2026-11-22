@@ -1,0 +1,690 @@
+{
+  "operations": {
+    "GET /api/v2/cpe-catalog/status": {
+      "parameters": [
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "type": "string",
+            "default": "live",
+            "title": "Mode"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/cpe-catalog/vendors": {
+      "parameters": [
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "type": "string",
+            "default": "live",
+            "title": "Mode"
+          }
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "enum": [
+                  "h",
+                  "o",
+                  "a"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Part"
+          }
+        },
+        {
+          "name": "q",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "default": "",
+            "title": "Q"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 30,
+            "minimum": 1,
+            "default": 15,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 10000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/cpe-catalog/products": {
+      "parameters": [
+        {
+          "name": "vendor",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Vendor"
+          }
+        },
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "type": "string",
+            "default": "live",
+            "title": "Mode"
+          }
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "enum": [
+                  "h",
+                  "o",
+                  "a"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Part"
+          }
+        },
+        {
+          "name": "q",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "default": "",
+            "title": "Q"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 30,
+            "minimum": 1,
+            "default": 15,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 10000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/cpe-catalog/versions": {
+      "parameters": [
+        {
+          "name": "vendor",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Vendor"
+          }
+        },
+        {
+          "name": "product",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Product"
+          }
+        },
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "type": "string",
+            "default": "live",
+            "title": "Mode"
+          }
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "enum": [
+                  "h",
+                  "o",
+                  "a"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Part"
+          }
+        },
+        {
+          "name": "q",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "default": "",
+            "title": "Q"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 30,
+            "minimum": 1,
+            "default": 15,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 10000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/cpe-catalog/candidates": {
+      "parameters": [
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "type": "string",
+            "default": "live",
+            "title": "Mode"
+          }
+        },
+        {
+          "name": "part",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "enum": [
+                  "h",
+                  "o",
+                  "a"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Part"
+          }
+        },
+        {
+          "name": "q",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "default": "",
+            "title": "Q"
+          }
+        },
+        {
+          "name": "vendor",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "default": "",
+            "title": "Vendor"
+          }
+        },
+        {
+          "name": "product",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "default": "",
+            "title": "Product"
+          }
+        },
+        {
+          "name": "version",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 120,
+            "default": "",
+            "title": "Version"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 30,
+            "minimum": 1,
+            "default": 15,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 10000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/cpe-catalog/candidates/{cpe_name_id}": {
+      "parameters": [
+        {
+          "name": "cpe_name_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cpe Name Id"
+          }
+        },
+        {
+          "name": "mode",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "type": "string",
+            "default": "live",
+            "title": "Mode"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/devices": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "Idempotency-Key",
+          "in": "header",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency-Key"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/DeviceCreate"
+      },
+      "required": true,
+      "success": {
+        "201": {}
+      }
+    }
+  },
+  "schemas": {
+    "CatalogSelection": {
+      "properties": {
+        "cpe_name_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Cpe Name Id"
+        },
+        "expected_cpe_name": {
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 8,
+          "title": "Expected Cpe Name"
+        },
+        "expected_nvd_modified": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expected Nvd Modified"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "fixture",
+            "live"
+          ],
+          "title": "Mode"
+        },
+        "confirmed": {
+          "type": "boolean",
+          "const": true,
+          "title": "Confirmed"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reason"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "cpe_name_id",
+        "expected_cpe_name",
+        "expected_nvd_modified",
+        "mode",
+        "confirmed",
+        "reason"
+      ],
+      "title": "CatalogSelection"
+    },
+    "DeviceCreate": {
+      "properties": {
+        "device_type": {
+          "type": "string",
+          "enum": [
+            "router",
+            "switch",
+            "server"
+          ],
+          "title": "Device Type"
+        },
+        "manufacturer": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Manufacturer"
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Model"
+        },
+        "product_vendor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Product Vendor"
+        },
+        "product": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Product"
+        },
+        "component_kind": {
+          "type": "string",
+          "enum": [
+            "firmware",
+            "os",
+            "software",
+            "hardware"
+          ],
+          "title": "Component Kind"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Version"
+        },
+        "site_label": {
+          "type": "string",
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Site Label"
+        },
+        "inventory_label": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Inventory Label"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Notes"
+        },
+        "catalog_selection": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/CatalogSelection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "device_type",
+        "manufacturer",
+        "model",
+        "component_kind",
+        "site_label"
+      ],
+      "title": "DeviceCreate"
+    }
+  }
+}

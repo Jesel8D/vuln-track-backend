@@ -30,7 +30,7 @@ class Quota:
         self.cooldown = 0.0
         self.users = OrderedDict()
 
-    def check_user(self, actor, operation):
+    def check_user(self, actor, operation, *, limit=6):
         with self.lock:
             now = self.clock()
             key = (actor, operation)
@@ -43,7 +43,7 @@ class Quota:
             calls = self.users.setdefault(key, deque())
             while calls and calls[0] <= now - 60:
                 calls.popleft()
-            if len(calls) >= 6:
+            if len(calls) >= limit:
                 raise APIError(429, "CPE_RATE_LIMIT", "Límite de solicitudes CPE")
             calls.append(now)
 
@@ -109,14 +109,21 @@ class Entry(BaseModel):
     cpe: Product
 
 
-class NVDPage(BaseModel):
+class PageMetadata(BaseModel):
     resultsPerPage: int = Field(strict=True, ge=0, le=20)
     startIndex: int = Field(strict=True, ge=0)
     totalResults: int = Field(strict=True, ge=0)
     format: str
     version: str
     timestamp: datetime
+
+
+class NVDPage(PageMetadata):
     products: list[Entry] = Field(max_length=20)
+
+
+class CatalogPage(PageMetadata):
+    products: list[object] = Field(max_length=20)
 
 
 class RetryableNVDCall(APIError):
@@ -136,7 +143,7 @@ class NVDClient:
         if url not in {NVD_URL, "https://services.nvd.nist.gov/rest/json/cves/2.0"}:
             raise APIError(502, "NVD_INVALID_ORIGIN", "Origen NVD no permitido")
         if self.live is False and self.transport is None:
-            raise APIError(503, "NVD_MODE_REQUIRED", "Activa un modo NVD expl?cito")
+            raise APIError(503, "NVD_MODE_REQUIRED", "Activa un modo NVD explícito")
         try:
             return self._content_once(url, params)
         except RetryableNVDCall:
@@ -205,9 +212,9 @@ class NVDClient:
         except (ValidationError, ValueError):
             raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta NVD no válida") from None
 
-    def _page(self, params):
+    def _read_page(self, params, schema):
         try:
-            page = NVDPage.model_validate_json(self._content(NVD_URL, params))
+            page = schema.model_validate_json(self._content(NVD_URL, params))
             count = len(page.products)
             if (
                 page.format != "NVD_CPE"
@@ -217,12 +224,21 @@ class NVDClient:
                 or count > params["resultsPerPage"]
                 or count
                 != min(params["resultsPerPage"], max(0, page.totalResults - page.startIndex))
-                or len({p.cpe.cpeNameId.lower() for p in page.products}) != count
             ):
                 raise ValueError("Inconsistent NVD page")
             return page
         except (ValidationError, ValueError):
             raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta NVD no válida") from None
+
+    def _page(self, params):
+        page = self._read_page(params, NVDPage)
+        if len({entry.cpe.cpeNameId.lower() for entry in page.products}) != len(page.products):
+            raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta NVD no válida")
+        return page
+
+    def catalog_page(self, params):
+        """Reuse transport and page validation, keeping bad products individually reportable."""
+        return self._read_page(params, CatalogPage)
 
     def search(self, actor, search: SearchInput):
         self.quota.check_user(actor, "search")

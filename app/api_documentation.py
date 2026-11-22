@@ -67,6 +67,12 @@ def configure_api_documentation(app: FastAPI, routers: tuple[APIRouter, ...]) ->
                     "usuario. Sin token, inválido o expirado: 401."
                 ),
             }[route.endpoint.__name__]
+        elif path.startswith("/api/v2/cpe-catalog"):
+            tag = "V2 · Catálogo CPE local"
+            detail = (
+                "Lectura autenticada y paginada del catálogo de PostgreSQL. "
+                "La procedencia live o fixture se consulta sin solicitudes externas."
+            )
         else:
             tag = "V1 · Activos heredados" if path.startswith("/api/v1") else ("V2 · Aplicaciones")
             if path.startswith("/api/v2"):
@@ -109,7 +115,7 @@ def configure_api_documentation(app: FastAPI, routers: tuple[APIRouter, ...]) ->
                 "avisa del resumen. Las descripciones originales permanecen en evidence "
                 "dentro del presupuesto de evidencia documentado."
             )
-        if "cpe" in path:
+        if "cpe" in path and not path.startswith("/api/v2/cpe-catalog"):
             detail += (
                 " NVD puede responder 429/502/503/504. La búsqueda NO confirma: "
                 "seleccionar manualmente un candidato no deprecado y versión "

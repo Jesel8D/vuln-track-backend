@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from scripts.v2_development import ROOT, PersistentV2, private_json, process_identity
 
-PROFILE = re.compile(r"rc[12](?:-restore(?:-[0-9a-f]{8})?)?")
+PROFILE = re.compile(r"(?:rc[12]|rc2-catalog)(?:-restore(?:-[0-9a-f]{8})?)?")
 
 
 def guard(profile, config):
@@ -28,6 +28,10 @@ def guard(profile, config):
         or (profile.startswith("rc2") and set(ports) & {55438, 8004, 5177})
     ):
         raise RuntimeError("RC1 ports must be separate from personal development")
+    if profile.startswith("rc2-catalog"):
+        expected_ports = [55445, 8011, 5184] if "-restore-" in profile else [55444, 8010, 5183]
+        if ports != expected_ports:
+            raise RuntimeError("RC2.2 requires its isolated catalog ports")
     return {
         "profile": profile,
         "volume": expected,
@@ -48,7 +52,7 @@ def main():
     parser.add_argument("--frontend", type=Path, default=ROOT.parent / "vuln-track-frontend")
     args = parser.parse_args()
     if not PROFILE.fullmatch(args.profile):
-        parser.error("Only rc1 or rc1-restore[-eight-hex-digits] is accepted")
+        parser.error("Expected an owned rc1, rc2 or rc2-catalog profile")
     if not (ROOT / ".local" / args.profile / "config.json").is_file():
         parser.error("Start the separate RC1 fixture profile first")
     stack = PersistentV2(args.profile)
@@ -75,7 +79,7 @@ def main():
             found = True
     if not found:
         raise RuntimeError("Owned RC1 API must be running explicitly in fixture mode")
-    primary = ROOT / ".local" / args.profile.split("-")[0]
+    primary = ROOT / ".local" / args.profile.split("-restore")[0]
     state_path = primary / "demo-access.json"
     if args.phase == "create":
         if state_path.exists():

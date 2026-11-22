@@ -75,7 +75,8 @@ def main():
         ), "Existing contract changed: " + category
     verified = load("verification-contract.json")
     rc2 = load("rc2-contract.json")
-    added = {key: verified[key] | rc2[key] for key in ("operations", "schemas")}
+    rc22 = load("rc22-contract.json")
+    added = {key: verified[key] | rc2[key] | rc22[key] for key in ("operations", "schemas")}
     assert {
         key: value
         for key, value in actual_contract["operations"].items()
@@ -127,6 +128,8 @@ def main():
                     if m[1] in {"analysis_id", "asset_analysis_id", "device_run_id"}
                     else "finding_id"
                     if m[1] in {"asset_finding_id", "device_finding_id"}
+                    else "cpe_name_id"
+                    if m[1] == "catalog_fixture_id"
                     else m[1]
                 )
                 + "}"
@@ -205,7 +208,7 @@ def main():
             if request["error"]:
                 assert sample["body"]["error"]["code"] == request["error"]
     assert covered == set(ops), set(ops) - covered
-    assert len(ops) == 59 and len(builder.REQUESTS) == 86
+    assert len(ops) == 65 and len(builder.REQUESTS) == 92
     for env in [
         "local.postman_environment.json",
         "test.postman_environment.json",
@@ -228,7 +231,7 @@ def main():
             (
                 "VALIDATED: OpenAPI 3.1; Postman 2.1; ",
                 f"{len(ops)}",
-                " operations (44 RC1 + 15 RC2); ",
+                " operations (44 RC1 + 15 RC2 + 6 RC2.2); ",
                 f"{len(builder.REQUESTS)}",
                 " requests; ",
                 f"{checked_bodies}",

@@ -27,12 +27,23 @@ class DeviceInput(BaseModel):
         return value
 
 
+class CatalogSelection(DeviceInput):
+    cpe_name_id: UUID
+    expected_cpe_name: Annotated[str, StringConstraints(strict=True, min_length=8, max_length=1024)]
+    expected_nvd_modified: datetime
+    mode: Literal["fixture", "live"]
+    confirmed: Literal[True]
+    reason: Annotated[str, StringConstraints(strict=True, min_length=1, max_length=500)]
+
+
 class DeviceCreate(DeviceInput):
     device_type: DeviceType
     manufacturer: Text120
     model: Text120
-    product_vendor: Text120
-    product: Annotated[str, StringConstraints(strict=True, min_length=1, max_length=160)]
+    product_vendor: Text120 | None = None
+    product: Annotated[str, StringConstraints(strict=True, min_length=1, max_length=160)] | None = (
+        None
+    )
     component_kind: ComponentKind
     version: Text120 | None = None
     site_label: Text120
@@ -40,6 +51,8 @@ class DeviceCreate(DeviceInput):
     notes: Annotated[str, StringConstraints(strict=True, min_length=1, max_length=1000)] | None = (
         None
     )
+
+    catalog_selection: CatalogSelection | None = None
 
     @field_validator("version")
     @classmethod
