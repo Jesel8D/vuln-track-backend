@@ -197,6 +197,7 @@ class DisposableV2:
                     "tests/010_v2_cpe_feed.sql",
                     "tests/011_v2_catalog_summary.sql",
                     "tests/012_v2_cpe_feed_quarantine.sql",
+                    "tests/013_v3_device_revisions.sql",
                 ):
                     result = self.apply(relative)
                     print(

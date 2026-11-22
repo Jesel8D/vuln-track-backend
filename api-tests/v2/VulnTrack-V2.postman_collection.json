@@ -7506,6 +7506,1039 @@
           ]
         }
       ]
+    },
+    {
+      "name": "13 · Revisiones de dispositivo",
+      "item": [
+        {
+          "id": "6794f49d-adc2-5411-8ec3-a1086ca5c734",
+          "name": "RC3 Crear equipo de revisión",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"device_type\": \"router\",\n  \"manufacturer\": \"Cisco\",\n  \"model\": \"RV340\",\n  \"product_vendor\": \"cisco\",\n  \"product\": \"small_business_rv340_firmware\",\n  \"component_kind\": \"firmware\",\n  \"version\": \"1.0.0.33\",\n  \"site_label\": \"Laboratorio\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.collectionVariables.set('device_id', data.id);",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"device_type\": \"router\",\n  \"manufacturer\": \"Cisco\",\n  \"model\": \"RV340\",\n  \"product_vendor\": \"cisco\",\n  \"product\": \"small_business_rv340_firmware\",\n  \"component_kind\": \"firmware\",\n  \"version\": \"1.0.0.33\",\n  \"site_label\": \"Laboratorio\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000038\",\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"created_by\": \"00000000-0000-4000-8000-000000000001\",\n  \"device_type\": \"router\",\n  \"manufacturer\": \"Cisco\",\n  \"model\": \"RV340\",\n  \"product_vendor\": \"cisco\",\n  \"product\": \"small_business_rv340_firmware\",\n  \"component_kind\": \"firmware\",\n  \"version\": \"1.0.0.33\",\n  \"site_label\": \"Laboratorio\",\n  \"inventory_label\": null,\n  \"notes\": null,\n  \"status\": \"active\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"updated_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"record_version\": 1,\n  \"identity_generation\": 1\n}"
+            }
+          ]
+        },
+        {
+          "id": "c99d4664-d0f2-556a-8f51-3b85e7114e85",
+          "name": "RC3 Confirmar firmware anterior",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/identifications",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cpe_name_id\": \"c817e5ba-62c1-41e7-a15c-fb851fea761e\",\n  \"expected_identification_id\": null,\n  \"reason\": \"Observación inicial del firmware\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/identifications",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"cpe_name_id\": \"c817e5ba-62c1-41e7-a15c-fb851fea761e\",\n  \"expected_identification_id\": null,\n  \"reason\": \"Observación inicial del firmware\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000039\",\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"device_id\": \"00000000-0000-4000-8000-000000000038\",\n  \"recorded_by\": \"00000000-0000-4000-8000-000000000001\",\n  \"cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*\",\n  \"cpe_name_id\": \"c817e5ba-62c1-41e7-a15c-fb851fea761e\",\n  \"mode\": \"fixture\",\n  \"reason\": \"Observación inicial del firmware\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"catalog_evidence\": null,\n  \"identity_generation\": 1\n}"
+            }
+          ]
+        },
+        {
+          "id": "531b3efb-a00e-54bc-bbf5-66e06b01ea9c",
+          "name": "RC3 Registrar consulta anterior",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/analyses",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. V2 procesa la página NVD dentro de POST y responde 201 al terminar; no es un job 202. Conserva estados queued/running/completed/failed e historial; complete/partial describe cobertura. Máximo una página de 100 CVE, partial no demuestra ausencia de más resultados. Reutilizar Idempotency-Key UUID solo para la misma intención; otra consulta activa o cambios incompatibles pueden producir 409. GET de progreso/resultados no crea ejecuciones."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "{{$guid}}"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/analyses",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. V2 procesa la página NVD dentro de POST y responde 201 al terminar; no es un job 202. Conserva estados queued/running/completed/failed e historial; complete/partial describe cobertura. Máximo una página de 100 CVE, partial no demuestra ausencia de más resultados. Reutilizar Idempotency-Key UUID solo para la misma intención; otra consulta activa o cambios incompatibles pueden producir 409. GET de progreso/resultados no crea ejecuciones."
+              },
+              "status": "Example",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000040\",\n  \"identification_id\": \"00000000-0000-4000-8000-000000000039\",\n  \"selected_cpe\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*\",\n  \"observed_version\": \"1.0.0.33\",\n  \"mode\": \"fixture\",\n  \"source\": \"nvd\",\n  \"status\": \"completed\",\n  \"coverage\": \"complete\",\n  \"total_results\": 1,\n  \"retrieved_count\": 1,\n  \"stored_count\": 1,\n  \"warning_codes\": [\n    \"TITLE_TRUNCATED\"\n  ],\n  \"failure_code\": null,\n  \"source_timestamp\": \"2026-11-13T12:00:00.000001Z\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"completed_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"evaluated_technology\": {\n    \"basis\": \"observed\",\n    \"product\": \"small_business_rv340_firmware\",\n    \"component_kind\": \"firmware\",\n    \"product_vendor\": \"cisco\",\n    \"record_version\": 1,\n    \"observed_version\": \"1.0.0.33\",\n    \"identity_generation\": 1\n  },\n  \"identity_generation\": 1,\n  \"is_current_technology\": true\n}"
+            }
+          ]
+        },
+        {
+          "id": "ff2dbdbc-4fcf-5a78-b8a1-6e8447a76be4",
+          "name": "RC3 Actualizar ubicación",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_record_version\": 1,\n  \"site_label\": \"Sala de redes\",\n  \"reason\": \"Traslado administrativo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('CPE conservado', ()=>pm.expect(data.cpe_review_state).to.eql('confirmed'));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_record_version\": 1,\n  \"site_label\": \"Sala de redes\",\n  \"reason\": \"Traslado administrativo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000038\",\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"created_by\": \"00000000-0000-4000-8000-000000000001\",\n  \"device_type\": \"router\",\n  \"manufacturer\": \"Cisco\",\n  \"model\": \"RV340\",\n  \"product_vendor\": \"cisco\",\n  \"product\": \"small_business_rv340_firmware\",\n  \"component_kind\": \"firmware\",\n  \"version\": \"1.0.0.33\",\n  \"site_label\": \"Sala de redes\",\n  \"inventory_label\": null,\n  \"notes\": null,\n  \"status\": \"active\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"updated_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"record_version\": 2,\n  \"identity_generation\": 1,\n  \"current_identification\": {\n    \"id\": \"00000000-0000-4000-8000-000000000039\",\n    \"mode\": \"fixture\",\n    \"reason\": \"Observación inicial del firmware\",\n    \"cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*\",\n    \"device_id\": \"00000000-0000-4000-8000-000000000038\",\n    \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n    \"cpe_name_id\": \"c817e5ba-62c1-41e7-a15c-fb851fea761e\",\n    \"recorded_by\": \"00000000-0000-4000-8000-000000000001\",\n    \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n    \"catalog_evidence\": null,\n    \"identity_generation\": 1\n  },\n  \"cpe_review_state\": \"confirmed\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "1f8d1ff5-f6e3-50f0-8f7f-20f148bece57",
+          "name": "RC3 Corregir modelo físico",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_record_version\": 2,\n  \"model\": \"RV340 corregido\",\n  \"confirm_sensitive\": true,\n  \"reason\": \"Etiqueta física comprobada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_record_version\": 2,\n  \"model\": \"RV340 corregido\",\n  \"confirm_sensitive\": true,\n  \"reason\": \"Etiqueta física comprobada\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000038\",\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"created_by\": \"00000000-0000-4000-8000-000000000001\",\n  \"device_type\": \"router\",\n  \"manufacturer\": \"Cisco\",\n  \"model\": \"RV340 corregido\",\n  \"product_vendor\": \"cisco\",\n  \"product\": \"small_business_rv340_firmware\",\n  \"component_kind\": \"firmware\",\n  \"version\": \"1.0.0.33\",\n  \"site_label\": \"Sala de redes\",\n  \"inventory_label\": null,\n  \"notes\": null,\n  \"status\": \"active\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"updated_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"record_version\": 3,\n  \"identity_generation\": 1,\n  \"current_identification\": {\n    \"id\": \"00000000-0000-4000-8000-000000000039\",\n    \"mode\": \"fixture\",\n    \"reason\": \"Observación inicial del firmware\",\n    \"cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*\",\n    \"device_id\": \"00000000-0000-4000-8000-000000000038\",\n    \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n    \"cpe_name_id\": \"c817e5ba-62c1-41e7-a15c-fb851fea761e\",\n    \"recorded_by\": \"00000000-0000-4000-8000-000000000001\",\n    \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n    \"catalog_evidence\": null,\n    \"identity_generation\": 1\n  },\n  \"cpe_review_state\": \"confirmed\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "cfee232a-22aa-5686-b68b-13eb72e10054",
+          "name": "RC3 Conflicto de revisión",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}",
+            "description": "Otro editor ya guardó. Recarga y compara antes de editar.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_record_version\": 2,\n  \"site_label\": \"Otra sala\",\n  \"reason\": \"Vista anterior\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Error sanitizado',()=>{pm.expect(data).to.have.property('error'); ['code','message','request_id'].forEach(k=>pm.expect(data.error[k]).to.be.a('string').and.not.empty);});",
+                  "pm.test('Código de error',()=>pm.expect(data.error.code).to.eql('DEVICE_VERSION_CONFLICT'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}",
+                "description": "Otro editor ya guardó. Recarga y compara antes de editar.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_record_version\": 2,\n  \"site_label\": \"Otra sala\",\n  \"reason\": \"Vista anterior\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"DEVICE_VERSION_CONFLICT\",\n    \"message\": \"El dispositivo cambió. Recarga y compara.\",\n    \"request_id\": \"example-request-id\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "4a738de0-efa9-53cd-8c42-a1c5919bc323",
+          "name": "RC3 Cambiar firmware",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_record_version\": 3,\n  \"version\": \"1.0.1.16\",\n  \"confirm_sensitive\": true,\n  \"reason\": \"Versión verificada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Revisión CPE', ()=>pm.expect(data.cpe_review_state).to.eql('needs_review'));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_record_version\": 3,\n  \"version\": \"1.0.1.16\",\n  \"confirm_sensitive\": true,\n  \"reason\": \"Versión verificada\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000038\",\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"created_by\": \"00000000-0000-4000-8000-000000000001\",\n  \"device_type\": \"router\",\n  \"manufacturer\": \"Cisco\",\n  \"model\": \"RV340 corregido\",\n  \"product_vendor\": \"cisco\",\n  \"product\": \"small_business_rv340_firmware\",\n  \"component_kind\": \"firmware\",\n  \"version\": \"1.0.1.16\",\n  \"site_label\": \"Sala de redes\",\n  \"inventory_label\": null,\n  \"notes\": null,\n  \"status\": \"active\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"updated_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"record_version\": 4,\n  \"identity_generation\": 2,\n  \"current_identification\": null,\n  \"cpe_review_state\": \"needs_review\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "2e433760-7bd1-5b25-b4b8-5a87f9dbdccc",
+          "name": "RC3 Bloquear CVE sin nueva identidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/analyses",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. V2 procesa la página NVD dentro de POST y responde 201 al terminar; no es un job 202. Conserva estados queued/running/completed/failed e historial; complete/partial describe cobertura. Máximo una página de 100 CVE, partial no demuestra ausencia de más resultados. Reutilizar Idempotency-Key UUID solo para la misma intención; otra consulta activa o cambios incompatibles pueden producir 409. GET de progreso/resultados no crea ejecuciones."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Error sanitizado',()=>{pm.expect(data).to.have.property('error'); ['code','message','request_id'].forEach(k=>pm.expect(data.error[k]).to.be.a('string').and.not.empty);});",
+                  "pm.test('Código de error',()=>pm.expect(data.error.code).to.eql('CPE_CONFIRMATION_REQUIRED'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "{{$guid}}"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/analyses",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. V2 procesa la página NVD dentro de POST y responde 201 al terminar; no es un job 202. Conserva estados queued/running/completed/failed e historial; complete/partial describe cobertura. Máximo una página de 100 CVE, partial no demuestra ausencia de más resultados. Reutilizar Idempotency-Key UUID solo para la misma intención; otra consulta activa o cambios incompatibles pueden producir 409. GET de progreso/resultados no crea ejecuciones."
+              },
+              "status": "Example",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"CPE_CONFIRMATION_REQUIRED\",\n    \"message\": \"Confirma un CPE con versión conocida\",\n    \"request_id\": \"example-request-id\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "3fd70c66-67d8-52a6-af5b-e53d3c593f32",
+          "name": "RC3 Historial de cambios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/revisions?limit=20",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/revisions?limit=20",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000041\",\n      \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n      \"device_id\": \"00000000-0000-4000-8000-000000000038\",\n      \"actor_id\": \"00000000-0000-4000-8000-000000000001\",\n      \"recorded_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"previous_version\": 3,\n      \"new_version\": 4,\n      \"changed_fields\": [\n        \"version\"\n      ],\n      \"change_kind\": \"technological\",\n      \"reason\": \"Versión verificada\",\n      \"previous_values\": {\n        \"model\": \"RV340 corregido\",\n        \"status\": \"active\",\n        \"product\": \"small_business_rv340_firmware\",\n        \"version\": \"1.0.0.33\",\n        \"site_label\": \"Sala de redes\",\n        \"device_type\": \"router\",\n        \"manufacturer\": \"Cisco\",\n        \"component_kind\": \"firmware\",\n        \"product_vendor\": \"cisco\",\n        \"inventory_label\": null\n      },\n      \"new_values\": {\n        \"model\": \"RV340 corregido\",\n        \"status\": \"active\",\n        \"product\": \"small_business_rv340_firmware\",\n        \"version\": \"1.0.1.16\",\n        \"site_label\": \"Sala de redes\",\n        \"device_type\": \"router\",\n        \"manufacturer\": \"Cisco\",\n        \"component_kind\": \"firmware\",\n        \"product_vendor\": \"cisco\",\n        \"inventory_label\": null\n      },\n      \"related_identification_id\": \"00000000-0000-4000-8000-000000000039\",\n      \"cpe_review_state\": \"needs_review\"\n    },\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000042\",\n      \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n      \"device_id\": \"00000000-0000-4000-8000-000000000038\",\n      \"actor_id\": \"00000000-0000-4000-8000-000000000001\",\n      \"recorded_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"previous_version\": 2,\n      \"new_version\": 3,\n      \"changed_fields\": [\n        \"model\"\n      ],\n      \"change_kind\": \"physical\",\n      \"reason\": \"Etiqueta física comprobada\",\n      \"previous_values\": {\n        \"model\": \"RV340\",\n        \"status\": \"active\",\n        \"product\": \"small_business_rv340_firmware\",\n        \"version\": \"1.0.0.33\",\n        \"site_label\": \"Sala de redes\",\n        \"device_type\": \"router\",\n        \"manufacturer\": \"Cisco\",\n        \"component_kind\": \"firmware\",\n        \"product_vendor\": \"cisco\",\n        \"inventory_label\": null\n      },\n      \"new_values\": {\n        \"model\": \"RV340 corregido\",\n        \"status\": \"active\",\n        \"product\": \"small_business_rv340_firmware\",\n        \"version\": \"1.0.0.33\",\n        \"site_label\": \"Sala de redes\",\n        \"device_type\": \"router\",\n        \"manufacturer\": \"Cisco\",\n        \"component_kind\": \"firmware\",\n        \"product_vendor\": \"cisco\",\n        \"inventory_label\": null\n      },\n      \"related_identification_id\": \"00000000-0000-4000-8000-000000000039\",\n      \"cpe_review_state\": \"confirmed\"\n    },\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000043\",\n      \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n      \"device_id\": \"00000000-0000-4000-8000-000000000038\",\n      \"actor_id\": \"00000000-0000-4000-8000-000000000001\",\n      \"recorded_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"previous_version\": 1,\n      \"new_version\": 2,\n      \"changed_fields\": [\n        \"site_label\"\n      ],\n      \"change_kind\": \"administrative\",\n      \"reason\": \"Traslado administrativo\",\n      \"previous_values\": {\n        \"model\": \"RV340\",\n        \"status\": \"active\",\n        \"product\": \"small_business_rv340_firmware\",\n        \"version\": \"1.0.0.33\",\n        \"site_label\": \"Laboratorio\",\n        \"device_type\": \"router\",\n        \"manufacturer\": \"Cisco\",\n        \"component_kind\": \"firmware\",\n        \"product_vendor\": \"cisco\",\n        \"inventory_label\": null\n      },\n      \"new_values\": {\n        \"model\": \"RV340\",\n        \"status\": \"active\",\n        \"product\": \"small_business_rv340_firmware\",\n        \"version\": \"1.0.0.33\",\n        \"site_label\": \"Sala de redes\",\n        \"device_type\": \"router\",\n        \"manufacturer\": \"Cisco\",\n        \"component_kind\": \"firmware\",\n        \"product_vendor\": \"cisco\",\n        \"inventory_label\": null\n      },\n      \"related_identification_id\": \"00000000-0000-4000-8000-000000000039\",\n      \"cpe_review_state\": \"confirmed\"\n    }\n  ],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0,\n    \"total\": 3\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "37fd6cbf-bbc6-5362-ba4b-4b07f649e4a6",
+          "name": "RC3 Comparar revisiones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/revisions/compare?from_version=1&to_version=4",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/revisions/compare?from_version=1&to_version=4",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"from_version\": 1,\n  \"to_version\": 4,\n  \"previous_values\": {\n    \"model\": \"RV340\",\n    \"status\": \"active\",\n    \"product\": \"small_business_rv340_firmware\",\n    \"version\": \"1.0.0.33\",\n    \"site_label\": \"Laboratorio\",\n    \"device_type\": \"router\",\n    \"manufacturer\": \"Cisco\",\n    \"component_kind\": \"firmware\",\n    \"product_vendor\": \"cisco\",\n    \"inventory_label\": null\n  },\n  \"new_values\": {\n    \"device_type\": \"router\",\n    \"manufacturer\": \"Cisco\",\n    \"model\": \"RV340 corregido\",\n    \"site_label\": \"Sala de redes\",\n    \"inventory_label\": null,\n    \"status\": \"active\",\n    \"component_kind\": \"firmware\",\n    \"product_vendor\": \"cisco\",\n    \"product\": \"small_business_rv340_firmware\",\n    \"version\": \"1.0.1.16\"\n  },\n  \"changed_fields\": [\n    \"model\",\n    \"version\",\n    \"site_label\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "id": "224c6513-c2ff-5c0e-b5d2-1b6ac5647216",
+          "name": "RC3 Consultar la versión anterior",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/analyses",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. V2 procesa la página NVD dentro de POST y responde 201 al terminar; no es un job 202. Conserva estados queued/running/completed/failed e historial; complete/partial describe cobertura. Máximo una página de 100 CVE, partial no demuestra ausencia de más resultados. Reutilizar Idempotency-Key UUID solo para la misma intención; otra consulta activa o cambios incompatibles pueden producir 409. GET de progreso/resultados no crea ejecuciones. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Histórico',()=>pm.expect(data.items[0].observed_version).eql('1.0.0.33'));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/analyses",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. V2 procesa la página NVD dentro de POST y responde 201 al terminar; no es un job 202. Conserva estados queued/running/completed/failed e historial; complete/partial describe cobertura. Máximo una página de 100 CVE, partial no demuestra ausencia de más resultados. Reutilizar Idempotency-Key UUID solo para la misma intención; otra consulta activa o cambios incompatibles pueden producir 409. GET de progreso/resultados no crea ejecuciones. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000040\",\n      \"identification_id\": \"00000000-0000-4000-8000-000000000039\",\n      \"selected_cpe\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*\",\n      \"observed_version\": \"1.0.0.33\",\n      \"mode\": \"fixture\",\n      \"source\": \"nvd\",\n      \"status\": \"completed\",\n      \"coverage\": \"complete\",\n      \"total_results\": 1,\n      \"retrieved_count\": 1,\n      \"stored_count\": 1,\n      \"warning_codes\": [\n        \"TITLE_TRUNCATED\"\n      ],\n      \"failure_code\": null,\n      \"source_timestamp\": \"2026-11-13T12:00:00.000001Z\",\n      \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"completed_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"evaluated_technology\": {\n        \"basis\": \"observed\",\n        \"product\": \"small_business_rv340_firmware\",\n        \"component_kind\": \"firmware\",\n        \"product_vendor\": \"cisco\",\n        \"record_version\": 1,\n        \"observed_version\": \"1.0.0.33\",\n        \"identity_generation\": 1\n      },\n      \"identity_generation\": 1,\n      \"is_current_technology\": false\n    }\n  ],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0,\n    \"total\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "id": "f63ca08d-f25d-52ec-b25d-730cbd23ae46",
+          "name": "RC3 Reidentificar desde catálogo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/reidentification",
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expected_record_version\": 4,\n  \"expected_identification_id\": null,\n  \"cpe_name_id\": \"3C67651B-1758-4332-9533-845D56B737C5\",\n  \"expected_cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.1.16:*:*:*:*:*:*:*\",\n  \"expected_nvd_modified\": \"2021-04-26T11:30:09.037Z\",\n  \"mode\": \"fixture\",\n  \"confirmed\": true,\n  \"reason\": \"CPE compatible revisado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/devices/{{device_id}}/reidentification",
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"expected_record_version\": 4,\n  \"expected_identification_id\": null,\n  \"cpe_name_id\": \"3C67651B-1758-4332-9533-845D56B737C5\",\n  \"expected_cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.1.16:*:*:*:*:*:*:*\",\n  \"expected_nvd_modified\": \"2021-04-26T11:30:09.037Z\",\n  \"mode\": \"fixture\",\n  \"confirmed\": true,\n  \"reason\": \"CPE compatible revisado\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Example",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"00000000-0000-4000-8000-000000000044\",\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"device_id\": \"00000000-0000-4000-8000-000000000038\",\n  \"recorded_by\": \"00000000-0000-4000-8000-000000000001\",\n  \"cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.1.16:*:*:*:*:*:*:*\",\n  \"cpe_name_id\": \"3c67651b-1758-4332-9533-845d56b737c5\",\n  \"mode\": \"fixture\",\n  \"reason\": \"CPE compatible revisado\",\n  \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n  \"catalog_evidence\": {\n    \"source\": \"nvd-captured-fixture\",\n    \"cpe_name_id\": \"3c67651b-1758-4332-9533-845d56b737c5\",\n    \"nvd_modified\": \"2026-11-13T12:00:00.000001Z\"\n  },\n  \"identity_generation\": 2\n}"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

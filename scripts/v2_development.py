@@ -186,13 +186,19 @@ class PersistentV2:
             "VT_PASSWORD_FILE": str(self.directory / "postgres.password"),
         }
         files = ["-f", str(COMPOSE)]
-        subnet = os.environ.get("VULNTRACK_RC24_DOCKER_SUBNET")
-        if self.profile == "rc2-catalog24" and subnet:
+        subnet = os.environ.get(
+            "VULNTRACK_RC3_DOCKER_SUBNET"
+            if self.profile == "rc3"
+            else "VULNTRACK_RC24_DOCKER_SUBNET"
+        )
+        if self.profile in {"rc2-catalog24", "rc3"} and subnet:
             from ipaddress import IPv4Network
 
             network = IPv4Network(subnet)
             if not network.is_private or network.prefixlen > 28:
-                raise ValueError("RC2.4 subnet must be a private IPv4 network with room for Docker")
+                raise ValueError(
+                    "Profile subnet must be a private IPv4 network with room for Docker"
+                )
             values["VT_RC24_SUBNET"] = str(network)
             files.extend(["-f", str(COMPOSE.with_name("compose.rc24-subnet.yaml"))])
         env_file = self.directory / ".env"
@@ -347,6 +353,8 @@ class PersistentV2:
                 "alembic-verification.ini",
                 "upgrade",
                 "head"
+                if self.profile == "rc3"
+                else "v2_0006_cpe_quarantine"
                 if self.profile.startswith("rc2-catalog24")
                 else "v2_0005_cpe_summary"
                 if self.profile.startswith("rc2-catalog23")
@@ -377,9 +385,9 @@ class PersistentV2:
                 verify_schema(connection, CVE_REVISION)
                 if connection.scalar(text("SELECT to_regnamespace('vulntrack_verification')")):
                     verify_verification_schema(connection)
-                if self.profile == "rc2" or self.profile.startswith("rc2-"):
+                if self.profile in {"rc2", "rc3"} or self.profile.startswith("rc2-"):
                     verify_devices_schema(connection)
-                if self.profile.startswith("rc2-catalog"):
+                if self.profile == "rc3" or self.profile.startswith("rc2-catalog"):
                     verify_catalog_schema(connection)
                 if self.profile.startswith(
                     ("rc2-catalog23", "rc2-catalog24")
@@ -390,10 +398,16 @@ class PersistentV2:
                     )
                 ):
                     raise RuntimeError("Catalog metadata missing")
-                if self.profile.startswith("rc2-catalog24") and not connection.scalar(
+                if (
+                    self.profile == "rc3" or self.profile.startswith("rc2-catalog24")
+                ) and not connection.scalar(
                     text("SELECT to_regclass('vulntrack_catalog.feed_quarantine') IS NOT NULL")
                 ):
                     raise RuntimeError("RC2.4 catalog quarantine missing")
+                if self.profile == "rc3" and not connection.scalar(
+                    text("SELECT to_regclass('vulntrack_devices.revisions') IS NOT NULL")
+                ):
+                    raise RuntimeError("RC3 device revisions missing")
                 checks = [
                     connection.scalar(text("SELECT version_num FROM public.alembic_version"))
                     == CVE_REVISION
@@ -573,8 +587,8 @@ class PersistentV2:
 
     def finish_restore(self, *, upgrade_catalog=False):
         if upgrade_catalog:
-            if self.profile != "rc2-catalog24" or self.config["phase"] != "restoring":
-                raise RuntimeError("Catalog upgrade requires an owned RC2.4 restore")
+            if self.profile not in {"rc2-catalog24", "rc3"} or self.config["phase"] != "restoring":
+                raise RuntimeError("Upgrade requires an owned isolated restore")
             command(
                 [
                     sys.executable,
@@ -583,7 +597,7 @@ class PersistentV2:
                     "-c",
                     "alembic-verification.ini",
                     "upgrade",
-                    "head",
+                    "head" if self.profile == "rc3" else "v2_0006_cpe_quarantine",
                 ],
                 env={**os.environ, "MIGRATION_DATABASE_URL": self.url("postgres")},
             )

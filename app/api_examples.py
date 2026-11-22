@@ -1982,9 +1982,20 @@ RESPONSE_EXAMPLES = {
                     ("completed_at"): ("2026-11-13T12:00:00.000001Z"),
                     ("coverage"): ("complete"),
                     ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("evaluated_technology"): {
+                        ("basis"): ("observed"),
+                        ("component_kind"): ("firmware"),
+                        ("identity_generation"): 1,
+                        ("observed_version"): ("1.0.0.33"),
+                        ("product"): ("small_business_rv340_firmware"),
+                        ("product_vendor"): ("cisco"),
+                        ("record_version"): 1,
+                    },
                     ("failure_code"): None,
-                    "id": ("00000000-0000-4000-8000-000000000035"),
-                    ("identification_id"): ("00000000-0000-4000-8000-000000000034"),
+                    "id": ("00000000-0000-4000-8000-000000000040"),
+                    ("identification_id"): ("00000000-0000-4000-8000-000000000039"),
+                    ("identity_generation"): 1,
+                    ("is_current_technology"): False,
                     "mode": ("fixture"),
                     ("observed_version"): ("1.0.0.33"),
                     ("retrieved_count"): 1,
@@ -2516,6 +2527,160 @@ RESPONSE_EXAMPLES = {
                 }
             ],
             "page": {("limit"): 20, ("offset"): 0, ("total"): 1},
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/revisions": [
+        200,
+        {
+            "items": [
+                {
+                    ("actor_id"): ("00000000-0000-4000-8000-000000000001"),
+                    ("change_kind"): ("technological"),
+                    ("changed_fields"): [("version")],
+                    ("cpe_review_state"): ("needs_review"),
+                    ("device_id"): ("00000000-0000-4000-8000-000000000038"),
+                    "id": ("00000000-0000-4000-8000-000000000041"),
+                    ("new_values"): {
+                        ("component_kind"): ("firmware"),
+                        ("device_type"): ("router"),
+                        ("inventory_label"): None,
+                        ("manufacturer"): ("Cisco"),
+                        ("model"): ("RV340 corregido"),
+                        ("product"): ("small_business_rv340_firmware"),
+                        ("product_vendor"): ("cisco"),
+                        ("site_label"): ("Sala de redes"),
+                        ("status"): ("active"),
+                        ("version"): ("1.0.1.16"),
+                    },
+                    ("new_version"): 4,
+                    ("previous_values"): {
+                        ("component_kind"): ("firmware"),
+                        ("device_type"): ("router"),
+                        ("inventory_label"): None,
+                        ("manufacturer"): ("Cisco"),
+                        ("model"): ("RV340 corregido"),
+                        ("product"): ("small_business_rv340_firmware"),
+                        ("product_vendor"): ("cisco"),
+                        ("site_label"): ("Sala de redes"),
+                        ("status"): ("active"),
+                        ("version"): ("1.0.0.33"),
+                    },
+                    ("previous_version"): 3,
+                    ("reason"): ("Versión verificada"),
+                    ("recorded_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("related_identification_id"): ("00000000-0000-4000-8000-000000000039"),
+                    ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+                },
+                {
+                    ("actor_id"): ("00000000-0000-4000-8000-000000000001"),
+                    ("change_kind"): ("physical"),
+                    ("changed_fields"): [("model")],
+                    ("cpe_review_state"): ("confirmed"),
+                    ("device_id"): ("00000000-0000-4000-8000-000000000038"),
+                    "id": ("00000000-0000-4000-8000-000000000042"),
+                    ("new_values"): {
+                        ("component_kind"): ("firmware"),
+                        ("device_type"): ("router"),
+                        ("inventory_label"): None,
+                        ("manufacturer"): ("Cisco"),
+                        ("model"): ("RV340 corregido"),
+                        ("product"): ("small_business_rv340_firmware"),
+                        ("product_vendor"): ("cisco"),
+                        ("site_label"): ("Sala de redes"),
+                        ("status"): ("active"),
+                        ("version"): ("1.0.0.33"),
+                    },
+                    ("new_version"): 3,
+                    ("previous_values"): {
+                        ("component_kind"): ("firmware"),
+                        ("device_type"): ("router"),
+                        ("inventory_label"): None,
+                        ("manufacturer"): ("Cisco"),
+                        ("model"): ("RV340"),
+                        ("product"): ("small_business_rv340_firmware"),
+                        ("product_vendor"): ("cisco"),
+                        ("site_label"): ("Sala de redes"),
+                        ("status"): ("active"),
+                        ("version"): ("1.0.0.33"),
+                    },
+                    ("previous_version"): 2,
+                    ("reason"): ("Etiqueta física comprobada"),
+                    ("recorded_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("related_identification_id"): ("00000000-0000-4000-8000-000000000039"),
+                    ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+                },
+                {
+                    ("actor_id"): ("00000000-0000-4000-8000-000000000001"),
+                    ("change_kind"): ("administrative"),
+                    ("changed_fields"): [("site_label")],
+                    ("cpe_review_state"): ("confirmed"),
+                    ("device_id"): ("00000000-0000-4000-8000-000000000038"),
+                    "id": ("00000000-0000-4000-8000-000000000043"),
+                    ("new_values"): {
+                        ("component_kind"): ("firmware"),
+                        ("device_type"): ("router"),
+                        ("inventory_label"): None,
+                        ("manufacturer"): ("Cisco"),
+                        ("model"): ("RV340"),
+                        ("product"): ("small_business_rv340_firmware"),
+                        ("product_vendor"): ("cisco"),
+                        ("site_label"): ("Sala de redes"),
+                        ("status"): ("active"),
+                        ("version"): ("1.0.0.33"),
+                    },
+                    ("new_version"): 2,
+                    ("previous_values"): {
+                        ("component_kind"): ("firmware"),
+                        ("device_type"): ("router"),
+                        ("inventory_label"): None,
+                        ("manufacturer"): ("Cisco"),
+                        ("model"): ("RV340"),
+                        ("product"): ("small_business_rv340_firmware"),
+                        ("product_vendor"): ("cisco"),
+                        ("site_label"): ("Laboratorio"),
+                        ("status"): ("active"),
+                        ("version"): ("1.0.0.33"),
+                    },
+                    ("previous_version"): 1,
+                    ("reason"): ("Traslado administrativo"),
+                    ("recorded_at"): ("2026-11-13T12:00:00.000001Z"),
+                    ("related_identification_id"): ("00000000-0000-4000-8000-000000000039"),
+                    ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+                },
+            ],
+            "page": {"limit": 20, "offset": 0, "total": 3},
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/revisions/compare": [
+        200,
+        {
+            ("changed_fields"): [("model"), ("version"), ("site_label")],
+            ("from_version"): 1,
+            ("new_values"): {
+                ("component_kind"): ("firmware"),
+                ("device_type"): ("router"),
+                ("inventory_label"): None,
+                ("manufacturer"): ("Cisco"),
+                ("model"): ("RV340 corregido"),
+                ("product"): ("small_business_rv340_firmware"),
+                ("product_vendor"): ("cisco"),
+                ("site_label"): ("Sala de redes"),
+                ("status"): ("active"),
+                ("version"): ("1.0.1.16"),
+            },
+            ("previous_values"): {
+                ("component_kind"): ("firmware"),
+                ("device_type"): ("router"),
+                ("inventory_label"): None,
+                ("manufacturer"): ("Cisco"),
+                ("model"): ("RV340"),
+                ("product"): ("small_business_rv340_firmware"),
+                ("product_vendor"): ("cisco"),
+                ("site_label"): ("Laboratorio"),
+                ("status"): ("active"),
+                ("version"): ("1.0.0.33"),
+            },
+            ("to_version"): 4,
         },
     ],
     "GET /api/v2/workspaces/{workspace_id}/nvd-dashboard/{nvd_mode}": [
@@ -3603,6 +3768,31 @@ RESPONSE_EXAMPLES = {
             ("url"): ("https://app.example.com/"),
         },
     ],
+    "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}": [
+        200,
+        {
+            "component_kind": ("firmware"),
+            "cpe_review_state": ("needs_review"),
+            "created_at": ("2026-11-13T12:00:00.000001Z"),
+            "created_by": ("00000000-0000-4000-8000-000000000001"),
+            "current_identification": None,
+            "device_type": "router",
+            "id": ("00000000-0000-4000-8000-000000000038"),
+            "identity_generation": 2,
+            "inventory_label": None,
+            "manufacturer": "Cisco",
+            "model": "RV340 corregido",
+            "notes": None,
+            "product": ("small_business_rv340_firmware"),
+            "product_vendor": "cisco",
+            "record_version": 4,
+            "site_label": ("Sala de redes"),
+            "status": "active",
+            "updated_at": ("2026-11-13T12:00:00.000001Z"),
+            "version": "1.0.1.16",
+            "workspace_id": ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
     "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}/findings/{finding_id}": [
         200,
         {
@@ -4320,13 +4510,15 @@ RESPONSE_EXAMPLES = {
             "created_at": ("2026-11-13T12:00:00.000001Z"),
             "created_by": ("00000000-0000-4000-8000-000000000001"),
             "device_type": "router",
-            "id": ("00000000-0000-4000-8000-000000000033"),
+            "id": ("00000000-0000-4000-8000-000000000038"),
+            "identity_generation": 1,
             "inventory_label": None,
             "manufacturer": "Cisco",
             "model": "RV340",
             "notes": None,
             "product": ("small_business_rv340_firmware"),
             "product_vendor": "cisco",
+            "record_version": 1,
             "site_label": "Laboratorio",
             "status": "active",
             "updated_at": ("2026-11-13T12:00:00.000001Z"),
@@ -4340,9 +4532,20 @@ RESPONSE_EXAMPLES = {
             "completed_at": ("2026-11-13T12:00:00.000001Z"),
             "coverage": ("complete"),
             "created_at": ("2026-11-13T12:00:00.000001Z"),
+            ("evaluated_technology"): {
+                ("basis"): ("observed"),
+                ("component_kind"): ("firmware"),
+                ("identity_generation"): 1,
+                ("observed_version"): ("1.0.0.33"),
+                ("product"): ("small_business_rv340_firmware"),
+                ("product_vendor"): ("cisco"),
+                ("record_version"): 1,
+            },
             "failure_code": None,
-            "id": ("00000000-0000-4000-8000-000000000035"),
-            ("identification_id"): ("00000000-0000-4000-8000-000000000034"),
+            "id": ("00000000-0000-4000-8000-000000000040"),
+            ("identification_id"): ("00000000-0000-4000-8000-000000000039"),
+            ("identity_generation"): 1,
+            ("is_current_technology"): True,
             "mode": "fixture",
             "observed_version": ("1.0.0.33"),
             "retrieved_count": 1,
@@ -4374,13 +4577,35 @@ RESPONSE_EXAMPLES = {
     "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/identifications": [
         201,
         {
+            ("catalog_evidence"): None,
             "cpe_name": ("cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*"),
             ("cpe_name_id"): ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
             ("created_at"): ("2026-11-13T12:00:00.000001Z"),
-            "device_id": ("00000000-0000-4000-8000-000000000033"),
-            "id": ("00000000-0000-4000-8000-000000000034"),
+            "device_id": ("00000000-0000-4000-8000-000000000038"),
+            "id": ("00000000-0000-4000-8000-000000000039"),
+            ("identity_generation"): 1,
             "mode": ("fixture"),
-            "reason": ("Revision humana de ejemplo"),
+            "reason": ("Observación inicial del firmware"),
+            ("recorded_by"): ("00000000-0000-4000-8000-000000000001"),
+            ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
+    "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/reidentification": [
+        201,
+        {
+            ("catalog_evidence"): {
+                ("cpe_name_id"): ("3c67651b-1758-4332-9533-845d56b737c5"),
+                ("nvd_modified"): ("2026-11-13T12:00:00.000001Z"),
+                ("source"): ("nvd-captured-fixture"),
+            },
+            "cpe_name": ("cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.1.16:*:*:*:*:*:*:*"),
+            ("cpe_name_id"): ("3c67651b-1758-4332-9533-845d56b737c5"),
+            ("created_at"): ("2026-11-13T12:00:00.000001Z"),
+            ("device_id"): ("00000000-0000-4000-8000-000000000038"),
+            "id": ("00000000-0000-4000-8000-000000000044"),
+            ("identity_generation"): 2,
+            "mode": ("fixture"),
+            "reason": ("CPE compatible revisado"),
             ("recorded_by"): ("00000000-0000-4000-8000-000000000001"),
             ("workspace_id"): ("00000000-0000-4000-8000-000000000002"),
         },
@@ -4400,10 +4625,18 @@ RESPONSE_EXAMPLES = {
 }
 
 ADDITIONAL_RESPONSE_EXAMPLES = {
+    ("PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}"): {
+        409: {
+            ("error"): {
+                ("code"): ("DEVICE_VERSION_CONFLICT"),
+                "message": ("El dispositivo cambió. Recarga y compara."),
+                ("request_id"): ("example-request-id"),
+            }
+        }
+    },
     (
-        "POST /api/v2/workspaces/{workspace_id}/appl"
-        "ications/{application_id}/targets/{target_i"
-        "d}/verifications"
+        "POST /api/v2/workspaces/{workspace_id}/applications/{application_id}/targe"
+        "ts/{target_id}/verifications"
     ): {
         201: {
             ("challenge"): {
@@ -4446,7 +4679,7 @@ ADDITIONAL_RESPONSE_EXAMPLES = {
                 ),
             },
         }
-    }
+    },
 }
 
 REQUEST_EXAMPLES = {
@@ -4501,6 +4734,43 @@ REQUEST_EXAMPLES = {
                 ("expected_updated_at"): ("2026-11-13T12:00:00Z"),
             },
         }
+    },
+    "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}": {
+        "RC3 Actualizar ubicación": {
+            ("summary"): ("RC3 Actualizar ubicación"),
+            ("value"): {
+                ("expected_record_version"): 1,
+                ("reason"): ("Traslado administrativo"),
+                ("site_label"): ("Sala de redes"),
+            },
+        },
+        "RC3 Cambiar firmware": {
+            ("summary"): ("RC3 Cambiar firmware"),
+            ("value"): {
+                ("confirm_sensitive"): True,
+                ("expected_record_version"): 3,
+                ("reason"): ("Versión verificada"),
+                ("version"): ("1.0.1.16"),
+            },
+        },
+        ("RC3 Corregir modelo físico"): {
+            ("summary"): ("RC3 Corregir modelo físico"),
+            ("value"): {
+                ("confirm_sensitive"): True,
+                ("expected_record_version"): 2,
+                ("model"): ("RV340 corregido"),
+                ("reason"): ("Etiqueta física comprobada"),
+            },
+        },
+        "local": {
+            "summary": ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            "value": {
+                ("confirm_sensitive"): True,
+                ("expected_record_version"): 3,
+                ("reason"): ("Versión verificada"),
+                ("version"): ("1.0.1.16"),
+            },
+        },
     },
     "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}/findings/{finding_id}": {
         ("local"): {
@@ -4673,7 +4943,24 @@ REQUEST_EXAMPLES = {
             ("value"): {
                 ("cpe_name_id"): ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
                 ("expected_identification_id"): None,
-                ("reason"): ("Revision humana de ejemplo"),
+                ("reason"): ("Observación inicial del firmware"),
+            },
+        }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/reidentification": {
+        "local": {
+            ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+            ("value"): {
+                ("confirmed"): True,
+                ("cpe_name_id"): ("3C67651B-1758-4332-9533-845D56B737C5"),
+                ("expected_cpe_name"): (
+                    "cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.1.16:*:*:*:*:*:*:*"
+                ),
+                ("expected_identification_id"): None,
+                ("expected_nvd_modified"): ("2021-04-26T11:30:09.037Z"),
+                ("expected_record_version"): 4,
+                ("mode"): ("fixture"),
+                ("reason"): ("CPE compatible revisado"),
             },
         }
     },

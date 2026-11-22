@@ -1012,6 +1012,129 @@ add(
 )
 add(RC22, "RC22 Detalle CPE", "GET", CAT + "/candidates/{{catalog_fixture_id}}?mode=fixture")
 
+RC3 = "13 · Revisiones de dispositivo"
+ALTERNATE = json.loads((ROOT / "tests/fixtures/rc3_rv340_alternate_cpe.json").read_text())["cpe"]
+add(
+    RC3,
+    "RC3 Crear equipo de revisión",
+    "POST",
+    DEVICES,
+    body=ADD_DEVICE,
+    status=201,
+    capture=f"{SET}('device_id', data.id);",
+)
+add(
+    RC3,
+    "RC3 Confirmar firmware anterior",
+    "POST",
+    DEVICE + "/identifications",
+    status=201,
+    fixture=True,
+    body={
+        "cpe_name_id": CPE_ID,
+        "expected_identification_id": None,
+        "reason": "Observación inicial del firmware",
+    },
+)
+add(
+    RC3,
+    "RC3 Registrar consulta anterior",
+    "POST",
+    DEVICE + "/analyses",
+    status=201,
+    fixture=True,
+    headers={"Idempotency-Key": "{{$guid}}"},
+)
+add(
+    RC3,
+    "RC3 Actualizar ubicación",
+    "PATCH",
+    DEVICE,
+    body={
+        "expected_record_version": 1,
+        "site_label": "Sala de redes",
+        "reason": "Traslado administrativo",
+    },
+    capture="pm.test('CPE conservado', ()=>pm.expect(data.cpe_review_state).to.eql('confirmed'));",
+)
+add(
+    RC3,
+    "RC3 Corregir modelo físico",
+    "PATCH",
+    DEVICE,
+    body={
+        "expected_record_version": 2,
+        "model": "RV340 corregido",
+        "confirm_sensitive": True,
+        "reason": "Etiqueta física comprobada",
+    },
+)
+add(
+    RC3,
+    "RC3 Conflicto de revisión",
+    "PATCH",
+    DEVICE,
+    body={
+        "expected_record_version": 2,
+        "site_label": "Otra sala",
+        "reason": "Vista anterior",
+    },
+    status=409,
+    error="DEVICE_VERSION_CONFLICT",
+    description="Otro editor ya guardó. Recarga y compara antes de editar.",
+)
+add(
+    RC3,
+    "RC3 Cambiar firmware",
+    "PATCH",
+    DEVICE,
+    body={
+        "expected_record_version": 3,
+        "version": "1.0.1.16",
+        "confirm_sensitive": True,
+        "reason": "Versión verificada",
+    },
+    capture="pm.test('Revisión CPE', ()=>pm.expect(data.cpe_review_state).to.eql('needs_review'));",
+)
+add(
+    RC3,
+    "RC3 Bloquear CVE sin nueva identidad",
+    "POST",
+    DEVICE + "/analyses",
+    status=409,
+    headers={"Idempotency-Key": "{{$guid}}"},
+    error="CPE_CONFIRMATION_REQUIRED",
+)
+add(RC3, "RC3 Historial de cambios", "GET", DEVICE + "/revisions?limit=20")
+add(
+    RC3, "RC3 Comparar revisiones", "GET", DEVICE + "/revisions/compare?from_version=1&to_version=4"
+)
+add(
+    RC3,
+    "RC3 Consultar la versión anterior",
+    "GET",
+    DEVICE + "/analyses",
+    capture="pm.test('Histórico',()=>pm.expect(data.items[0].observed_version).eql('1.0.0.33'));",
+)
+add(
+    RC3,
+    "RC3 Reidentificar desde catálogo",
+    "POST",
+    DEVICE + "/reidentification",
+    status=201,
+    fixture=True,
+    body={
+        "expected_record_version": 4,
+        "expected_identification_id": None,
+        "cpe_name_id": ALTERNATE["cpeNameId"],
+        "expected_cpe_name": ALTERNATE["cpeName"],
+        "expected_nvd_modified": ALTERNATE["lastModified"] + "Z",
+        "mode": "fixture",
+        "confirmed": True,
+        "reason": "CPE compatible revisado",
+    },
+)
+
 
 def dump(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
@@ -1086,12 +1209,13 @@ def main():
                 return "00000000-0000-4000-8000-000000000001"
 
             example = {k: doc_value(k, v) for k, v in example.items()}
-            op["requestBody"]["content"]["application/json"]["examples"] = {
-                "local": {
-                    "summary": ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
-                    "value": example,
-                }
+            examples = op["requestBody"]["content"]["application/json"].setdefault("examples", {})
+            examples["local"] = {
+                "summary": ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
+                "value": example,
             }
+            if req["folder"] == RC3 and req["method"] == "PATCH":
+                examples[req["name"]] = {"summary": req["name"], "value": example}
         raw = req.get("base", "{{base_url}}") + req["path"]
         test = "".join(
             (
@@ -1173,7 +1297,7 @@ def main():
             }
         ]
         pre = req["pre"]
-        if req["folder"].startswith(("10", "11", "12")):
+        if req["folder"].startswith(("10", "11", "12", "13")):
             pre = (
                 "if (pm.variables.get('target_mode') === 'persistent-development') "
                 "{ pm.execution.skipRequest(); return; }\n" + pre
@@ -1335,7 +1459,8 @@ def main():
     additional_response_examples = {}
     for req in REQUESTS:
         if req["name"] in synthetic and (
-            req["status"] < 300 or req["name"] == ("Crear workspace adicional idempotente")
+            req["status"] < 300
+            or req["name"] in {"Crear workspace adicional idempotente", "RC3 Conflicto de revisión"}
         ):
             canonical = re.sub(
                 r"\{\{([^}]+)\}\}",

@@ -1,0 +1,442 @@
+{
+  "operations": {
+    "PATCH /api/v2/workspaces/{workspace_id}/devices/{device_id}": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "device_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Device Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/DeviceEdit"
+      },
+      "required": true,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/revisions": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "device_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Device Id"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "default": 20,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 1000000,
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "GET /api/v2/workspaces/{workspace_id}/devices/{device_id}/revisions/compare": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "device_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Device Id"
+          }
+        },
+        {
+          "name": "from_version",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "title": "From Version"
+          }
+        },
+        {
+          "name": "to_version",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "title": "To Version"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {}
+      }
+    },
+    "POST /api/v2/workspaces/{workspace_id}/devices/{device_id}/reidentification": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        },
+        {
+          "name": "device_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Device Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": {
+        "$ref": "#/components/schemas/DeviceReidentification"
+      },
+      "required": true,
+      "success": {
+        "201": {}
+      }
+    }
+  },
+  "schemas": {
+    "DeviceEdit": {
+      "properties": {
+        "expected_record_version": {
+          "type": "integer",
+          "maximum": 9007199254740991.0,
+          "minimum": 1.0,
+          "title": "Expected Record Version"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reason"
+        },
+        "confirm_sensitive": {
+          "type": "boolean",
+          "title": "Confirm Sensitive",
+          "default": false
+        },
+        "device_type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "router",
+                "switch",
+                "server"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Device Type"
+        },
+        "manufacturer": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Manufacturer"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Model"
+        },
+        "site_label": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Site Label"
+        },
+        "inventory_label": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Inventory Label"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Notes"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "active",
+                "retired"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Status"
+        },
+        "component_kind": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "firmware",
+                "os",
+                "software",
+                "hardware"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Component Kind"
+        },
+        "product_vendor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Product Vendor"
+        },
+        "product": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 160,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Product"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Version"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "expected_record_version",
+        "reason"
+      ],
+      "title": "DeviceEdit"
+    },
+    "DeviceReidentification": {
+      "properties": {
+        "cpe_name_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Cpe Name Id"
+        },
+        "expected_cpe_name": {
+          "type": "string",
+          "maxLength": 1024,
+          "minLength": 8,
+          "title": "Expected Cpe Name"
+        },
+        "expected_nvd_modified": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Expected Nvd Modified"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "fixture",
+            "live"
+          ],
+          "title": "Mode"
+        },
+        "confirmed": {
+          "type": "boolean",
+          "const": true,
+          "title": "Confirmed"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Reason"
+        },
+        "expected_record_version": {
+          "type": "integer",
+          "maximum": 9007199254740991.0,
+          "minimum": 1.0,
+          "title": "Expected Record Version"
+        },
+        "expected_identification_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expected Identification Id"
+        }
+      },
+      "additionalProperties": false,
+      "type": "object",
+      "required": [
+        "cpe_name_id",
+        "expected_cpe_name",
+        "expected_nvd_modified",
+        "mode",
+        "confirmed",
+        "reason",
+        "expected_record_version",
+        "expected_identification_id"
+      ],
+      "title": "DeviceReidentification"
+    }
+  }
+}

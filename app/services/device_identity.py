@@ -13,7 +13,11 @@ def words(value):
 
 
 def validate_device_candidate(device, candidate):
-    fields = parse_cpe(candidate.cpe_name)
+    validate_device_cpe(device, candidate.cpe_name)
+
+
+def validate_device_cpe(device, name):
+    fields = parse_cpe(name)
     part, vendor, product, version = (unbind_component(field) for field in fields[:4])
     if not device["version"]:
         raise APIError(409, "VERSION_REQUIRED", "Registra una versión conocida antes de confirmar")
