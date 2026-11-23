@@ -244,6 +244,34 @@ def candidates(
     limit: Limit = 15,
     offset: Offset = 0,
 ):
+    return find_candidates(
+        request,
+        mode=mode,
+        part=part,
+        q=q,
+        vendor=vendor,
+        product=product,
+        version=version,
+        deprecated=deprecated,
+        limit=limit,
+        offset=offset,
+    )
+
+
+def find_candidates(
+    request,
+    *,
+    mode,
+    part,
+    q,
+    vendor,
+    product,
+    version,
+    deprecated,
+    limit,
+    offset,
+    concrete_version=False,
+):
     exact = normalized_text(q)
     cpe_exact = exact.startswith("cpe:2.3:")
     stale = (
@@ -253,6 +281,7 @@ def candidates(
         if deprecated is False
         else ""
     )
+    concrete = f" AND {LITERAL_VERSION}" if concrete_version else ""
     match = " AND cpe_name=:exact" if cpe_exact else " AND search_text LIKE :q ESCAPE '!'"
     return listing(
         request,
@@ -267,7 +296,8 @@ def candidates(
         AND (:version='' OR version=:version)
     """
         + match
-        + stale,
+        + stale
+        + concrete,
         exact=exact,
         order="deprecated,vendor,product,version,cpe_name_id",
         vendor=vendor,

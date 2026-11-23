@@ -7748,6 +7748,52 @@
               "default": 0,
               "title": "Offset"
             }
+          },
+          {
+            "name": "technology_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Technology Id"
+            }
+          },
+          {
+            "name": "part",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "h",
+                "o",
+                "a"
+              ],
+              "type": "string",
+              "default": "a",
+              "title": "Part"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "fixture",
+                "live"
+              ],
+              "type": "string",
+              "default": "live",
+              "title": "Mode"
+            }
           }
         ],
         "responses": {
@@ -8133,7 +8179,9 @@
                   "summary": "Ejemplo; sustituir variables y secretos locales antes de enviar",
                   "value": {
                     "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
-                    "expected_selected_cpe": null
+                    "expected_selected_cpe": null,
+                    "mode": "fixture",
+                    "part": "o"
                   }
                 }
               }
@@ -21343,6 +21391,37 @@
               }
             ],
             "title": "Expected Selected Cpe"
+          },
+          "expected_cpe_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1024
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Cpe Name"
+          },
+          "part": {
+            "type": "string",
+            "enum": [
+              "h",
+              "o",
+              "a"
+            ],
+            "title": "Part",
+            "default": "a"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode",
+            "default": "live"
           }
         },
         "additionalProperties": false,

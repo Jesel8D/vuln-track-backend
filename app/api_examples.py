@@ -4973,6 +4973,8 @@ REQUEST_EXAMPLES = {
             ("value"): {
                 ("cpe_name_id"): ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
                 ("expected_selected_cpe"): None,
+                ("mode"): ("fixture"),
+                ("part"): ("o"),
             },
         }
     },

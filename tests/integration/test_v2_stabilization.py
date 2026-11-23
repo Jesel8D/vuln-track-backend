@@ -3,6 +3,7 @@
 import os
 import secrets
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 from threading import Barrier
 from uuid import uuid4
 
@@ -12,7 +13,8 @@ from sqlalchemy import event, text
 
 from app.core.config import Settings
 from app.main import create_app
-from tests.cpe_support import NAME_ID
+from app.services.cpe_catalog import UPSERT, normalize, refresh_summary
+from tests.cpe_support import RAW as CPE_RAW
 from tests.cpe_support import client_for as cpe_client
 from tests.cve_support import RAW, response_page
 from tests.cve_support import client_for as cve_client
@@ -43,7 +45,13 @@ def api(postgres):
         yield app, client
 
 
-def technology(client, user):
+def technology(client, user, postgres):
+    identifier = str(uuid4())
+    entry = deepcopy(CPE_RAW["products"][0])
+    entry["cpe"]["cpeNameId"] = identifier
+    with postgres.begin() as connection:
+        connection.execute(UPSERT, normalize(entry, "fixture", None))
+        refresh_summary(connection, "fixture")
     base = f"/api/v2/workspaces/{user['workspace']}/applications"
     result = client.post(base, json={"name": "Regresión V2"}, headers=user["headers"])
     assert result.status_code == 201
@@ -61,7 +69,12 @@ def technology(client, user):
     tech = base + "/technologies/" + result.json()["id"]
     result = client.put(
         tech + "/cpe",
-        json={"cpe_name_id": str(NAME_ID), "expected_selected_cpe": None},
+        json={
+            "cpe_name_id": identifier,
+            "expected_selected_cpe": None,
+            "part": "o",
+            "mode": "fixture",
+        },
         headers=user["headers"],
     )
     assert result.status_code == 200
@@ -97,10 +110,8 @@ def test_additional_workspace_idempotency_membership_and_isolation(api, postgres
         assert (
             db.scalar(
                 text(
-
-                        "SELECT count(*) FROM vulntrack.audit_events WHERE "
-                        "object_id=:id AND action='workspace.created'"
-
+                    "SELECT count(*) FROM vulntrack.audit_events WHERE "
+                    "object_id=:id AND action='workspace.created'"
                 ),
                 {"id": key},
             )
@@ -149,12 +160,12 @@ def test_concurrent_workspace_creation_keeps_one_workspace_and_owner(api, postgr
 
 
 @pytest.mark.parametrize("original_and", [True, False])
-def test_original_cve_description_persists_without_bad_trailing_title(api, original_and):
+def test_original_cve_description_persists_without_bad_trailing_title(api, original_and, postgres):
     app, client = api
     if not original_and:
         app.state.cve = cve_client(raw=response_page(simple=True))
     user = account(client)
-    base, tech = technology(client, user)
+    base, tech = technology(client, user, postgres)
     result = client.post(
         tech + "/analyses", headers=user["headers"] | {"Idempotency-Key": str(uuid4())}
     )

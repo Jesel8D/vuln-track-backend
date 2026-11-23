@@ -165,6 +165,20 @@ def expired_token(settings):
     )
 
 
+def seed_fixture_catalog(engine):
+    result = synchronize(
+        engine,
+        fixture_client(),
+        "fixture",
+        scope=CatalogScope(vendor="cisco", product="small_business_rv340_firmware"),
+    )
+    assert result["status"] == "complete" and result["stored"] == 1
+    alternate = json.loads((ROOT / "tests/fixtures/rc3_rv340_alternate_cpe.json").read_text())
+    with engine.begin() as connection:
+        connection.execute(UPSERT, normalize(alternate, "fixture", None))
+        refresh_summary(connection, "fixture")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--installation", choices=["existing", "new"], default="existing")
@@ -185,19 +199,7 @@ def main():
     with DisposableV2(args.installation) as stack:
         engine = create_engine(stack.url("postgres"), hide_parameters=True)
         try:
-            result = synchronize(
-                engine,
-                fixture_client(),
-                "fixture",
-                scope=CatalogScope(vendor="cisco", product="small_business_rv340_firmware"),
-            )
-            assert result["status"] == "complete" and result["stored"] == 1
-            alternate = json.loads(
-                (ROOT / "tests/fixtures/rc3_rv340_alternate_cpe.json").read_text()
-            )
-            with engine.begin() as connection:
-                connection.execute(UPSERT, normalize(alternate, "fixture", None))
-                refresh_summary(connection, "fixture")
+            seed_fixture_catalog(engine)
         finally:
             engine.dispose()
         settings = Settings(
@@ -246,6 +248,7 @@ def main():
                 "disabled_base_url": disabled_base,
                 "password": secrets.token_urlsafe(28),
                 "nvd_mode": "fixture",
+                "cpe_catalog_mode": "fixture",
                 "disposable_confirmed": "true",
                 "allow_live_nvd": "false",
                 "expired_token": expired_token(settings),

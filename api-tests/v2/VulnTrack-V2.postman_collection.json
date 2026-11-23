@@ -67,6 +67,11 @@
       "type": "string"
     },
     {
+      "key": "cpe_catalog_mode",
+      "value": "live",
+      "type": "string"
+    },
+    {
       "key": "confirmed_cpe",
       "value": "",
       "type": "string"
@@ -2062,7 +2067,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/cpe-candidates?query=cisco&product_query=small_business_rv340_firmware&limit=10&offset=0",
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/cpe-candidates?query=cisco&technology_id={{technology_id}}&mode={{cpe_catalog_mode}}&part=o&limit=10&offset=0",
             "description": "En modo real NO selecciona candidato. Revisar producto, versión, UUID y deprecated, luego definir cpe_name_id, confirmed_cpe y cpe_confirmed_manually=true."
           },
           "event": [
@@ -2076,7 +2081,7 @@
                   "const data = pm.response.json();",
                   "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
                   "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
-                  "if (pm.variables.get('nvd_mode') === 'fixture') { const candidate = data.items.find(x => x.cpe_name_id.toLowerCase() === 'c817e5ba-62c1-41e7-a15c-fb851fea761e'); pm.test('UUID de fixture verificado', () => { pm.expect(candidate).to.be.an('object'); pm.expect(candidate.cpe_name).to.eql('cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*'); pm.expect(candidate.deprecated).to.eql(false); }); pm.collectionVariables.set('cpe_name_id',candidate.cpe_name_id); pm.collectionVariables.set('confirmed_cpe',candidate.cpe_name); }",
+                  "if (pm.variables.get('cpe_catalog_mode') === 'fixture') { const candidate = data.items.find(x => x.cpe_name_id.toLowerCase() === 'c817e5ba-62c1-41e7-a15c-fb851fea761e'); pm.test('UUID de fixture verificado', () => { pm.expect(candidate).to.be.an('object'); pm.expect(candidate.cpe_name).to.eql('cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*'); pm.expect(candidate.deprecated).to.eql(false); }); pm.collectionVariables.set('cpe_name_id',candidate.cpe_name_id); pm.collectionVariables.set('confirmed_cpe',candidate.cpe_name); }",
                   "})();"
                 ]
               }
@@ -2093,7 +2098,7 @@
                     "value": "application/json"
                   }
                 ],
-                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/cpe-candidates?query=cisco&product_query=small_business_rv340_firmware&limit=10&offset=0",
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/cpe-candidates?query=cisco&technology_id={{technology_id}}&mode={{cpe_catalog_mode}}&part=o&limit=10&offset=0",
                 "description": "En modo real NO selecciona candidato. Revisar producto, versión, UUID y deprecated, luego definir cpe_name_id, confirmed_cpe y cpe_confirmed_manually=true."
               },
               "status": "Example",
@@ -2127,7 +2132,7 @@
             "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. NVD puede responder 429/502/503/504. La búsqueda NO confirma: seleccionar manualmente un candidato no deprecado y versión exacta. Pruebas offline usan UUID documentado de fixture, nunca el primer candidato por posición.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cpe_name_id\": \"{{cpe_name_id}}\",\n  \"expected_selected_cpe\": null\n}",
+              "raw": "{\n  \"cpe_name_id\": \"{{cpe_name_id}}\",\n  \"expected_selected_cpe\": null,\n  \"part\": \"o\",\n  \"mode\": \"{{cpe_catalog_mode}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2142,7 +2147,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "(function(){",
-                  "if (pm.variables.get('nvd_mode') !== 'fixture' && pm.variables.get('cpe_confirmed_manually') !== 'true') throw new Error('Se requiere revisión humana del CPE');",
+                  "if (pm.variables.get('cpe_catalog_mode') !== 'fixture' && pm.variables.get('cpe_confirmed_manually') !== 'true') throw new Error('Se requiere revisión humana del CPE');",
                   "if (!pm.variables.get('cpe_name_id')) throw new Error('Falta UUID CPE verificado');",
                   "})();"
                 ]
@@ -2183,7 +2188,7 @@
                 "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. NVD puede responder 429/502/503/504. La búsqueda NO confirma: seleccionar manualmente un candidato no deprecado y versión exacta. Pruebas offline usan UUID documentado de fixture, nunca el primer candidato por posición.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"cpe_name_id\": \"{{cpe_name_id}}\",\n  \"expected_selected_cpe\": null\n}",
+                  "raw": "{\n  \"cpe_name_id\": \"{{cpe_name_id}}\",\n  \"expected_selected_cpe\": null,\n  \"part\": \"o\",\n  \"mode\": \"{{cpe_catalog_mode}}\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -3126,7 +3131,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "(function(){",
-                  "if (pm.variables.get('nvd_mode') !== 'fixture' && pm.variables.get('cpe_confirmed_manually') !== 'true') throw new Error('Se requiere revisión humana del CPE');",
+                  "if (pm.variables.get('cpe_catalog_mode') !== 'fixture' && pm.variables.get('cpe_confirmed_manually') !== 'true') throw new Error('Se requiere revisión humana del CPE');",
                   "if (!pm.variables.get('cpe_name_id')) throw new Error('Falta UUID CPE verificado');",
                   "pm.collectionVariables.set('identification_key',pm.variables.replaceIn('{{$guid}}'));",
                   "})();"
