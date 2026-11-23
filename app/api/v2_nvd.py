@@ -3,7 +3,7 @@
 import hashlib
 import json
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
@@ -12,11 +12,13 @@ from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import text
 
+from app.api.cpe_catalog import Part, admit_catalog, catalog_row, find_candidates, normalized_text
 from app.api.router import Identity
 from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
-from app.schemas.cpe import Candidate, CandidateList, SearchInput, parse_cpe, unbind_component
+from app.schemas.cpe import Candidate, CandidateList, SearchInput
 from app.services.applicability import encoded
+from app.services.cpe_catalog import Mode
 from app.services.nvd_findings import finding_rows
 
 logger = logging.getLogger("vulntrack.v2.nvd")
@@ -32,10 +34,19 @@ IdempotencyKey = Annotated[
 ]
 
 
+class ApplicationCpeSearch(SearchInput):
+    technology_id: UUID | None = None
+    part: Part = "a"
+    mode: Mode = "live"
+
+
 class CPESelection(BaseModel):
     model_config = ConfigDict(extra="forbid")
     cpe_name_id: UUID
     expected_selected_cpe: str | None = Field(default=None, max_length=1024)
+    expected_cpe_name: str | None = Field(default=None, max_length=1024)
+    part: Part = "a"
+    mode: Mode = "live"
 
 
 class FindingReview(BaseModel):
@@ -123,20 +134,60 @@ def _authorize(session, workspace_id, application_id, role="owner", actor_id=Non
         raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
 
 
+def _technology(session, workspace_id, application_id, technology_id):
+    row = (
+        session.execute(
+            text("""SELECT selected_cpe, vendor, product, version FROM vulntrack.technologies
+                WHERE workspace_id=:workspace AND application_id=:application
+                  AND id=:technology"""),
+            {"workspace": workspace_id, "application": application_id, "technology": technology_id},
+        )
+        .mappings()
+        .first()
+    )
+    if row is None:
+        raise APIError(404, "TECHNOLOGY_NOT_FOUND", "Tecnología no encontrada")
+    return row
+
+
+def _catalog_name(value):
+    return "_".join(normalized_text(value or "").casefold().split())
+
+
 @router.get("/cpe-candidates", response_model=CandidateList)
 def cpe_candidates(
     workspace_id: UUID,
     application_id: UUID,
     user: Identity,
     request: Request,
-    search: Annotated[SearchInput, Query()],
+    search: Annotated[ApplicationCpeSearch, Query()],
 ):
+    vendor, product, version = "", _catalog_name(search.product_query), ""
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id)
-    # Network calls happen after the RLS transaction has closed.
-    return request.app.state.nvd.search(user.id, search)
+        if search.technology_id is not None:
+            technology = _technology(session, workspace_id, application_id, search.technology_id)
+            vendor = _catalog_name(technology["vendor"])
+            product = _catalog_name(technology["product"])
+            version = technology["version"]
+
+    admit_catalog(request, user)
+    result = find_candidates(
+        request,
+        mode=search.mode,
+        part=search.part,
+        q=search.query,
+        vendor=vendor,
+        product=product,
+        version=version,
+        deprecated=False,
+        limit=search.limit,
+        offset=search.offset,
+        concrete_version=True,
+    )
+    return result | {"source_timestamp": datetime.now(UTC)}
 
 
 @router.put("/technologies/{technology_id}/cpe", response_model=Candidate)
@@ -152,33 +203,33 @@ def confirm_cpe(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id, "writer")
-        current = (
-            session.execute(
-                text("""SELECT selected_cpe, version FROM vulntrack.technologies
-                WHERE workspace_id=:workspace AND application_id=:application
-                  AND id=:technology"""),
-                {
-                    "workspace": workspace_id,
-                    "application": application_id,
-                    "technology": technology_id,
-                },
-            )
-            .mappings()
-            .first()
-        )
-        if current is None:
-            raise APIError(404, "TECHNOLOGY_NOT_FOUND", "Tecnología no encontrada")
+        current = _technology(session, workspace_id, application_id, technology_id)
         if current["selected_cpe"] != payload.expected_selected_cpe:
             raise APIError(409, "CPE_SELECTION_CHANGED", "La selección CPE cambió")
 
-    candidate, _ = request.app.state.nvd.resolve(user.id, payload.cpe_name_id)
-    candidate_version = unbind_component(parse_cpe(candidate.cpe_name)[3])
+    admit_catalog(request, user)
+    with request.app.state.catalog_reader.connect(payload.mode) as connection:
+        candidate = catalog_row(connection, payload.mode, payload.cpe_name_id)
+    if candidate["deprecated"]:
+        raise APIError(409, "CPE_DEPRECATED", "El CPE seleccionado está deprecado")
+    if payload.expected_cpe_name is not None and candidate["cpe_name"] != payload.expected_cpe_name:
+        raise APIError(409, "CPE_SELECTION_CHANGED", "El registro CPE cambió")
     if (
-        candidate_version in {"*", "-"}
-        or candidate_version.casefold() != current["version"].casefold()
+        candidate["version"] != current["version"]
+        or candidate["version"] == "-"
+        or any(wildcard in candidate["version"] for wildcard in "*?")
     ):
         raise APIError(
             409, "CPE_VERSION_MISMATCH", "El CPE NVD debe coincidir con la versión observada"
+        )
+    vendor = _catalog_name(current["vendor"])
+    if (
+        candidate["part"] != payload.part
+        or candidate["product"] != _catalog_name(current["product"])
+        or (vendor and candidate["vendor"] != vendor)
+    ):
+        raise APIError(
+            409, "CPE_PRODUCT_MISMATCH", "El tipo, fabricante o producto CPE no coincide"
         )
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
@@ -188,13 +239,17 @@ def confirm_cpe(
             text("""UPDATE vulntrack.technologies SET selected_cpe=:cpe, confidence='user_confirmed'
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:technology
                   AND selected_cpe IS NOT DISTINCT FROM :expected
+                  AND vendor IS NOT DISTINCT FROM :vendor AND product=:product AND version=:version
                 RETURNING id"""),
             {
-                "cpe": candidate.cpe_name,
+                "cpe": candidate["cpe_name"],
                 "workspace": workspace_id,
                 "application": application_id,
                 "technology": technology_id,
                 "expected": payload.expected_selected_cpe,
+                "vendor": current["vendor"],
+                "product": current["product"],
+                "version": current["version"],
             },
         ).first()
         if updated is None:

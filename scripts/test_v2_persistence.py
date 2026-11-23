@@ -105,6 +105,13 @@ def main():
     try:
         stack.start_database()
         stack.bootstrap()
+        from sqlalchemy import create_engine
+
+        engine = create_engine(stack.url("postgres"), hide_parameters=True)
+        try:
+            fixture.seed_fixture_catalog(engine)
+        finally:
+            engine.dispose()
         with fixture.server(fixture.fixture_app(stack.settings(), original_and=True), 0) as base:
             api = HTTP(base)
             user = api.request("POST", "/api/v1/auth/register", expected=201, body=credentials)
@@ -136,15 +143,24 @@ def main():
             ids["technology"] = technology["id"]
             tech = app_base + "/technologies/" + technology["id"]
             candidate_id = "c817e5ba-62c1-41e7-a15c-fb851fea761e"
-            candidates = api.request("GET", app_base + "/cpe-candidates?query=cisco", token=token)[
-                "items"
-            ]
+            candidates = api.request(
+                "GET",
+                app_base
+                + "/cpe-candidates?query=cisco&mode=fixture&part=o"
+                + f"&technology_id={technology['id']}",
+                token=token,
+            )["items"]
             assert any(c["cpe_name_id"] == candidate_id for c in candidates)
             api.request(
                 "PUT",
                 tech + "/cpe",
                 token=token,
-                body={"cpe_name_id": candidate_id, "expected_selected_cpe": None},
+                body={
+                    "cpe_name_id": candidate_id,
+                    "expected_selected_cpe": None,
+                    "part": "o",
+                    "mode": "fixture",
+                },
             )
             run = api.request(
                 "POST",
@@ -259,10 +275,7 @@ def main():
             if owned.check_owner("container", owned.name):
                 owned.stop_database()
         print(
-
-                "Only owned validation services stopped; both named volumes and "
-                "private backup retained"
-
+            "Only owned validation services stopped; both named volumes and private backup retained"
         )
 
 

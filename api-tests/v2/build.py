@@ -365,10 +365,13 @@ add(
     "Buscar candidatos CPE V2",
     "GET",
     APP
-    + ("/cpe-candidates?query=cisco&product_query=small_business_rv340_firmware&limit=10&offset=0"),
+    + (
+        "/cpe-candidates?query=cisco&technology_id={{technology_id}}"
+        "&mode={{cpe_catalog_mode}}&part=o&limit=10&offset=0"
+    ),
     capture="".join(
         (
-            "if (pm.variables.get('nvd_mode') === 'fixture') { const ",
+            "if (pm.variables.get('cpe_catalog_mode') === 'fixture') { const ",
             "candidate = data.items.find(x => x.cpe_name_id.toLowerCase() ===",
             " '",
             f"{CPE_ID}",
@@ -390,7 +393,7 @@ add(
     ),
 )
 CONFIRM_PRE = (
-    "if (pm.variables.get('nvd_mode') !== 'fixture' && pm.variables.g"
+    "if (pm.variables.get('cpe_catalog_mode') !== 'fixture' && pm.variables.g"
     "et('cpe_confirmed_manually') !== 'true') throw new Error('Se req"
     "uiere revisión humana del CPE');\nif (!pm.variables.get('cpe_name"
     "_id')) throw new Error('Falta UUID CPE verificado');"
@@ -400,7 +403,12 @@ add(
     "Confirmar CPE revisado",
     "PUT",
     TECH + "/cpe",
-    body={"cpe_name_id": "{{cpe_name_id}}", "expected_selected_cpe": None},
+    body={
+        "cpe_name_id": "{{cpe_name_id}}",
+        "expected_selected_cpe": None,
+        "part": "o",
+        "mode": "{{cpe_catalog_mode}}",
+    },
     pre=CONFIRM_PRE,
 )
 add(
@@ -1206,6 +1214,8 @@ def main():
                     return "api_example"
                 if key == "cpe_name_id":
                     return CPE_ID
+                if value == "{{cpe_catalog_mode}}":
+                    return "fixture"
                 return "00000000-0000-4000-8000-000000000001"
 
             example = {k: doc_value(k, v) for k, v in example.items()}
@@ -1344,6 +1354,7 @@ def main():
         "asset_id": "",
         "technology_id": "",
         "cpe_name_id": "",
+        "cpe_catalog_mode": "live",
         "confirmed_cpe": "",
         "analysis_id": "",
         "asset_analysis_id": "",
@@ -1435,6 +1446,7 @@ def main():
                     "base_url": "http://127.0.0.1:8000",
                     "password": "",
                     "nvd_mode": "live" if mode == "local" else "fixture",
+                    "cpe_catalog_mode": "live" if mode == "local" else "fixture",
                     "target_mode": "persistent-development"
                     if mode == "persistent-development"
                     else "temporary",
