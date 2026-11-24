@@ -43,7 +43,8 @@ def rules(pg, public=None, dns=False, seconds=20):
     if dns:
         # Docker's embedded resolver only, for a single bounded getaddrinfo; its
         # NAT uses ephemeral local ports, so scope to resolver address, not :53.
-        output.append("-A OUTPUT -d 127.0.0.11/32 -j ACCEPT")
+        expiry = (datetime.now(UTC) + timedelta(seconds=4)).strftime("%Y-%m-%dT%H:%M:%S")
+        output.append(f"-A OUTPUT -d 127.0.0.11/32 -m time --datestop {expiry} -j ACCEPT")
     return "\n".join(output + ["COMMIT", ""])
 
 
