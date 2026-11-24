@@ -21,7 +21,7 @@ from app.services.v2_cve_reliability import source_kind
 
 logger = logging.getLogger(__name__)
 CONTRACT = "nvd-cve-page-2.0-cache-1"
-PARSER = "public-cve-5b-1"
+PARSER = "public-cve-5c1-1"
 MAX_BODY = 2097152
 PRIVATE_KEYS = frozenset(
     "workspace workspaceid user username userid location sitelabel notes "
@@ -97,6 +97,13 @@ def validate_public_page(value, start=0, limit=100):
             "cveTags",
             "vendorComments",
             "affected",
+            "evaluatorComment",
+            "evaluatorSolution",
+            "evaluatorImpact",
+            "cisaExploitAdd",
+            "cisaActionDue",
+            "cisaRequiredAction",
+            "cisaVulnerabilityName",
         }
         if any(set(entry["cve"]) - allowed for entry in body["vulnerabilities"]):
             raise ValueError("Unrecognized CVE fields")

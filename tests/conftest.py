@@ -136,3 +136,8 @@ def forbid_uncontrolled_http(monkeypatch):
         raise AssertionError("Pruebas sin red: usar MockTransport con fixture NVD")
 
     monkeypatch.setattr(httpx.HTTPTransport, "handle_request", blocked)
+
+    async def blocked_async(*args, **kwargs):
+        raise AssertionError("Pruebas sin red: usar MockTransport con fixture NVD")
+
+    monkeypatch.setattr(httpx.AsyncHTTPTransport, "handle_async_request", blocked_async)

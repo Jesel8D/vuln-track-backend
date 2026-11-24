@@ -34,6 +34,7 @@ from app.core.http import RequestBoundary, error_body
 from app.core.registration import RegistrationGate
 from app.core.security import LoginLimiter
 from app.db.session import build_engine, build_session_factory
+from app.integrations.cve_transport import HTTPPolicy
 from app.integrations.nvd import NVDClient, Quota
 from app.integrations.nvd_cve import CVEClient
 from app.services.analyses import AnalysisService
@@ -86,10 +87,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings.nvd_api_key,
         settings.nvd_timeout_seconds,
         quota=app.state.nvd.quota,
+        http_policy=HTTPPolicy(
+            timeout=settings.cve_http_total_seconds, max_bytes=settings.cve_http_max_bytes
+        ),
         live=settings.nvd_mode == "live",
     )
     app.state.analyses = AnalysisService(app.state.session_factory, AssetAuthorization())
-    app.state.cve_worker = CVEWorker(engine, app.state.session_factory, app.state.cve)
+    app.state.cve_worker = CVEWorker(
+        engine, app.state.session_factory, app.state.cve, limits=settings
+    )
     app.state.analyses.worker_ready = lambda: app.state.cve_worker.available
     app.state.login_limiter = LoginLimiter(settings.login_attempts_per_minute)
     app.state.registration_gate = RegistrationGate(

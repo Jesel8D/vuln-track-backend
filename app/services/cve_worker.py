@@ -10,6 +10,8 @@ from uuid import uuid4
 from sqlalchemy import func, select, text
 
 from app.core.errors import APIError
+from app.integrations.cve_transport import RequestBudget
+from app.integrations.nvd_cve import CVEClient
 from app.models.database_v1 import AnalysisRun as Run
 from app.models.database_v1 import Finding, User
 from app.services.applicability import encoded, evidence_for
@@ -23,7 +25,7 @@ class Interrupted(Exception):
 
 
 class CVEWorker:
-    def __init__(self, engine, session_factory, client, *, clock=time.monotonic):
+    def __init__(self, engine, session_factory, client, *, clock=time.monotonic, limits=None):
         self.engine = engine
         self.sessions = session_factory
         self.client = client
@@ -31,9 +33,12 @@ class CVEWorker:
         self.stop = Event()
         self.thread = None
         self.available = False
-        self.max_pages = 5
+        self.max_pages = limits.cve_max_pages if limits else 5
         self.page_size = 100
-        self.max_seconds = 300
+        self.max_seconds = limits.cve_max_seconds if limits else 300
+        self.max_requests = limits.cve_max_requests if limits else 15
+        self.max_records = limits.cve_max_records if limits else 500
+        self.max_bytes = limits.cve_max_bytes if limits else 10485760
 
     def start(self):
         self.thread = Thread(target=self._loop, name="vulntrack-cve", daemon=True)
@@ -147,15 +152,29 @@ class CVEWorker:
         if inactive:
             self._finish(run_id, "ACTOR_INACTIVE")
             return True
-        deadline = self.clock() + self.max_seconds
+        budget = RequestBudget(
+            requests=self.max_requests,
+            max_bytes=self.max_bytes,
+            seconds=self.max_seconds,
+            clock=self.clock,
+            cancelled=self.stop,
+        )
+        deadline = budget.deadline
         try:
             while True:
                 with self.sessions() as session:
                     row = session.get(Run, run_id)
-                    start, page_count = row.next_index, row.page_count
+                    start, page_count, retrieved = (
+                        row.next_index,
+                        row.page_count,
+                        row.retrieved_count,
+                    )
                     active = session.scalar(select(User.active).where(User.id == row.initiated_by))
                 if not active:
                     raise APIError(503, "ACTOR_INACTIVE", "Usuario no activo")
+                if retrieved >= self.max_records:
+                    self._finish(run_id, "RECORD_BUDGET_REACHED")
+                    break
                 if page_count >= self.max_pages:
                     self._finish(run_id, "PAGE_BUDGET_REACHED")
                     break
@@ -163,7 +182,20 @@ class CVEWorker:
                 for attempt in range(3):
                     self._wait(self.client.quota.wait_seconds(), deadline)
                     try:
-                        page = self.client.page(cpe, start, self.page_size)
+                        if isinstance(self.client, CVEClient):
+                            page = self.client.page(
+                                cpe,
+                                start,
+                                min(self.page_size, self.max_records - retrieved),
+                                budget=budget,
+                            )
+                        else:
+                            # Trusted internal test doubles only; production uses CVEClient.
+                            budget.reserve()
+                            page = self.client.page(
+                                cpe, start, min(self.page_size, self.max_records - retrieved)
+                            )
+                            budget.consume(len(encoded(page.model_dump(mode="json"))))
                         break
                     except APIError as exc:
                         if exc.code == "NVD_RATE_LIMIT":
@@ -183,6 +215,9 @@ class CVEWorker:
                 if self.clock() >= deadline:
                     raise APIError(503, "TIME_BUDGET_REACHED", "Presupuesto agotado")
                 done, uncertain = self._persist_page(run_id, page, cpe, observed)
+                if self.clock() >= deadline:
+                    self._finish(run_id, "TIME_BUDGET_REACHED")
+                    break
                 if done or uncertain:
                     self._finish(run_id)
                     break

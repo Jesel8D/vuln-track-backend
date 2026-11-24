@@ -144,7 +144,7 @@ class NVDClient:
 
     def _content(self, url, params):
         # Internal callers use a constant route. Block accidental new origins as well.
-        if url not in {NVD_URL, "https://services.nvd.nist.gov/rest/json/cves/2.0"}:
+        if url != NVD_URL:
             raise APIError(502, "NVD_INVALID_ORIGIN", "Origen NVD no permitido")
         if self.live is False and self.transport is None:
             raise APIError(503, "NVD_MODE_REQUIRED", "Activa un modo NVD explícito")
@@ -160,6 +160,8 @@ class NVDClient:
             return self._content_once(url, params)
 
     def _content_once(self, url, params):
+        if url != NVD_URL:
+            raise APIError(502, "NVD_INVALID_ORIGIN", "Origen NVD no permitido")
         self.quota.reserve()
         headers = {"Accept": "application/json", "Accept-Encoding": "identity"}
         if self.api_key:
