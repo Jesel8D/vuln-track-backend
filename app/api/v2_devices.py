@@ -15,6 +15,7 @@ from app.api.cpe_catalog import catalog_row
 from app.api.router import Identity
 from app.api.v2_nvd import IdempotencyKey
 from app.core.errors import APIError
+from app.db.pagination import page
 from app.db.workspace_context import workspace_session
 from app.schemas.cpe import Candidate, CandidateList, SearchInput
 from app.schemas.devices import (
@@ -131,22 +132,6 @@ def audit(session, scope, action, resource, identifier):
     """),
         {**scope, "action": action, "resource": resource, "identifier": identifier},
     )
-
-
-def page(session, *, select, table, where, sort, scope, limit, offset):
-    # SQL fragments are constants supplied by this module. Only bound values come from requests.
-    items = session.execute(
-        text(
-            f"SELECT {select} FROM {table} WHERE {where} "
-            f"ORDER BY {sort} LIMIT :limit OFFSET :offset"
-        ),
-        {**scope, "limit": limit, "offset": offset},
-    ).mappings()
-    total = session.scalar(text(f"SELECT count(*) FROM {table} WHERE {where}"), scope)
-    return {
-        "items": [dict(row) for row in items],
-        "page": {"limit": limit, "offset": offset, "total": total},
-    }
 
 
 def register_identification(session, scope, candidate, mode, reason, evidence=None):

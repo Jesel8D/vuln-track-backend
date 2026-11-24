@@ -10,6 +10,7 @@ from sqlalchemy import text
 
 from app.api.router import Identity
 from app.core.errors import APIError
+from app.db.pagination import page
 from app.db.workspace_context import workspace_session
 from app.services.web_target_authorization import public_target
 from app.services.web_target_policy import INVENTORY_POLICY, DestinationDenied
@@ -27,8 +28,9 @@ def _authorize(session, workspace_id, application_id, write=False):
         raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
     if not session.scalar(
         text("""SELECT 1 FROM vulntrack.applications
-            WHERE workspace_id=:workspace AND id=:application AND status='active'"""),
-        {"workspace": workspace_id, "application": application_id},
+            WHERE workspace_id=:workspace AND id=:application
+              AND (NOT :write OR status='active')"""),
+        {"workspace": workspace_id, "application": application_id, "write": write},
     ):
         raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
 
@@ -93,79 +95,103 @@ class TargetAuthorization(BaseModel):
         return result
 
 
+def _present_target(row, workspace_id, application_id):
+    # JSON pages preserve timestamps as ISO strings; policy evaluation expects
+    # aware datetime values, exactly as the original SQL row mapping did.
+    for key in ("authorization_expires_at", "created_at", "updated_at"):
+        if isinstance(row.get(key), str):
+            row[key] = datetime.fromisoformat(row[key])
+    return public_target(row, workspace_id, application_id)
+
+
+TargetState = Literal["pending", "approved", "rejected", "expired"]
+Limit = Annotated[int, Query(ge=1, le=100)]
+Offset = Annotated[int, Query(ge=0, le=1000000)]
+TARGET_FIELDS = """t.id,t.url,t.label,
+    CASE WHEN t.authorization_status='approved'
+              AND t.authorization_expires_at <= statement_timestamp()
+         THEN 'expired' ELSE t.authorization_status END AS authorization_status,
+    t.authorization_expires_at,t.authorization_reference,t.created_at,t.updated_at"""
+TARGET_FILTER = """t.workspace_id=:workspace
+    AND (:q='' OR strpos(lower(t.url||' '||coalesce(t.label,'')),lower(:q))>0)
+    AND (CAST(:state AS text) IS NULL OR
+        CASE WHEN t.authorization_status='approved'
+                  AND t.authorization_expires_at <= statement_timestamp()
+             THEN 'expired' ELSE t.authorization_status END = :state)"""
+
+
 @workspace_router.get("")
 def list_workspace_targets(
     workspace_id: UUID,
     user: Identity,
     request: Request,
     limit: Annotated[int, Query(ge=1, le=1000)] = 100,
-    offset: Annotated[int, Query(ge=0, le=1000000)] = 0,
+    offset: Offset = 0,
+    q: Annotated[str, Query(max_length=160)] = "",
+    authorization_status: TargetState | None = None,
 ):
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         if not session.scalar(
             text(
-                "SELECT vulntrack.has_workspace_role(:workspace, ARRAY['owner','editor','viewer'])"
+                "SELECT vulntrack.has_workspace_role(:workspace,ARRAY['owner','editor','viewer'])"
             ),
             {"workspace": workspace_id},
         ):
             raise APIError(404, "WORKSPACE_NOT_FOUND", "Workspace no disponible")
-        rows = (
-            session.execute(
-                text("""SELECT t.id,t.application_id,a.name AS application_name,a.status AS
-                application_status,
-                t.url,t.label,
-                CASE WHEN t.authorization_status='approved'
-                          AND t.authorization_expires_at <= clock_timestamp()
-                     THEN 'expired' ELSE t.authorization_status END AS authorization_status,
-                t.authorization_expires_at,t.authorization_reference,t.created_at,t.updated_at
-                FROM vulntrack.application_targets t
-                JOIN vulntrack.applications a
-                  ON a.workspace_id=t.workspace_id AND a.id=t.application_id
-                WHERE t.workspace_id=:workspace
-                ORDER BY a.created_at DESC,a.id,t.created_at,t.id
-                LIMIT :limit OFFSET :offset"""),
-                {"workspace": workspace_id, "limit": limit, "offset": offset},
-            )
-            .mappings()
-            .all()
+        result = page(
+            session,
+            select=TARGET_FIELDS + ",t.application_id,a.name AS application_name,"
+            "a.status AS application_status",
+            table="vulntrack.application_targets t JOIN vulntrack.applications a "
+            "ON a.workspace_id=t.workspace_id AND a.id=t.application_id",
+            where=TARGET_FILTER,
+            sort="created_at DESC,id",
+            scope={"workspace": workspace_id, "q": q.strip(), "state": authorization_status},
+            limit=limit,
+            offset=offset,
         )
-        total = session.scalar(
-            text(
-                "SELECT count(*) FROM vulntrack.application_targets WHERE workspace_id=:workspace"
-            ),
-            {"workspace": workspace_id},
-        )
-        return {
-            "items": [public_target(row, workspace_id, row["application_id"]) for row in rows],
-            "page": {"limit": limit, "offset": offset, "total": total},
-        }
+        result["items"] = [
+            _present_target(row, workspace_id, row["application_id"]) for row in result["items"]
+        ]
+        return result
 
 
 @router.get("")
-def list_targets(workspace_id: UUID, application_id: UUID, user: Identity, request: Request):
+def list_targets(
+    workspace_id: UUID,
+    application_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Limit = 100,
+    offset: Offset = 0,
+    q: Annotated[str, Query(max_length=160)] = "",
+    authorization_status: TargetState | None = None,
+):
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id)
-        rows = (
-            session.execute(
-                text("""SELECT id,url,label,
-                CASE WHEN authorization_status='approved'
-                          AND authorization_expires_at <= clock_timestamp()
-                     THEN 'expired' ELSE authorization_status END AS authorization_status,
-                authorization_expires_at,
-                authorization_reference,created_at,updated_at
-                FROM vulntrack.application_targets
-                WHERE workspace_id=:workspace AND application_id=:application
-                ORDER BY created_at,id LIMIT 100"""),
-                {"workspace": workspace_id, "application": application_id},
-            )
-            .mappings()
-            .all()
+        result = page(
+            session,
+            select=TARGET_FIELDS,
+            table="vulntrack.application_targets t",
+            where=TARGET_FILTER + " AND t.application_id=:application",
+            sort="created_at,id",
+            scope={
+                "workspace": workspace_id,
+                "application": application_id,
+                "q": q.strip(),
+                "state": authorization_status,
+            },
+            limit=limit,
+            offset=offset,
         )
-        return {"items": [public_target(row, workspace_id, application_id) for row in rows]}
+        result["items"] = [
+            _present_target(row, workspace_id, application_id) for row in result["items"]
+        ]
+        return result
 
 
 @router.post("", status_code=201)

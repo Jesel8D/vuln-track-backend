@@ -1126,7 +1126,7 @@
               }
             ],
             "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets",
-            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Inventario HTTP(S), sin escaneo. Autorizar requiere referencia y expected_updated_at; aprobación vence en el próximo año, rechazo sin vencimiento. Conflicto de versión: 409. No demuestra propiedad del destino. ZAP permanece deshabilitado. Lista acotada sin parámetros de paginación: hasta 100 elementos."
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Inventario HTTP(S), sin escaneo. Autorizar requiere referencia y expected_updated_at; aprobación vence en el próximo año, rechazo sin vencimiento. Conflicto de versión: 409. No demuestra propiedad del destino. ZAP permanece deshabilitado. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
           },
           "event": [
             {
@@ -1157,7 +1157,7 @@
                   }
                 ],
                 "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/targets",
-                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Inventario HTTP(S), sin escaneo. Autorizar requiere referencia y expected_updated_at; aprobación vence en el próximo año, rechazo sin vencimiento. Conflicto de versión: 409. No demuestra propiedad del destino. ZAP permanece deshabilitado. Lista acotada sin parámetros de paginación: hasta 100 elementos."
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Inventario HTTP(S), sin escaneo. Autorizar requiere referencia y expected_updated_at; aprobación vence en el próximo año, rechazo sin vencimiento. Conflicto de versión: 409. No demuestra propiedad del destino. ZAP permanece deshabilitado. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
               },
               "status": "Example",
               "code": 200,
@@ -2779,7 +2779,7 @@
               }
             ],
             "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/findings/{{finding_id}}/recommendations",
-            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Modificaciones requieren expected_updated_at con zona horaria; versión obsoleta/transición inválida: 409. Revisión no prueba explotación. Lista acotada sin parámetros de paginación: hasta 100 elementos."
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Modificaciones requieren expected_updated_at con zona horaria; versión obsoleta/transición inválida: 409. Revisión no prueba explotación. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
           },
           "event": [
             {
@@ -2821,7 +2821,7 @@
                   }
                 ],
                 "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/findings/{{finding_id}}/recommendations",
-                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Modificaciones requieren expected_updated_at con zona horaria; versión obsoleta/transición inválida: 409. Revisión no prueba explotación. Lista acotada sin parámetros de paginación: hasta 100 elementos."
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Modificaciones requieren expected_updated_at con zona horaria; versión obsoleta/transición inválida: 409. Revisión no prueba explotación. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
               },
               "status": "Example",
               "code": 200,

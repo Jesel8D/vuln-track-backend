@@ -1,0 +1,402 @@
+{
+  "previous_openapi_sha256": "906559ac2a9dbadbf9ff1d90f37c662f60dbbbff1fbf1e5d9075beb7fc90c328",
+  "changes": {
+    "operations": {
+      "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/findings/{finding_id}/recommendations": {
+        "before": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "application_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Application Id"
+              }
+            },
+            {
+              "name": "finding_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Finding Id"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        },
+        "after": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "application_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Application Id"
+              }
+            },
+            {
+              "name": "finding_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Finding Id"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 100,
+                "minimum": 1,
+                "default": 100,
+                "title": "Limit"
+              }
+            },
+            {
+              "name": "offset",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 1000000,
+                "minimum": 0,
+                "default": 0,
+                "title": "Offset"
+              }
+            },
+            {
+              "name": "status",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "pending",
+                      "in_progress",
+                      "fixed",
+                      "accepted_risk"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Status"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        }
+      },
+      "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/targets": {
+        "before": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "application_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Application Id"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        },
+        "after": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "application_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Application Id"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 100,
+                "minimum": 1,
+                "default": 100,
+                "title": "Limit"
+              }
+            },
+            {
+              "name": "offset",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 1000000,
+                "minimum": 0,
+                "default": 0,
+                "title": "Offset"
+              }
+            },
+            {
+              "name": "q",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "maxLength": 160,
+                "default": "",
+                "title": "Q"
+              }
+            },
+            {
+              "name": "authorization_status",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "pending",
+                      "approved",
+                      "rejected",
+                      "expired"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Authorization Status"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        }
+      },
+      "GET /api/v2/workspaces/{workspace_id}/targets": {
+        "before": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 1000,
+                "minimum": 1,
+                "default": 100,
+                "title": "Limit"
+              }
+            },
+            {
+              "name": "offset",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 1000000,
+                "minimum": 0,
+                "default": 0,
+                "title": "Offset"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        },
+        "after": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 1000,
+                "minimum": 1,
+                "default": 100,
+                "title": "Limit"
+              }
+            },
+            {
+              "name": "offset",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 1000000,
+                "minimum": 0,
+                "default": 0,
+                "title": "Offset"
+              }
+            },
+            {
+              "name": "q",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "maxLength": 160,
+                "default": "",
+                "title": "Q"
+              }
+            },
+            {
+              "name": "authorization_status",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "enum": [
+                      "pending",
+                      "approved",
+                      "rejected",
+                      "expired"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Authorization Status"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        }
+      }
+    }
+  },
+  "additions": {}
+}
