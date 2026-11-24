@@ -4049,5 +4049,33 @@
       },
       "identity_generation": 2
     }
+  },
+  "Cobertura CPE del inventario": {
+    "status": 200,
+    "body": {
+      "workspace_id": "00000000-0000-4000-8000-000000000001",
+      "scope": "active",
+      "devices": {
+        "total": 0,
+        "confirmed": 0,
+        "pending": 0,
+        "needs_review": 0,
+        "excluded_inactive": 0,
+        "without_version": 0,
+        "confirmed_by_mode": {
+          "live": 0,
+          "fixture": 0,
+          "unknown": 0
+        }
+      },
+      "technologies": {
+        "total": 0,
+        "confirmed": 0,
+        "pending": 0,
+        "needs_review": 0,
+        "excluded_inactive": 0,
+        "confirmation_provenance": "not_recorded"
+      }
+    }
   }
 }

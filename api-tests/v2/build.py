@@ -192,6 +192,18 @@ add(
 )
 add("04 · Aplicaciones", "Dashboard", "GET", BASE + "/dashboard")
 add(
+    "04 · Aplicaciones",
+    "Cobertura CPE del inventario",
+    "GET",
+    BASE + "/inventory-coverage",
+    capture=(
+        "pm.test('Particiones de inventario',()=>{['devices','technologies'].forEach(k=>"
+        "pm.expect(data[k].confirmed+data[k].pending+data[k].needs_review)"
+        ".to.eql(data[k].total));});"
+    ),
+    description="Lectura agregada de entidades activas del workspace; no consulta catálogo ni CVE.",
+)
+add(
     "05 · Destinos autorizados",
     "Registrar destino público sin escanear",
     "POST",

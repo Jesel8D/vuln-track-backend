@@ -1,0 +1,178 @@
+{
+  "operations": {
+    "GET /api/v2/workspaces/{workspace_id}/inventory-coverage": {
+      "parameters": [
+        {
+          "name": "workspace_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          }
+        }
+      ],
+      "security": [
+        {
+          "HTTPBearer": []
+        }
+      ],
+      "request": null,
+      "required": false,
+      "success": {
+        "200": {
+          "$ref": "#/components/schemas/InventoryCoverage"
+        }
+      }
+    }
+  },
+  "schemas": {
+    "CatalogModes": {
+      "properties": {
+        "live": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Live"
+        },
+        "fixture": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Fixture"
+        },
+        "unknown": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Unknown"
+        }
+      },
+      "type": "object",
+      "required": [
+        "live",
+        "fixture",
+        "unknown"
+      ],
+      "title": "CatalogModes"
+    },
+    "DeviceCoverage": {
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Total"
+        },
+        "confirmed": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Confirmed"
+        },
+        "pending": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Pending"
+        },
+        "needs_review": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Needs Review"
+        },
+        "excluded_inactive": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Excluded Inactive"
+        },
+        "without_version": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Without Version"
+        },
+        "confirmed_by_mode": {
+          "$ref": "#/components/schemas/CatalogModes"
+        }
+      },
+      "type": "object",
+      "required": [
+        "total",
+        "confirmed",
+        "pending",
+        "needs_review",
+        "excluded_inactive",
+        "without_version",
+        "confirmed_by_mode"
+      ],
+      "title": "DeviceCoverage"
+    },
+    "InventoryCoverage": {
+      "properties": {
+        "workspace_id": {
+          "type": "string",
+          "format": "uuid",
+          "title": "Workspace Id"
+        },
+        "scope": {
+          "type": "string",
+          "const": "active",
+          "title": "Scope",
+          "default": "active"
+        },
+        "devices": {
+          "$ref": "#/components/schemas/DeviceCoverage"
+        },
+        "technologies": {
+          "$ref": "#/components/schemas/TechnologyCoverage"
+        }
+      },
+      "type": "object",
+      "required": [
+        "workspace_id",
+        "devices",
+        "technologies"
+      ],
+      "title": "InventoryCoverage"
+    },
+    "TechnologyCoverage": {
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Total"
+        },
+        "confirmed": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Confirmed"
+        },
+        "pending": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Pending"
+        },
+        "needs_review": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Needs Review"
+        },
+        "excluded_inactive": {
+          "type": "integer",
+          "minimum": 0.0,
+          "title": "Excluded Inactive"
+        },
+        "confirmation_provenance": {
+          "type": "string",
+          "const": "not_recorded",
+          "title": "Confirmation Provenance",
+          "default": "not_recorded"
+        }
+      },
+      "type": "object",
+      "required": [
+        "total",
+        "confirmed",
+        "pending",
+        "needs_review",
+        "excluded_inactive"
+      ],
+      "title": "TechnologyCoverage"
+    }
+  }
+}

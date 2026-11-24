@@ -17782,6 +17782,256 @@
         }
       }
     },
+    "/api/v2/workspaces/{workspace_id}/inventory-coverage": {
+      "get": {
+        "tags": [
+          "V2 · Workspaces y dashboard"
+        ],
+        "summary": "Inventory coverage",
+        "description": "Count active devices and technologies separately; historical CPEs are not current.\n\n    No dictionary reads or CVE requests. Unknown provenance is never inferred.\n    Pending/review/confirmed partition each denominator. Retired devices and\n    technologies of archived applications are excluded and reported separately. Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia.",
+        "operationId": "inventory_coverage_api_v2_workspaces__workspace_id__inventory_coverage_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ejemplo sintético de prueba desechable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryCoverage"
+                },
+                "example": {
+                  "devices": {
+                    "confirmed": 0,
+                    "confirmed_by_mode": {
+                      "fixture": 0,
+                      "live": 0,
+                      "unknown": 0
+                    },
+                    "excluded_inactive": 0,
+                    "needs_review": 0,
+                    "pending": 0,
+                    "total": 0,
+                    "without_version": 0
+                  },
+                  "scope": "active",
+                  "technologies": {
+                    "confirmation_provenance": "not_recorded",
+                    "confirmed": 0,
+                    "excluded_inactive": 0,
+                    "needs_review": 0,
+                    "pending": 0,
+                    "total": 0
+                  },
+                  "workspace_id": "00000000-0000-4000-8000-000000000001"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependencia, esquema o servicio no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Segundos sugeridos antes de reintentar"
+              }
+            }
+          },
+          "401": {
+            "description": "JWT ausente, inválido, expirado o cuenta no autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Bearer"
+              }
+            }
+          },
+          "422": {
+            "description": "Solicitud inválida; no se refleja información sensible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Cuerpo supera el límite configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso no visible o inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/workspaces/{workspace_id}/nvd-dashboard/{nvd_mode}": {
       "get": {
         "tags": [
@@ -21493,6 +21743,32 @@
         ],
         "title": "CandidateList"
       },
+      "CatalogModes": {
+        "properties": {
+          "live": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Live"
+          },
+          "fixture": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Fixture"
+          },
+          "unknown": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Unknown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "live",
+          "fixture",
+          "unknown"
+        ],
+        "title": "CatalogModes"
+      },
       "CatalogSelection": {
         "properties": {
           "cpe_name_id": {
@@ -21837,6 +22113,54 @@
           "component_kind"
         ],
         "title": "Confirm"
+      },
+      "DeviceCoverage": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          },
+          "confirmed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Confirmed"
+          },
+          "pending": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Pending"
+          },
+          "needs_review": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Needs Review"
+          },
+          "excluded_inactive": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Excluded Inactive"
+          },
+          "without_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Without Version"
+          },
+          "confirmed_by_mode": {
+            "$ref": "#/components/schemas/CatalogModes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "confirmed",
+          "pending",
+          "needs_review",
+          "excluded_inactive",
+          "without_version",
+          "confirmed_by_mode"
+        ],
+        "title": "DeviceCoverage"
       },
       "DeviceCreate": {
         "properties": {
@@ -22866,6 +23190,34 @@
         ],
         "title": "Instructions"
       },
+      "InventoryCoverage": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "scope": {
+            "type": "string",
+            "const": "active",
+            "title": "Scope",
+            "default": "active"
+          },
+          "devices": {
+            "$ref": "#/components/schemas/DeviceCoverage"
+          },
+          "technologies": {
+            "$ref": "#/components/schemas/TechnologyCoverage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace_id",
+          "devices",
+          "technologies"
+        ],
+        "title": "InventoryCoverage"
+      },
       "IssueResult": {
         "properties": {
           "challenge": {
@@ -23191,6 +23543,50 @@
           "url"
         ],
         "title": "TargetCreate"
+      },
+      "TechnologyCoverage": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          },
+          "confirmed": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Confirmed"
+          },
+          "pending": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Pending"
+          },
+          "needs_review": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Needs Review"
+          },
+          "excluded_inactive": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Excluded Inactive"
+          },
+          "confirmation_provenance": {
+            "type": "string",
+            "const": "not_recorded",
+            "title": "Confirmation Provenance",
+            "default": "not_recorded"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "confirmed",
+          "pending",
+          "needs_review",
+          "excluded_inactive"
+        ],
+        "title": "TechnologyCoverage"
       },
       "TechnologyCreate": {
         "properties": {
