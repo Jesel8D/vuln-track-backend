@@ -337,18 +337,41 @@ def test_cvss_versions_keep_all_sources_without_claiming_risk(version):
     from app.services.nvd_findings import finding_rows
 
     raw = response_page()
+    number = {
+        "cvssMetricV2": "2.0",
+        "cvssMetricV30": "3.0",
+        "cvssMetricV31": "3.1",
+        "cvssMetricV40": "4.0",
+    }[version]
+    vector = (
+        "AV:N/AC:L/Au:N/C:P/I:P/A:P"
+        if number == "2.0"
+        else "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"
+        if number == "4.0"
+        else f"CVSS:{number}/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+    )
     raw["vulnerabilities"][0]["cve"]["metrics"] = {
         version: [
             {
-                "source": "one@example.invalid",
-                "cvssData": {"baseSeverity": "HIGH", "baseScore": 8.1},
-            },
-            {
-                "source": "two@example.invalid",
-                "cvssData": {"baseSeverity": "LOW", "baseScore": 3.1},
-            },
+                "source": source,
+                "type": "Primary" if index == 0 else "Secondary",
+                "baseSeverity": severity,
+                "cvssData": {
+                    "version": number,
+                    "vectorString": vector,
+                    "baseSeverity": severity,
+                    "baseScore": score,
+                },
+            }
+            for index, (source, severity, score) in enumerate(
+                [("one@example.invalid", "HIGH", 8.1), ("two@example.invalid", "LOW", 3.1)]
+            )
         ]
     }
+    # baseSeverity on the wrapper is a v2 field; preserve valid schema fixtures.
+    if number != "2.0":
+        for item in raw["vulnerabilities"][0]["cve"]["metrics"][version]:
+            del item["baseSeverity"]
     page = client_for(raw=raw).page(CPE)
     _, rows, _ = finding_rows(page, CPE, "1.0.0.33")
     assert rows[0]["severity"] == "high"

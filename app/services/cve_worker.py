@@ -251,7 +251,7 @@ class CVEWorker:
             }
             ids, dates = [], []
             for entry in page.vulnerabilities:
-                record = entry.cve.model_dump(mode="json", exclude_none=True)
+                record = entry.cve.model_dump(mode="json", exclude_unset=True)
                 external_id = record["id"]
                 ids.append(external_id)
                 dates.append(record["published"])

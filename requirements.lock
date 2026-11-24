@@ -91,3 +91,10 @@ typing-inspection==0.4.4
     #   pydantic-settings
 uvicorn==0.54.0
     # via vulntrack-backend (pyproject.toml)
+
+# Offline pinned NVD schema validation (5C.1-R).
+attrs==26.1.0
+jsonschema==4.23.0
+jsonschema-specifications==2025.9.1
+referencing==0.36.2
+rpds-py==2026.9.1

@@ -120,7 +120,7 @@ def evidence_for(cpe, observed, record):
         "observed_version": observed,
         "source": "NVD",
         "cve_id": record["id"],
-        "vulnStatus": record["vulnStatus"],
+        "vulnStatus": record.get("vulnStatus"),
         "published": record["published"],
         "lastModified": record["lastModified"],
         "descriptions": record.get("descriptions", []),

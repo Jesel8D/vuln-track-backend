@@ -34,3 +34,6 @@ api-tests/v2/.artifacts/
 # Volatile RC2.3 dependency links
 /.venv
 /api-tests/v2/node_modules
+
+# Local pinned schema wheels for isolated trial image.
+dev/nvd-trial/wheels/

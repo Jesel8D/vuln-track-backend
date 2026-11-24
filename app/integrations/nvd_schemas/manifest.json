@@ -1,0 +1,51 @@
+[
+  {
+    "file": "cve_api_json_2.0.schema",
+    "url": "https://csrc.nist.gov/schema/nvd/api/2.0/cve_api_json_2.0.schema",
+    "consulted_date": "2026-11-24",
+    "representation": "original HTTP bytes from 5C.1",
+    "sha256": "2b9c4e8ab7e6e42aa17ea787f58167beff47c119c6f291405f86ac19c6149e01"
+  },
+  {
+    "file": "ssvc-v2.0.3.json",
+    "url": "https://csrc.nist.gov/schema/nvd/api/2.0/ssvc-v2.0.3.json",
+    "consulted_date": "2026-11-24",
+    "representation": "official web extraction from diagnostic",
+    "sha256": "1fa40c72a3e57c7eb67f262fe6d90e6be0d74c4b42c771d9841edaf23a3f88b6"
+  },
+  {
+    "file": "cve_affected_1.0.json",
+    "url": "https://csrc.nist.gov/schema/nvd/api/2.0/cve_affected_1.0.json",
+    "consulted_date": "2026-11-24",
+    "representation": "official web extraction from diagnostic",
+    "sha256": "c1c7acda41f6e63d5eefccda979baf3a2e90072e27977dd190f6fdb2d2f16ebc"
+  },
+  {
+    "file": "cvss-v2.0.json",
+    "url": "https://csrc.nist.gov/schema/nvd/api/2.0/external/cvss-v2.0.json",
+    "consulted_date": "2026-11-24",
+    "representation": "official web rendered extraction, not raw HTTP bytes; original license retained",
+    "sha256": "4f0c6e0c5ffe54b3ecefc5f7cb7d6b28501b687aa4b1923690e579eb8307ccfb"
+  },
+  {
+    "file": "cvss-v3.0.json",
+    "url": "https://csrc.nist.gov/schema/nvd/api/2.0/external/cvss-v3.0.json",
+    "consulted_date": "2026-11-24",
+    "representation": "official web rendered extraction, not raw HTTP bytes; original license retained",
+    "sha256": "4a59226ca03555fb10aa97f77c8e31a67debc87ccaa538d372fcb0691e1e719d"
+  },
+  {
+    "file": "cvss-v3.1.json",
+    "url": "https://csrc.nist.gov/schema/nvd/api/2.0/external/cvss-v3.1.json",
+    "consulted_date": "2026-11-24",
+    "representation": "official web rendered extraction, not raw HTTP bytes; original license retained",
+    "sha256": "1b4a08592a3cb7fa5c9a7d88e92065df558a3c156cb51d0430b683b5f0fa9fde"
+  },
+  {
+    "file": "cvss-v4.0.json",
+    "url": "https://csrc.nist.gov/schema/nvd/api/2.0/external/cvss-v4.0.json",
+    "consulted_date": "2026-11-24",
+    "representation": "official web rendered extraction, not raw HTTP bytes; original license retained",
+    "sha256": "caf3592c48c229804055df041c2f3ae140dc141fc8ee59fa5a90e497e2395487"
+  }
+]

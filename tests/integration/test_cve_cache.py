@@ -307,9 +307,7 @@ def test_payload_capacity_and_malformed_provider_do_not_create_zero_evidence(api
     upstream, calls = provider(raw)
     app.state.cve = upstream
     result = post(client, user, path)
-    assert (
-        result.status_code == 502 and result.json()["error"]["code"] == "CVE_CACHE_INVALID_RESPONSE"
-    )
+    assert result.status_code == 502 and result.json()["error"]["code"] == "NVD_INVALID_RESPONSE"
     assert counts(postgres, user["workspace"])["responses"] == 0
 
 
