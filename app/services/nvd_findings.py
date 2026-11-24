@@ -40,7 +40,7 @@ def nvd_date(value):
 
 def finding_rows(page, cpe, observed_version):
     page_cves = [
-        entry.cve.model_dump(mode="json", exclude_none=True) for entry in page.vulnerabilities
+        entry.cve.model_dump(mode="json", exclude_unset=True) for entry in page.vulnerabilities
     ]
     warnings = []
     rows = []

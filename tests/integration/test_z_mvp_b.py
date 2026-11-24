@@ -601,7 +601,9 @@ def test_evidence_budget_marks_undetermined_and_partial(b_api):
     b = b_api
     accepted = accept(b)
     raw = response_page(simple=True)
-    raw["vulnerabilities"][0]["cve"]["descriptions"] = [{"lang": "en", "value": "x" * 70000}]
+    raw["vulnerabilities"][0]["cve"]["descriptions"] = [
+        {"lang": "en", "value": "x" * 4000} for _ in range(8)
+    ]  # Each description obeys maxLength4096; combined evidence exceeds24KB.
     row = work(b, accepted, raw=raw)
     assert row["coverage"] == "partial" and "EVIDENCE_BUDGET_REACHED" in row["warning_codes"]
     f = findings(b, accepted)["items"][0]

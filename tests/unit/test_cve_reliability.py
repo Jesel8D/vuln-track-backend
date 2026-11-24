@@ -31,7 +31,7 @@ def test_enrichment_status_is_preserved_not_replaced_with_security(status):
     record = raw["vulnerabilities"][0]["cve"]
     record["vulnStatus"] = status
     record.pop("metrics", None)
-    record.pop("references", None)
+    record["references"] = []  # Required by the official schema, may be empty.
     page = client_for(raw=raw).page(CPE)
     _, rows, _ = finding_rows(page, CPE, "1.0.0.33")
     assert rows[0]["severity"] == "unknown" and rows[0]["cvss"] is None

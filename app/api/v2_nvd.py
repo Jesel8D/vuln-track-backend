@@ -611,7 +611,7 @@ def analyze_technology(
                 "params": json.dumps(
                     {
                         "cpeName": technology["selected_cpe"],
-                        "resultsPerPage": 100,
+                        "resultsPerPage": getattr(request.app.state.cve, "page_limit", 100),
                         "nvd_mode": request.app.state.nvd_mode,
                     }
                 ),

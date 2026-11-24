@@ -1,0 +1,125 @@
+{
+  "resultsPerPage": 3,
+  "startIndex": 0,
+  "totalResults": 3,
+  "format": "NVD_CVE",
+  "version": "2.0",
+  "timestamp": "2026-11-24T12:00:00Z",
+  "vulnerabilities": [
+    {
+      "cve": {
+        "id": "CVE-2026-99990001",
+        "published": "2026-06-17T12:00:00Z",
+        "lastModified": "2026-06-17T12:00:00Z",
+        "references": [],
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Synthetic offline record"
+          }
+        ],
+        "metrics": {
+          "ssvcV203": [
+            {
+              "source": "synthetic-cisa-adp",
+              "ssvcData": {
+                "options": [
+                  {
+                    "User": "synthetic"
+                  }
+                ],
+                "role": "test",
+                "version": "2.0.3"
+              }
+            }
+          ]
+        },
+        "publicFutureField": {
+          "value": "kept",
+          "nullable": null
+        }
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2026-99990002",
+        "published": "2026-06-17T12:00:00Z",
+        "lastModified": "2026-06-17T12:00:00Z",
+        "references": [],
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Synthetic offline record"
+          }
+        ],
+        "metrics": {
+          "ssvcV203": [
+            {
+              "source": "synthetic-cisa-adp",
+              "ssvcData": {
+                "options": [
+                  {
+                    "User": "synthetic"
+                  }
+                ],
+                "role": "test",
+                "version": "2.0.3"
+              }
+            }
+          ]
+        },
+        "publicFutureField": {
+          "value": "kept",
+          "nullable": null
+        },
+        "vulnStatus": "Not Scheduled",
+        "affected": [
+          {
+            "source": "synthetic-cna",
+            "affectedData": [
+              {
+                "product": "HTTP Server",
+                "vendor": "Apache",
+                "defaultStatus": "unknown"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2026-99990003",
+        "published": "2026-06-17T12:00:00Z",
+        "lastModified": "2026-06-17T12:00:00Z",
+        "references": [],
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Synthetic offline record"
+          }
+        ],
+        "metrics": {
+          "ssvcV203": [
+            {
+              "source": "synthetic-cisa-adp",
+              "ssvcData": {
+                "options": [
+                  {
+                    "User": "synthetic"
+                  }
+                ],
+                "role": "test",
+                "version": "2.0.3"
+              }
+            }
+          ]
+        },
+        "publicFutureField": {
+          "value": "kept",
+          "nullable": null
+        }
+      }
+    }
+  ]
+}

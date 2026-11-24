@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
-from app.integrations.nvd_cve import CVE, CVEPage
+from app.integrations.nvd_cve import CVEPage
 from app.schemas.cpe import parse_cpe
 from app.services.applicability import encoded
 from app.services.nvd_findings import _contains_nul
@@ -21,13 +21,8 @@ from app.services.v2_cve_reliability import source_kind
 
 logger = logging.getLogger(__name__)
 CONTRACT = "nvd-cve-page-2.0-cache-1"
-PARSER = "public-cve-5c1-1"
+PARSER = "public-cve-5c1r-1"
 MAX_BODY = 2097152
-PRIVATE_KEYS = frozenset(
-    "workspace workspaceid user username userid location sitelabel notes "
-    "password apikey authorization credentials memberships reviewedby reviewreason "
-    "reviewevidence recommendations inventorylabel deviceid applicationid technologyid".split()
-)
 
 
 class CacheFailure(APIError):
@@ -76,7 +71,9 @@ def validate_public_page(value, start=0, limit=100):
     """Revalidate on both insertion and reuse; never remove an unknown predicate."""
     try:
         page = CVEPage.model_validate(
-            value.model_dump(mode="json") if isinstance(value, CVEPage) else value
+            value.model_dump(mode="json", exclude_unset=True)
+            if isinstance(value, CVEPage)
+            else value
         )
         count = len(page.vulnerabilities)
         if (
@@ -90,37 +87,7 @@ def validate_public_page(value, start=0, limit=100):
         ):
             raise ValueError("Invalid page identity/counts")
         page.timestamp = page.timestamp.replace(tzinfo=page.timestamp.tzinfo or UTC)
-        body = page.model_dump(mode="json", exclude_none=True)
-        allowed = set(CVE.model_fields) | {
-            "sourceIdentifier",
-            "weaknesses",
-            "cveTags",
-            "vendorComments",
-            "affected",
-            "evaluatorComment",
-            "evaluatorSolution",
-            "evaluatorImpact",
-            "cisaExploitAdd",
-            "cisaActionDue",
-            "cisaRequiredAction",
-            "cisaVulnerabilityName",
-        }
-        if any(set(entry["cve"]) - allowed for entry in body["vulnerabilities"]):
-            raise ValueError("Unrecognized CVE fields")
-
-        def check(item, depth=0):
-            if depth > 24:
-                raise ValueError("Nested payload")
-            if isinstance(item, dict):
-                for key, child in item.items():
-                    if re.sub(r"[^a-z]", "", key.casefold()) in PRIVATE_KEYS:
-                        raise ValueError("Private field in provider body")
-                    check(child, depth + 1)
-            elif isinstance(item, list):
-                for child in item:
-                    check(child, depth + 1)
-
-        check(body)
+        body = page.model_dump(mode="json", exclude_unset=True)
         if _contains_nul(body):
             raise ValueError("NUL")
         raw = encoded(body)
@@ -187,7 +154,8 @@ def fetch_page(request, actor, workspace, cpe):
     namespace = getattr(client, "cache_namespace", None)
     if not settings.cve_cache_enabled or namespace is None or mode == "unknown":
         return Result(client.page(cpe, 0, 100))
-    key, query = query_key(mode, namespace, cpe)
+    limit = getattr(client, "page_limit", 100)
+    key, query = query_key(mode, namespace, cpe, limit=limit)
     token, slot, refresh = uuid4(), None, False
     try:
         with scoped(request, actor, workspace) as session:
@@ -218,7 +186,7 @@ def fetch_page(request, actor, workspace, cpe):
             ):
                 if hashlib.sha256(row["body"].encode()).hexdigest() != row["digest"]:
                     raise APIError(503, "CVE_CACHE_INTEGRITY", "Evidencia almacenada no válida")
-                page, body, digest = validate_public_page(json.loads(row["body"]))
+                page, body, digest = validate_public_page(json.loads(row["body"]), limit=limit)
                 if digest != row["digest"]:
                     raise APIError(503, "CVE_CACHE_INTEGRITY", "Evidencia almacenada no válida")
                 return Result(
@@ -268,7 +236,7 @@ def fetch_page(request, actor, workspace, cpe):
             )
 
         # No SQL transaction/connection is held while the controlled provider executes.
-        page, body, digest = validate_public_page(client.page(cpe, 0, 100))
+        page, body, digest = validate_public_page(client.page(cpe, 0, limit), limit=limit)
         coverage = "complete" if page.totalResults == len(page.vulnerabilities) else "partial"
         warnings = [] if coverage == "complete" else ["PAGE_BUDGET_REACHED"]
         ttl = (

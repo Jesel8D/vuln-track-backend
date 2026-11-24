@@ -3,11 +3,12 @@
 import json
 from datetime import UTC, datetime
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from app.core.errors import APIError
 from app.integrations.cve_transport import HTTPPolicy, content
 from app.integrations.nvd import NVDClient
+from app.integrations.nvd_contract import validate_page
 from app.schemas.cpe import parse_cpe
 
 CVE_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
@@ -16,7 +17,7 @@ CVE_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 class CVE(BaseModel):
     model_config = ConfigDict(strict=True, extra="allow")
     id: str = Field(pattern=r"^CVE-[0-9]{4}-[0-9]{4,}$", max_length=80)
-    vulnStatus: str = Field(min_length=1, max_length=80)
+    vulnStatus: str | None = Field(default=None, max_length=80)
     published: str = Field(max_length=40)
     lastModified: str = Field(max_length=40)
     descriptions: list[dict] = Field(default_factory=list, max_length=100)
@@ -38,6 +39,13 @@ class Entry(BaseModel):
 
 
 class CVEPage(BaseModel):
+    @model_validator(mode="before")
+    @classmethod
+    def official_contract(cls, value):
+        if isinstance(value, dict):
+            validate_page(value)
+        return value
+
     resultsPerPage: int = Field(strict=True, ge=0, le=100)
     startIndex: int = Field(strict=True, ge=0)
     totalResults: int = Field(strict=True, ge=0)
@@ -59,11 +67,13 @@ class CVEClient(NVDClient):
         self.source_kind = source_kind
         self.cache_namespace = cache_namespace
         self.http_policy = http_policy or HTTPPolicy(timeout=self.timeout)
+        self.last_response_bytes = None
 
     def _content(self, url, params):
         return content(self, url, params)
 
     def page(self, cpe, start=0, limit=100, *, budget=None):
+        self.last_response_bytes = None
         parse_cpe(cpe)
         if (
             type(start) is not int
@@ -102,6 +112,7 @@ class CVEClient(NVDClient):
             ):
                 raise ValueError("Inconsistent NVD page")
             page.timestamp = page.timestamp.replace(tzinfo=page.timestamp.tzinfo or UTC)
+            self.last_response_bytes = raw
             return page
         except (ValidationError, ValueError, TypeError, RecursionError):
             raise APIError(502, "NVD_INVALID_RESPONSE", "Respuesta CVE NVD no válida") from None
