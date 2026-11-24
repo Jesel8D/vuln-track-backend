@@ -336,7 +336,7 @@ def execute_real(args):
                     "code": error.code,
                     "http_attempts": adapter.attempts,
                     "transport": adapter.evidence,
-                    "live_provenance_saved": False,
+                    "persistence": "not-certified-on-failure",
                 }
             )
             + "\n"
