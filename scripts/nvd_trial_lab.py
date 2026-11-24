@@ -1,4 +1,4 @@
-"""Owned offline lab launcher: new source copy, PG volume, internal network, no public API."""
+"""Owned lab launcher: separate signed grant for real execution; no public API."""
 
 import argparse
 import hashlib
@@ -22,7 +22,7 @@ def run(args, *, env=None, data=None, timeout=180):
     return r.stdout
 
 
-def launch(catalogue, fixture, destination):
+def launch(catalogue, fixture, destination, *, plan=None, grant=None):
     if destination.exists():
         raise ValueError("New lab destination required; never reuse an existing profile")
     os.umask(0o077)
@@ -48,7 +48,14 @@ def launch(catalogue, fixture, destination):
         p.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(database / name, p)
     shutil.copyfile(catalogue, destination / "catalogue.json")
-    shutil.copyfile(fixture, destination / "fixture.json")
+    if plan is None:
+        shutil.copyfile(fixture, destination / "fixture.json")
+    else:
+        shutil.copyfile(plan, destination / "plan.json")
+        shutil.copyfile(grant, destination / "grant.json")
+        (source / "REVIEWED_COMMIT").write_text(
+            run(["git", "-C", str(ROOT), "rev-parse", "HEAD"]).decode().strip()
+        )
     env = {
         "PATH": os.environ["PATH"],
         "HOME": os.environ["HOME"],
@@ -56,15 +63,28 @@ def launch(catalogue, fixture, destination):
         "DATABASE_V2_PATH": str(reference),
     }
     # Python environment belongs to the developer; no application secrets inherited.
-    r = subprocess.run(
+    command = (
         [
+            sys.executable,
+            "-c",
+            "import sys; from pathlib import Path; from scripts.nvd_trial_lab import child; "
+            "child(Path(sys.argv[1]),Path(sys.argv[2]),Path(sys.argv[3]))",
+            str(destination),
+            str(destination / "plan.json"),
+            str(destination / "grant.json"),
+        ]
+        if plan
+        else [
             sys.executable,
             "-m",
             "scripts.nvd_trial_lab",
             "--child",
             "--destination",
             str(destination),
-        ],
+        ]
+    )
+    r = subprocess.run(
+        command,
         cwd=source,
         env=env,
         stdout=subprocess.PIPE,
@@ -91,21 +111,37 @@ def free_subnet():
     raise RuntimeError("No free owned lab subnet")
 
 
-def child(destination):
+def child(destination, plan=None, grant=None):
     from sqlalchemy import create_engine
     from sqlalchemy.engine import make_url
 
     from app.services.cpe_catalog import UPSERT, normalize, refresh_summary
     from scripts.v2_development import API_ROLE, PersistentV2, private_json
 
-    nonce = secrets.token_hex(6)
-    name = "vulntrack-5c1r-" + nonce
+    permit = None
+    if plan is not None:
+        from app.integrations.nvd_lab_authorization import authorize, read_json
+
+        info = read_json(plan)
+        permit = authorize(
+            plan, grant, commit=(ROOT / "REVIEWED_COMMIT").read_text().strip(), image=info["image"]
+        )
+        actual = json.loads(run(["docker", "image", "inspect", info["image"]]))[0]
+        if (
+            actual.get("Config", {}).get("Labels", {}).get("io.vulntrack.reviewed-commit")
+            != info["commit"]
+        ):
+            raise ValueError("Reviewed image/commit required")
+    nonce = secrets.token_hex(6) if permit is None else permit.plan["laboratory"].rsplit("-", 1)[1]
+    name = "vulntrack-5c1r-" + nonce if permit is None else permit.plan["laboratory"]
     stack = PersistentV2("rc3", pg_port=0, api_port=0, web_port=0)
     stack.config.update(project=name, container=name + "-postgres", volume=name + "-pgdata")
     stack.save()
     stack.name, stack.volume = stack.config["container"], stack.config["volume"]
     network, worker = name + "-internal", name + "-worker"
     created_network = False
+    guard, egress = name + "-guard", name + "-egress"
+    pg_ip = None
     try:
         # Only this fresh source copy's Compose file is adapted. Docker's default
         # address pool is exhausted by existing retained labs; never prune them.
@@ -147,7 +183,12 @@ def child(destination):
         for old in current["NetworkSettings"]["Networks"]:
             if old != network:
                 run(["docker", "network", "disconnect", old, stack.name])
-        url = make_url(stack.url(API_ROLE)).set(host="postgres", port=5432)
+        pg_ip = stack.inspect("container", stack.name)["NetworkSettings"]["Networks"][network][
+            "IPAddress"
+        ]
+        url = make_url(stack.url(API_ROLE)).set(
+            host="postgres" if permit is None else pg_ip, port=5432
+        )
         private_json(
             destination / "worker.json",
             {
@@ -159,7 +200,104 @@ def child(destination):
         )
         outputs = destination / "results"
         outputs.mkdir(mode=0o700)
-        image = os.environ.get("TRIAL_IMAGE", "vulntrack-backend:5c1r-trial")
+        image = (
+            os.environ.get("TRIAL_IMAGE", "vulntrack-backend:5c1r-trial")
+            if permit is None
+            else permit.plan["image"]
+        )
+        worker_network = network
+        extra_mounts, extra_args = [], []
+        if permit is not None:
+            control = destination / "control"
+            control.mkdir(mode=0o700)
+            private_json(control / "pg.json", {"address": pg_ip})
+            (destination / "image-id").write_text(image)
+            run(
+                [
+                    "docker",
+                    "run",
+                    "-d",
+                    "--name",
+                    guard,
+                    "--network",
+                    "none",
+                    "--read-only",
+                    "--user=0:0",
+                    "--cap-drop=ALL",
+                    "--cap-add=NET_ADMIN",
+                    "--cap-add=NET_RAW",
+                    "--security-opt=no-new-privileges",
+                    "--pids-limit=32",
+                    "--memory=128m",
+                    "--mount",
+                    f"type=bind,src={control},dst=/control",
+                    "--mount",
+                    f"type=bind,src={outputs},dst=/output,readonly",
+                    "--entrypoint",
+                    "python",
+                    image,
+                    "-m",
+                    "scripts.nvd_trial_network",
+                    "--action",
+                    "hold",
+                    "--pg",
+                    pg_ip,
+                ]
+            )
+            import time
+
+            end = time.monotonic() + 5
+            while not (control / "guard-ready").exists():
+                if time.monotonic() >= end:
+                    raise RuntimeError("Egress guard not ready; no network attached")
+                time.sleep(0.05)
+            run(["docker", "network", "connect", network, guard])
+            run(
+                [
+                    "docker",
+                    "network",
+                    "create",
+                    "--subnet",
+                    free_subnet(),
+                    "--label",
+                    "vulntrack.trial=" + nonce,
+                    egress,
+                ]
+            )
+            run(["docker", "network", "connect", egress, guard])
+            run(
+                [
+                    "docker",
+                    "exec",
+                    guard,
+                    "python",
+                    "-m",
+                    "scripts.nvd_trial_network",
+                    "--action",
+                    "setup",
+                    "--pg",
+                    pg_ip,
+                ],
+                timeout=12,
+            )
+            worker_network = "container:" + guard
+            for host, target in [
+                (plan, "/input/plan.json"),
+                (grant, "/input/grant.json"),
+                (control, "/control"),
+                (destination / "image-id", "/input/image-id"),
+            ]:
+                extra_mounts += ["--mount", f"type=bind,src={host},dst={target},readonly"]
+            extra_args = [
+                "--plan-file",
+                "/input/plan.json",
+                "--authorization-record",
+                "/input/grant.json",
+                "--control",
+                "/control",
+                "--image-id",
+                "/input/image-id",
+            ]
         run(
             [
                 "docker",
@@ -167,7 +305,7 @@ def child(destination):
                 "--name",
                 worker,
                 "--network",
-                network,
+                worker_network,
                 "--read-only",
                 "--cap-drop=ALL",
                 "--security-opt=no-new-privileges",
@@ -181,8 +319,15 @@ def child(destination):
                 "/tmp:rw,noexec,nosuid,nodev,size=16m",
                 "--mount",
                 f"type=bind,src={destination / 'worker.json'},dst=/input/config.json,readonly",
-                "--mount",
-                f"type=bind,src={destination / 'fixture.json'},dst=/input/fixture.json,readonly",
+                *(
+                    [
+                        "--mount",
+                        f"type=bind,src={destination / 'fixture.json'},"
+                        "dst=/input/fixture.json,readonly",
+                    ]
+                    if permit is None
+                    else extra_mounts
+                ),
                 "--mount",
                 f"type=bind,src={outputs},dst=/output",
                 "--entrypoint",
@@ -191,11 +336,10 @@ def child(destination):
                 "-m",
                 "scripts.nvd_trial",
                 "--mode",
-                "offline",
+                "offline" if permit is None else "real",
                 "--config",
                 "/input/config.json",
-                "--fixture",
-                "/input/fixture.json",
+                *(["--fixture", "/input/fixture.json"] if permit is None else extra_args),
                 "--output",
                 "/output",
             ],
@@ -204,13 +348,31 @@ def child(destination):
         info = json.loads(run(["docker", "inspect", worker]))[0]
         net = json.loads(run(["docker", "network", "inspect", network]))[0]
         assert net["Internal"] and not info["HostConfig"]["PortBindings"]
-        assert set(info["NetworkSettings"]["Networks"]) == {network}
+        if permit is None:
+            assert set(info["NetworkSettings"]["Networks"]) == {network}
+        else:
+            assert info["HostConfig"]["NetworkMode"].startswith("container:")
+            run(
+                [
+                    "docker",
+                    "exec",
+                    guard,
+                    "python",
+                    "-m",
+                    "scripts.nvd_trial_network",
+                    "--action",
+                    "close",
+                    "--pg",
+                    pg_ip,
+                ]
+            )
         result = json.loads((outputs / "rehearsal.json").read_text())
         result.update(
             container=worker,
             postgres=stack.name,
             volume=stack.volume,
-            internal_network=True,
+            internal_network=permit is None,
+            namespace_egress_guard=permit is not None,
             public_ports=0,
             private_installation_mounts=False,
             immutable_root=True,
@@ -222,6 +384,25 @@ def child(destination):
     finally:
         # Keep all owned resources/evidence/data. No rm/down-v/prune/volume deletion.
         subprocess.run(["docker", "stop", "--time", "5", worker], capture_output=True)
+        if permit is not None:
+            if pg_ip:
+                subprocess.run(
+                    [
+                        "docker",
+                        "exec",
+                        guard,
+                        "python",
+                        "-m",
+                        "scripts.nvd_trial_network",
+                        "--action",
+                        "close",
+                        "--pg",
+                        pg_ip,
+                    ],
+                    capture_output=True,
+                    timeout=5,
+                )
+            subprocess.run(["docker", "stop", "--time", "5", guard], capture_output=True)
         subprocess.run(["docker", "stop", "--time", "5", stack.name], capture_output=True)
         private_json(
             destination / "resources.json",
@@ -232,7 +413,73 @@ def child(destination):
                 "network": network if created_network else None,
                 "stopped": True,
                 "data_retained": True,
+                "guard": guard if permit else None,
+                "egress_network": egress if permit else None,
             },
+        )
+
+
+def create_plan(output):
+    from app.integrations.nvd_lab_authorization import CVE_URL, PARAMS, canonical, validate_plan
+
+    if run(["git", "-C", str(ROOT), "status", "--porcelain"]).strip():
+        raise ValueError("Commit reviewed code before preparing a plan")
+    commit = run(["git", "-C", str(ROOT), "rev-parse", "HEAD"]).decode().strip()
+    image = json.loads(run(["docker", "image", "inspect", "vulntrack-backend:5c2-egress"]))[0]
+    if image["Config"].get("Labels", {}).get("io.vulntrack.reviewed-commit") != commit:
+        raise ValueError("Image must match reviewed commit")
+    plan = {
+        "version": "5c2-egress-1",
+        "laboratory": "vulntrack-5c2-" + secrets.token_hex(6),
+        "commit": commit,
+        "image": image["Id"],
+        "endpoint": CVE_URL,
+        "method": "GET",
+        "params": PARAMS,
+        "requests": 1,
+        "seconds": 20,
+        "max_bytes": 2097152,
+        "purpose": "first-isolated-nvd-cve-trial",
+        "nonce": secrets.token_hex(16),
+    }
+    validate_plan(plan)
+    fd = os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "wb") as f:
+        f.write(canonical(plan))
+
+
+def execute(args):
+    from app.integrations import nvd_lab_authorization as policy
+
+    if policy.TRUSTED_AUTHORITY_SHA256 is None:
+        raise policy.denied()  # No file/DB/Docker/DNS I/O without trusted review.
+    if not all([args.plan_file, args.authorization_record, args.catalogue_record]):
+        raise policy.denied()
+    if run(["git", "-C", str(ROOT), "status", "--porcelain"]).strip():
+        raise policy.denied()
+    commit = run(["git", "-C", str(ROOT), "rev-parse", "HEAD"]).decode().strip()
+    image = json.loads(run(["docker", "image", "inspect", "vulntrack-backend:5c2-egress"]))[0]
+    permit = policy.authorize(
+        args.plan_file, args.authorization_record, commit=commit, image=image["Id"]
+    )
+    if image["Config"].get("Labels", {}).get("io.vulntrack.reviewed-commit") != commit:
+        raise policy.denied()
+    import fcntl
+
+    directory = ROOT / ".local/nvd-trial-authorizations"
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    with (directory / "operator.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        # Burn before setup/DNS; failures never rearm this approval, even when a
+        # new destination is selected. Do not remove this ledger to retry.
+        fd = os.open(directory / permit.plan["nonce"], os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        os.close(fd)
+        return launch(
+            args.catalogue_record.resolve(),
+            None,
+            args.destination.resolve(),
+            plan=args.plan_file.resolve(),
+            grant=args.authorization_record.resolve(),
         )
 
 
@@ -241,10 +488,22 @@ def main():
     p.add_argument("--catalogue-record", type=Path)
     p.add_argument("--fixture", type=Path)
     p.add_argument("--destination", type=Path, required=True)
+    p.add_argument("--mode", choices=["offline", "real"], default="offline")
+    p.add_argument("--plan-real", type=Path, help="Write a review plan only; no permission or DNS")
+    p.add_argument("--plan-file", type=Path)
+    p.add_argument("--authorization-record", type=Path)
     p.add_argument("--child", action="store_true", help=argparse.SUPPRESS)
     args = p.parse_args()
     if args.child:
+        if args.plan_file or args.authorization_record or args.mode == "real":
+            from app.integrations.nvd_lab_authorization import denied
+
+            raise denied()  # Internal public CLI cannot bypass the one-use ledger.
         child(args.destination.resolve())
+    elif args.plan_real:
+        create_plan(args.plan_real)
+    elif args.mode == "real":
+        execute(args)
     else:
         if not args.catalogue_record or not args.fixture:
             p.error("explicit public catalogue record and simulated fixture required")

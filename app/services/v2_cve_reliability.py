@@ -13,6 +13,10 @@ def recover(session):
 
 
 def source_kind(client):
+    from app.integrations.nvd_lab_client import lab_client, proven
+
+    if lab_client(client):
+        return "live" if proven(client) else "unknown"
     if getattr(client, "transport", None) is not None:
         return "fixture" if getattr(client, "source_kind", None) == "fixture" else "simulated"
     return "live" if getattr(client, "live", False) is True else "unknown"

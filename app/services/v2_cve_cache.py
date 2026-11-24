@@ -149,7 +149,9 @@ def fetch_page(request, actor, workspace, cpe):
     settings = request.app.state.settings
     mode = source_kind(client)
     # This increment must never turn a cache miss into permission for real network I/O.
-    if mode == "live":
+    from app.integrations.nvd_lab_client import scoped_lab
+
+    if mode == "live" and not scoped_lab(request):
         raise APIError(503, "CVE_LIVE_DISABLED", "CVE live no está habilitado en este incremento")
     namespace = getattr(client, "cache_namespace", None)
     if not settings.cve_cache_enabled or namespace is None or mode == "unknown":

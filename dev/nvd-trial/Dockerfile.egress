@@ -1,0 +1,11 @@
+FROM vulntrack-backend:5c1r-trial
+USER root
+COPY netguard /opt/nvd-netguard
+COPY trial-policy /app/dev/nvd-trial
+COPY app /app/app
+COPY scripts /app/scripts
+ARG REVIEWED_COMMIT
+RUN test -n "$REVIEWED_COMMIT" && printf '%s' "$REVIEWED_COMMIT" > /app/REVIEWED_COMMIT
+LABEL io.vulntrack.reviewed-commit=$REVIEWED_COMMIT
+USER 10001
+HEALTHCHECK NONE
