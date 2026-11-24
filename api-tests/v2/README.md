@@ -1,5 +1,13 @@
 # API V2 estabilizada: colección y pruebas
 
+## Actualización local: cuarto incremento, 24/11/2026
+
+Contrato vigente: **73 operaciones y 110 requests definidos**; 71 operaciones anteriores conservadas, 2 lecturas nuevas de analítica. Los contratos congelados anteriores se conservan; `analytics-contract.json` registra adiciones y los dos filtros opcionales nuevos de GET devices. `validate.py` verifica la evolución exacta, esquemas y ejemplos. La colección se generó y validó; **no se ejecutó Newman en este incremento**.
+
+Nuevos GET autenticados por workspace: `inventory-analytics/distribution` (devices/technologies, vendor/product, top 1–10, otros/desconocidos) y `inventory-analytics/events` (days 30/90 UTC, eventos registrados, incluidas entidades inactivas). Los dos modelos usan response_model estricto; no leen el diccionario público ni resultados CVE. GET devices admite manufacturer_key/model_key exactos con la misma normalización. Sin escrituras, migraciones o paquetes nuevos.
+
+Los ejemplos son sintéticos de contrato y no alimentan las gráficas. La validación sobre inventarios existentes compara 32 respuestas en 4 ámbitos con filas SQL independientes. [Informe completo y límites](../../../evolucion-vulntrack/CUARTO_INCREMENTO_ANALITICA_INVENTARIO.md). El texto de estabilización siguiente es antecedente; sus conteos 39/61 no describen el contrato actual.
+
 39 operaciones reales y 61 solicitudes Postman v2.1, con IDs/tokens automáticos y ejemplos sanitizados. La rama `feat/v2-stabilization` conserva los contratos de `6331564` y corrige workspace adicional, undetermined y títulos CVE. Database requiere SQL007 de `feat/v2-persistent-development-database`.
 
 ## Suite completa temporal

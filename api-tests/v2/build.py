@@ -1166,6 +1166,39 @@ add(
 )
 
 
+ANALYTICS = "13 · Analítica de inventario"
+add(
+    ANALYTICS,
+    "Distribución de dispositivos",
+    "GET",
+    BASE + "/inventory-analytics/distribution?inventory_kind=devices&dimension=vendor&limit=10",
+    capture=(
+        "pm.test('Partición de inventario',()=>pm.expect(data.total).eql("
+        "data.unknown+data.other+data.categories.reduce((n,c)=>n+c.count,0)));"
+    ),
+)
+add(
+    ANALYTICS,
+    "Distribución de productos de aplicaciones",
+    "GET",
+    BASE
+    + "/inventory-analytics/distribution?inventory_kind=technologies&dimension=product&limit=10",
+)
+add(
+    ANALYTICS,
+    "Eventos CPE de dispositivos",
+    "GET",
+    BASE + "/inventory-analytics/events?inventory_kind=devices&days=90",
+    capture="pm.test('Ventana diaria acotada',()=>pm.expect(data.daily.length).eql(90));",
+)
+add(
+    ANALYTICS,
+    "Eventos CPE de tecnologías",
+    "GET",
+    BASE + "/inventory-analytics/events?inventory_kind=technologies&days=30",
+)
+
+
 def dump(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 

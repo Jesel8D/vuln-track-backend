@@ -77,7 +77,11 @@ def main():
             expected[category].update(extension[category])
     # Explicit, reviewable evolution. Frozen prior contracts remain unchanged;
     # every exception carries its exact before/after shape, never a wildcard.
-    for filename in ("consistency-contract.json", "listing-contract.json"):
+    for filename in (
+        "consistency-contract.json",
+        "listing-contract.json",
+        "analytics-contract.json",
+    ):
         evolution = load(filename)
         for category, changes in evolution["changes"].items():
             for key, change in changes.items():
@@ -208,7 +212,7 @@ def main():
             if request["error"]:
                 assert sample["body"]["error"]["code"] == request["error"]
     assert covered == set(ops), set(ops) - covered
-    assert len(ops) == 71 and len(builder.REQUESTS) == 106
+    assert len(ops) == 73 and len(builder.REQUESTS) == 110
     for env in [
         "local.postman_environment.json",
         "test.postman_environment.json",
@@ -231,7 +235,7 @@ def main():
             (
                 "VALIDATED: OpenAPI 3.1; Postman 2.1; ",
                 f"{len(ops)}",
-                " operations (70 prior + 1 confirmation history); ",
+                " operations (71 prior + 2 inventory analytics); ",
                 f"{len(builder.REQUESTS)}",
                 " requests; ",
                 f"{checked_bodies}",

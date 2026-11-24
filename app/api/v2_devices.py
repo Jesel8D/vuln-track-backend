@@ -15,6 +15,7 @@ from app.api.cpe_catalog import catalog_row
 from app.api.router import Identity
 from app.api.v2_nvd import IdempotencyKey
 from app.core.errors import APIError
+from app.db.inventory_labels import label_key
 from app.db.pagination import page
 from app.db.workspace_context import workspace_session
 from app.schemas.cpe import Candidate, CandidateList, SearchInput
@@ -323,10 +324,23 @@ def list_devices(
     status: DeviceStatus | None = None,
     limit: Limit = 20,
     offset: Offset = 0,
+    manufacturer_key: Annotated[str | None, Query(min_length=1, max_length=120)] = None,
+    model_key: Annotated[str | None, Query(min_length=1, max_length=120)] = None,
 ):
-    if any(ord(character) < 32 for character in q):
+    if any(
+        ord(character) < 32 or ord(character) == 127
+        for value in (q, manufacturer_key or "", model_key or "")
+        for character in value
+    ):
         raise APIError(422, "SEARCH_INVALID", "Texto de búsqueda inválido")
-    scope = {"workspace": workspace_id, "q": q.strip(), "type": device_type, "status": status}
+    scope = {
+        "workspace": workspace_id,
+        "q": q.strip(),
+        "type": device_type,
+        "status": status,
+        "manufacturer_key": manufacturer_key,
+        "model_key": model_key,
+    }
     with access(request, user.id, workspace_id) as session:
         return page(
             session,
@@ -334,8 +348,12 @@ def list_devices(
                 WHERE i.workspace_id=d.workspace_id AND i.device_id=d.id
                 AND i.identity_generation=d.identity_generation) AS cpe_confirmed""",
             table="vulntrack_devices.devices d",
-            where="""workspace_id=:workspace AND (CAST(:type AS text) IS NULL OR device_type=:type)
+            where=f"""workspace_id=:workspace AND (CAST(:type AS text) IS NULL OR device_type=:type)
                   AND (CAST(:status AS text) IS NULL OR status=:status)
+                  AND (CAST(:manufacturer_key AS text) IS NULL OR
+                    {label_key("manufacturer")}={label_key("CAST(:manufacturer_key AS text)")})
+                  AND (CAST(:model_key AS text) IS NULL OR
+                    {label_key("model")}={label_key("CAST(:model_key AS text)")})
                   AND (strpos(lower(manufacturer),lower(:q))>0
                        OR strpos(lower(model),lower(:q))>0)""",
             sort="created_at DESC,id DESC",

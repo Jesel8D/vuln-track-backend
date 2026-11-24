@@ -4103,5 +4103,1305 @@
       "current_confirmation_id": null,
       "legacy_provenance": "not_recorded"
     }
+  },
+  "Distribución de dispositivos": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "workspace_id": "00000000-0000-4000-8000-000000000002",
+      "inventory_kind": "devices",
+      "dimension": "vendor",
+      "scope": "active",
+      "normalization": "case_whitespace_v1",
+      "limit": 10,
+      "total": 0,
+      "excluded_inactive": 0,
+      "unknown": 0,
+      "other": 0,
+      "categories": [],
+      "observed_at": "2026-11-24T12:00:00Z"
+    }
+  },
+  "Distribución de productos de aplicaciones": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "workspace_id": "00000000-0000-4000-8000-000000000002",
+      "inventory_kind": "technologies",
+      "dimension": "product",
+      "scope": "active",
+      "normalization": "case_whitespace_v1",
+      "limit": 10,
+      "total": 0,
+      "excluded_inactive": 0,
+      "unknown": 0,
+      "other": 0,
+      "categories": [],
+      "observed_at": "2026-11-24T12:00:00Z"
+    }
+  },
+  "Eventos CPE de dispositivos": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "workspace_id": "00000000-0000-4000-8000-000000000002",
+      "inventory_kind": "devices",
+      "scope": "recorded_history",
+      "window": {
+        "days": 90,
+        "start": "2026-08-27",
+        "end_exclusive": "2026-11-25",
+        "timezone": "UTC",
+        "observed_at": "2026-11-24T12:00:00Z"
+      },
+      "totals": {
+        "first_confirmations": 0,
+        "subsequent_confirmations": 0,
+        "technology_confirmations": 0,
+        "version_changes": 0,
+        "identity_changes_without_version": 0
+      },
+      "confirmation_modes": {
+        "live": 0,
+        "fixture": 0,
+        "unknown": 0
+      },
+      "daily": [
+        {
+          "date": "2026-08-27",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-08-28",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-08-29",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-08-30",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-08-31",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-01",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-02",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-03",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-04",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-05",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-06",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-07",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-08",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-09",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-10",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-11",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-12",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-13",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-14",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-15",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-16",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-17",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-18",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-19",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-20",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-21",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-22",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-23",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-24",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-25",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-26",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-27",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-28",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-29",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-09-30",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-01",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-02",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-03",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-04",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-05",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-06",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-07",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-08",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-09",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-10",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-11",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-12",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-13",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-14",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-15",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-16",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-17",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-18",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-19",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-20",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-21",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-22",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-23",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-24",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-25",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-26",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-27",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-28",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-29",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-30",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-31",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-01",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-02",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-03",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-04",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-05",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-06",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-07",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-08",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-09",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-10",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-11",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-12",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-13",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-14",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-15",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-16",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-17",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-18",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-19",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-20",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-21",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-22",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-23",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-24",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        }
+      ],
+      "selections_without_confirmation_events": 0,
+      "version_history_available": true
+    }
+  },
+  "Eventos CPE de tecnologías": {
+    "method": "GET",
+    "status": 200,
+    "body": {
+      "workspace_id": "00000000-0000-4000-8000-000000000002",
+      "inventory_kind": "technologies",
+      "scope": "recorded_history",
+      "window": {
+        "days": 30,
+        "start": "2026-10-26",
+        "end_exclusive": "2026-11-25",
+        "timezone": "UTC",
+        "observed_at": "2026-11-24T12:00:00Z"
+      },
+      "totals": {
+        "first_confirmations": 0,
+        "subsequent_confirmations": 0,
+        "technology_confirmations": 0,
+        "version_changes": 0,
+        "identity_changes_without_version": 0
+      },
+      "confirmation_modes": {
+        "live": 0,
+        "fixture": 0,
+        "unknown": 0
+      },
+      "daily": [
+        {
+          "date": "2026-10-26",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-27",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-28",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-29",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-30",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-10-31",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-01",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-02",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-03",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-04",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-05",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-06",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-07",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-08",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-09",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-10",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-11",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-12",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-13",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-14",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-15",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-16",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-17",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-18",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-19",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-20",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-21",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-22",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-23",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        },
+        {
+          "date": "2026-11-24",
+          "counts": {
+            "first_confirmations": 0,
+            "subsequent_confirmations": 0,
+            "technology_confirmations": 0,
+            "version_changes": 0,
+            "identity_changes_without_version": 0
+          }
+        }
+      ],
+      "selections_without_confirmation_events": 0,
+      "version_history_available": false
+    }
   }
 }
