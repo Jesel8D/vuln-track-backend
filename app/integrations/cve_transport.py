@@ -1,7 +1,7 @@
-"""CVE-only bounded transport. This release has NO real CVE network capability.
+"""CVE-only bounded transport. Ordinary clients have NO real CVE network capability.
 
-Injected httpx.MockTransport is the only accepted adapter. TLS options/deadlines
-are exercised offline; approving real egress requires a reviewed later release.
+Injected httpx.MockTransport is the ordinary adapter. A separately authorized
+laboratory capability reuses this exact exchange and all its limits.
 CPE/catalog transport remains independent and unchanged.
 """
 
@@ -204,8 +204,12 @@ def content(client, url, params, *, budget=None):
     validate_request(url, params)
     # Stronger than an env flag: no transport constructor, DNS, socket or quota
     # consumption is possible for real CVE requests in the 5C.1 release.
-    if not isinstance(client.transport, httpx.MockTransport):
+    from app.integrations.nvd_lab_client import lab_client
+
+    if not isinstance(client.transport, httpx.MockTransport) and not lab_client(client):
         raise APIError(503, "CVE_LIVE_DISABLED", "CVE live no habilitado en esta versión")
+    if lab_client(client):
+        client.permit.check()
     policy = client.http_policy
     budget = budget or RequestBudget(max_bytes=policy.max_bytes, seconds=policy.timeout)
     guard = flight_lock(client.quota)

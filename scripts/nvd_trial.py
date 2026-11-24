@@ -1,4 +1,4 @@
-"""5C.2 isolated worker. Offline rehearsal only; real release remains locked."""
+"""5C.2 isolated worker. Real adapter exists; an independently signed grant is required."""
 
 import argparse
 import hashlib
@@ -7,6 +7,7 @@ import os
 import secrets
 import signal
 import socket
+import time
 from pathlib import Path
 from threading import Event
 from uuid import UUID, uuid4
@@ -21,6 +22,9 @@ from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
 from app.integrations.cve_transport import CVE_URL, HTTPPolicy, RequestBudget
 from app.integrations.nvd_cve import CVEClient
+from app.integrations.nvd_lab_authorization import authorize, denied
+from app.integrations.nvd_lab_client import LabCVEClient, bind_lab
+from app.integrations.nvd_lab_transport import NVDLabTransport, Pin
 from app.main import create_app
 
 CPE = "cpe:2.3:a:apache:http_server:2.4.49:*:*:*:*:*:*:*"
@@ -90,19 +94,22 @@ def account(client):
     return {"id": r.json()["id"], "workspace": workspace, "headers": headers}
 
 
-def rehearse(config, fixture, output):
+def rehearse(config, fixture, output, *, real=None, control=None):
     # This worker accepts only its private, newly created lab settings. It never
     # discovers .env, PersistentV2 profiles, catalogue URLs or ordinary credentials.
-    if config.stat().st_size > 4096 or fixture.stat().st_size > 2097152:
+    if config.stat().st_size > 4096 or fixture is not None and fixture.stat().st_size > 2097152:
         raise ValueError("Bounded lab files required")
     data = json.loads(config.read_text())
     if set(data) != {"database_url", "token_secret", "workspace_hmac_key", "laboratory"}:
         raise ValueError("Unexpected lab settings")
-    if not data.pop("laboratory").startswith("vulntrack-5c1r-"):
+    laboratory = data.pop("laboratory")
+    if (real is None and not laboratory.startswith("vulntrack-5c1r-")) or (
+        real is not None and laboratory != real.permit.plan["laboratory"]
+    ):
         raise ValueError("Owned laboratory required")
     url = make_url(data["database_url"])
     if (url.host, url.port, url.database, url.username) != (
-        "postgres",
+        ("postgres" if real is None else json.loads((control / "pg.json").read_text())["address"]),
         5432,
         "vulntrack_v2_development",
         "vulntrack_v2_api",
@@ -119,7 +126,7 @@ def rehearse(config, fixture, output):
     cancelled = Event()
     previous = signal.signal(signal.SIGINT, lambda *_: cancelled.set())
     app = create_app(settings)
-    original = fixture.read_bytes()
+    original = fixture.read_bytes() if real is None else None
     requests = []
 
     def provider(request):
@@ -133,23 +140,50 @@ def rehearse(config, fixture, output):
         requests.append(str(request.url))
         return httpx.Response(200, content=original, headers={"Content-Type": "application/json"})
 
-    upstream = TrialClient(httpx.MockTransport(provider), cancelled)
-    app.state.cve = upstream
+    upstream = real or TrialClient(httpx.MockTransport(provider), cancelled)
+    if real is None:
+        app.state.cve = upstream
+    else:
+        upstream.budget.cancelled = cancelled
+        bind_lab(app, upstream, data["database_url"])
     # Deny public/private socket destinations, including during cache reuse. The
     # container's internal bridge is a second independent external-egress barrier.
     attempts = []
     old_connect = socket.socket.connect
-    allowed = {x[4][0] for x in socket.getaddrinfo("postgres", 5432, type=socket.SOCK_STREAM)}
+    allowed = {x[4][0] for x in socket.getaddrinfo(url.host, 5432, type=socket.SOCK_STREAM)}
 
     def connect(sock, address):
         if sock.family in {socket.AF_INET, socket.AF_INET6}:
             attempts.append((address[0], address[1]))
-            if address[0] not in allowed or address[1] != 5432:
+            if not (address[0] in allowed and address[1] == 5432) and not (
+                real is not None
+                and address[0] == real.transport.pin.address
+                and address[1] == 443
+                and not cancelled.is_set()
+            ):
                 raise AssertionError("Offline worker denies non-lab socket")
         return old_connect(sock, address)
 
     socket.socket.connect = connect
     try:
+        if real is not None:
+            try:
+                real.prepare()  # TLS + bounded exchange + schema/privacy, once.
+                original = real.last_response_bytes
+                (output / "response.nvd.json").write_bytes(original)
+            finally:
+                (output / "close-egress").touch(mode=0o600)
+            deadline = time.monotonic() + 3
+            while not (control / "egress-closed").exists():
+                if time.monotonic() >= deadline:
+                    raise denied()
+                time.sleep(0.05)
+            cancelled.set()  # Local processing/cache cannot reopen the provider.
+
+        def count():
+            return len(requests) if real is None else real.transport.attempts
+
+        expected_source = "simulated" if real is None else "live"
         with TestClient(app) as client:
             owner = account(client)
             other = account(client)
@@ -183,26 +217,28 @@ def rehearse(config, fixture, output):
             r = client.post(path + "/analyses", headers=headers)
             assert r.status_code == 201, r.json()
             first = r.json()
-            assert first["provenance"]["cve_source"] == "simulated"
-            assert first["storage"]["resolution"] == "provider" and len(requests) == 1
+            assert first["provenance"]["cve_source"] == expected_source
+            assert first["storage"]["resolution"] == "provider" and count() == 1
             findings = client.get(
                 base + "/analyses/" + first["id"] + "/findings", headers=owner["headers"]
             ).json()
-            assert len(findings["items"]) == 3
+            assert len(findings["items"]) <= 20
+            complete = first["coverage"] == "complete"
             # Close provider capability *before* the second intent, not after hit.
             cancelled.set()
-            second = client.post(
-                path + "/analyses", headers=owner["headers"] | {"Idempotency-Key": str(uuid4())}
-            )
-            assert second.status_code == 201, second.json()
-            hit = second.json()
-            assert hit["storage"]["resolution"] == "reused" and len(requests) == 1
-            assert hit["storage"]["obtained_at"] == first["storage"]["obtained_at"]
-            assert hit["storage"]["expires_at"] == first["storage"]["expires_at"]
-            assert hit["provenance"] == first["provenance"] or (
-                hit["provenance"]["response_received_at"]
-                == first["provenance"]["response_received_at"]
-            )
+            if complete:
+                second = client.post(
+                    path + "/analyses", headers=owner["headers"] | {"Idempotency-Key": str(uuid4())}
+                )
+                assert second.status_code == 201, second.json()
+                hit = second.json()
+                assert hit["storage"]["resolution"] == "reused" and count() == 1
+                assert hit["storage"]["obtained_at"] == first["storage"]["obtained_at"]
+                assert hit["storage"]["expires_at"] == first["storage"]["expires_at"]
+                assert hit["provenance"] == first["provenance"] or (
+                    hit["provenance"]["response_received_at"]
+                    == first["provenance"]["response_received_at"]
+                )
             assert (
                 client.get(base + "/analyses/" + first["id"], headers=other["headers"]).status_code
                 == 404
@@ -222,20 +258,34 @@ def rehearse(config, fixture, output):
         assert upstream.last_response_bytes == original
         result = {
             "result": "passed",
-            "plan": public_plan(),
-            "source": "simulated",
-            "external_requests": 0,
-            "mock_requests": len(requests),
-            "mock_requests_after_hit": len(requests),
+            "plan": public_plan() if real is None else real.permit.plan,
+            "source": expected_source,
+            "external_requests": 0 if real is None else count(),
+            "mock_requests": count() if real is None else 0,
+            "mock_requests_after_hit": count() if real is None else 0,
+            "cache_hit_checked": complete,
+            "coverage": first["coverage"],
             "raw_sha256": hashlib.sha256(original).hexdigest(),
-            "cache_hit_dates_unchanged": True,
+            "cache_hit_dates_unchanged": True if complete else None,
             "rls_other_workspace_denied": True,
-            "history_unchanged_after_cache_hit": True,
+            "history_unchanged_after_cache_hit": True if complete else None,
             "provider_closed_before_hit": cancelled.is_set(),
-            "socket_destinations_only_lab_pg": all(a in allowed and p == 5432 for a, p in attempts),
+            "socket_destinations_only_lab_pg": all(a in allowed and p == 5432 for a, p in attempts)
+            if real is None
+            else None,
+            "real_receipt": {
+                "grant_sha256": real.permit.grant_sha256,
+                "peer_ip": real.transport.pin.address,
+                "tls_verified": real.transport.peer_verified,
+                "transport": real.transport.evidence,
+            }
+            if real is not None
+            else None,
         }
         output.mkdir(mode=0o700, exist_ok=True)
-        (output / "response.simulated.json").write_bytes(original)
+        (output / ("response.simulated.json" if real is None else "response.nvd.json")).write_bytes(
+            original
+        )
         (output / "rehearsal.json").write_text(json.dumps(result, indent=2) + "\n")
         return result
     finally:
@@ -245,6 +295,57 @@ def rehearse(config, fixture, output):
         app.state.engine.dispose()
 
 
+def execute_real(args):
+    from app.integrations import nvd_lab_authorization as policy
+
+    if policy.TRUSTED_AUTHORITY_SHA256 is None:
+        raise denied()  # Before all config, auth file, DB, DNS or quota I/O.
+    if not all(
+        [
+            args.config,
+            args.plan_file,
+            args.authorization_record,
+            args.output,
+            args.control,
+            args.image_id,
+        ]
+    ):
+        raise denied()
+    commit = Path("/app/REVIEWED_COMMIT").read_text().strip()
+    permit = authorize(
+        args.plan_file,
+        args.authorization_record,
+        commit=commit,
+        image=args.image_id.read_text().strip(),
+    )
+    pin = json.loads((args.control / "pin.json").read_text())
+    adapter = NVDLabTransport(permit, Pin(**pin))
+    try:
+        return rehearse(
+            args.config,
+            None,
+            args.output,
+            real=LabCVEClient(adapter, Event()),
+            control=args.control,
+        )
+    except APIError as error:
+        (args.output / "failure.json").write_text(
+            json.dumps(
+                {
+                    "result": "failed",
+                    "code": error.code,
+                    "http_attempts": adapter.attempts,
+                    "transport": adapter.evidence,
+                    "live_provenance_saved": False,
+                }
+            )
+            + "\n"
+        )
+        raise
+    finally:
+        (args.output / "close-egress").touch(mode=0o600)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=["offline", "real"], required=True)
@@ -252,13 +353,19 @@ def main():
     parser.add_argument("--fixture", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--authorization-record", type=Path)
+    parser.add_argument("--plan-file", type=Path)
+    parser.add_argument("--control", type=Path)
+    parser.add_argument("--image-id", type=Path)
     args = parser.parse_args()
     if args.mode == "real":
-        # Before config/file/DB/DNS/transport/quota, even with forged documents.
-        print(
-            "NO-GO: real trial locked; official contract and later specific authorization required"
-        )
-        return 2
+        try:
+            execute_real(args)
+            return 0
+        except APIError:
+            print(
+                "NO-GO: real trial requires trusted documentary review and a signed one-use grant"
+            )
+            return 2
     os.umask(0o077)
     if not all([args.config, args.fixture, args.output]):
         parser.error("offline requires explicit owned config, fixture and output")
