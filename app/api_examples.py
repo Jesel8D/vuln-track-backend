@@ -2698,6 +2698,350 @@ RESPONSE_EXAMPLES = {
             ("to_version"): 4,
         },
     ],
+    "GET /api/v2/workspaces/{workspace_id}/inventory-analytics/distribution": [
+        200,
+        {
+            "categories": [],
+            "dimension": ("product"),
+            ("excluded_inactive"): 0,
+            ("inventory_kind"): ("technologies"),
+            "limit": 10,
+            "normalization": ("case_whitespace_v1"),
+            "observed_at": ("2026-11-24T12:00:00Z"),
+            "other": 0,
+            "scope": ("active"),
+            "total": 0,
+            "unknown": 0,
+            "workspace_id": ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
+    "GET /api/v2/workspaces/{workspace_id}/inventory-analytics/events": [
+        200,
+        {
+            "confirmation_modes": {("fixture"): 0, ("live"): 0, ("unknown"): 0},
+            "daily": [
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-10-26"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-10-27"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-10-28"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-10-29"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-10-30"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-10-31"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-01"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-02"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-03"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-04"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-05"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-06"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-07"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-08"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-09"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-10"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-11"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-12"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-13"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-14"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-15"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-16"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-17"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-18"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-19"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-20"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-21"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-22"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-23"),
+                },
+                {
+                    "counts": {
+                        ("first_confirmations"): 0,
+                        ("identity_changes_without_version"): 0,
+                        ("subsequent_confirmations"): 0,
+                        ("technology_confirmations"): 0,
+                        ("version_changes"): 0,
+                    },
+                    "date": ("2026-11-24"),
+                },
+            ],
+            "inventory_kind": ("technologies"),
+            "scope": ("recorded_history"),
+            ("selections_without_confirmation_events"): 0,
+            "totals": {
+                ("first_confirmations"): 0,
+                ("identity_changes_without_version"): 0,
+                ("subsequent_confirmations"): 0,
+                ("technology_confirmations"): 0,
+                ("version_changes"): 0,
+            },
+            ("version_history_available"): False,
+            "window": {
+                "days": 30,
+                ("end_exclusive"): ("2026-11-25"),
+                ("observed_at"): ("2026-11-24T12:00:00Z"),
+                "start": ("2026-10-26"),
+                "timezone": ("UTC"),
+            },
+            "workspace_id": ("00000000-0000-4000-8000-000000000002"),
+        },
+    ],
     "GET /api/v2/workspaces/{workspace_id}/inventory-coverage": [
         200,
         {

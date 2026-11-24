@@ -8658,6 +8658,287 @@
           ]
         }
       ]
+    },
+    {
+      "name": "13 · Analítica de inventario",
+      "item": [
+        {
+          "id": "d313939f-0181-5bb5-85bb-39a6be919ed2",
+          "name": "Distribución de dispositivos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-analytics/distribution?inventory_kind=devices&dimension=vendor&limit=10",
+            "description": "Active entities, top complete categories plus explicit other/unknown counts.\n\nDevices use physical manufacturer/model; technologies use vendor/product.\nOnly case and whitespace are normalized. No commercial alias inference."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Partición de inventario',()=>pm.expect(data.total).eql(data.unknown+data.other+data.categories.reduce((n,c)=>n+c.count,0)));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-analytics/distribution?inventory_kind=devices&dimension=vendor&limit=10",
+                "description": "Active entities, top complete categories plus explicit other/unknown counts.\n\nDevices use physical manufacturer/model; technologies use vendor/product.\nOnly case and whitespace are normalized. No commercial alias inference."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"inventory_kind\": \"devices\",\n  \"dimension\": \"vendor\",\n  \"scope\": \"active\",\n  \"normalization\": \"case_whitespace_v1\",\n  \"limit\": 10,\n  \"total\": 0,\n  \"excluded_inactive\": 0,\n  \"unknown\": 0,\n  \"other\": 0,\n  \"categories\": [],\n  \"observed_at\": \"2026-11-24T12:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "1e716f20-7880-574a-a84e-71c57c8de732",
+          "name": "Distribución de productos de aplicaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-analytics/distribution?inventory_kind=technologies&dimension=product&limit=10",
+            "description": "Active entities, top complete categories plus explicit other/unknown counts.\n\nDevices use physical manufacturer/model; technologies use vendor/product.\nOnly case and whitespace are normalized. No commercial alias inference."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-analytics/distribution?inventory_kind=technologies&dimension=product&limit=10",
+                "description": "Active entities, top complete categories plus explicit other/unknown counts.\n\nDevices use physical manufacturer/model; technologies use vendor/product.\nOnly case and whitespace are normalized. No commercial alias inference."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"inventory_kind\": \"technologies\",\n  \"dimension\": \"product\",\n  \"scope\": \"active\",\n  \"normalization\": \"case_whitespace_v1\",\n  \"limit\": 10,\n  \"total\": 0,\n  \"excluded_inactive\": 0,\n  \"unknown\": 0,\n  \"other\": 0,\n  \"categories\": [],\n  \"observed_at\": \"2026-11-24T12:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "e4ab128b-55d0-593f-a6e5-3094f87b619e",
+          "name": "Eventos CPE de dispositivos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-analytics/events?inventory_kind=devices&days=90",
+            "description": "Recorded events, including inactive entities; no reconstructed state history.\n\nDate is the stored confirmation/revision timestamp, in UTC. The current day\nis partial. A revision changing version and product counts only once.\nTechnology version changes have no ledger and are deliberately not inferred."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Ventana diaria acotada',()=>pm.expect(data.daily.length).eql(90));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-analytics/events?inventory_kind=devices&days=90",
+                "description": "Recorded events, including inactive entities; no reconstructed state history.\n\nDate is the stored confirmation/revision timestamp, in UTC. The current day\nis partial. A revision changing version and product counts only once.\nTechnology version changes have no ledger and are deliberately not inferred."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"inventory_kind\": \"devices\",\n  \"scope\": \"recorded_history\",\n  \"window\": {\n    \"days\": 90,\n    \"start\": \"2026-08-27\",\n    \"end_exclusive\": \"2026-11-25\",\n    \"timezone\": \"UTC\",\n    \"observed_at\": \"2026-11-24T12:00:00Z\"\n  },\n  \"totals\": {\n    \"first_confirmations\": 0,\n    \"subsequent_confirmations\": 0,\n    \"technology_confirmations\": 0,\n    \"version_changes\": 0,\n    \"identity_changes_without_version\": 0\n  },\n  \"confirmation_modes\": {\n    \"live\": 0,\n    \"fixture\": 0,\n    \"unknown\": 0\n  },\n  \"daily\": [\n    {\n      \"date\": \"2026-08-27\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-08-28\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-08-29\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-08-30\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-08-31\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-01\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-02\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-03\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-04\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-05\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-06\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-07\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-08\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-09\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-10\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-11\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-12\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-13\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-14\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-15\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-16\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-17\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-18\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-19\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-20\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-21\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-22\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-23\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-24\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-25\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-26\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-27\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-28\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-29\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-09-30\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-01\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-02\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-03\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-04\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-05\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-06\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-07\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-08\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-09\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-10\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-11\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-12\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-13\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-14\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-15\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-16\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-17\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-18\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-19\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-20\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-21\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-22\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-23\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-24\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-25\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-26\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-27\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-28\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-29\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-30\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-31\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-01\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-02\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-03\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-04\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-05\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-06\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-07\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-08\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-09\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-10\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-11\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-12\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-13\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-14\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-15\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-16\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-17\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-18\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-19\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-20\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-21\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-22\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-23\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-24\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    }\n  ],\n  \"selections_without_confirmation_events\": 0,\n  \"version_history_available\": true\n}"
+            }
+          ]
+        },
+        {
+          "id": "d55e807e-c44b-5bf8-bc16-30d380a7f133",
+          "name": "Eventos CPE de tecnologías",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-analytics/events?inventory_kind=technologies&days=30",
+            "description": "Recorded events, including inactive entities; no reconstructed state history.\n\nDate is the stored confirmation/revision timestamp, in UTC. The current day\nis partial. A revision changing version and product counts only once.\nTechnology version changes have no ledger and are deliberately not inferred."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "if (pm.variables.get('target_mode') === 'persistent-development') { pm.execution.skipRequest(); return; }",
+                  "",
+                  "})();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-analytics/events?inventory_kind=technologies&days=30",
+                "description": "Recorded events, including inactive entities; no reconstructed state history.\n\nDate is the stored confirmation/revision timestamp, in UTC. The current day\nis partial. A revision changing version and product counts only once.\nTechnology version changes have no ledger and are deliberately not inferred."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000002\",\n  \"inventory_kind\": \"technologies\",\n  \"scope\": \"recorded_history\",\n  \"window\": {\n    \"days\": 30,\n    \"start\": \"2026-10-26\",\n    \"end_exclusive\": \"2026-11-25\",\n    \"timezone\": \"UTC\",\n    \"observed_at\": \"2026-11-24T12:00:00Z\"\n  },\n  \"totals\": {\n    \"first_confirmations\": 0,\n    \"subsequent_confirmations\": 0,\n    \"technology_confirmations\": 0,\n    \"version_changes\": 0,\n    \"identity_changes_without_version\": 0\n  },\n  \"confirmation_modes\": {\n    \"live\": 0,\n    \"fixture\": 0,\n    \"unknown\": 0\n  },\n  \"daily\": [\n    {\n      \"date\": \"2026-10-26\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-27\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-28\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-29\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-30\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-10-31\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-01\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-02\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-03\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-04\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-05\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-06\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-07\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-08\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-09\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-10\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-11\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-12\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-13\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-14\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-15\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-16\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-17\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-18\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-19\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-20\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-21\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-22\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-23\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    },\n    {\n      \"date\": \"2026-11-24\",\n      \"counts\": {\n        \"first_confirmations\": 0,\n        \"subsequent_confirmations\": 0,\n        \"technology_confirmations\": 0,\n        \"version_changes\": 0,\n        \"identity_changes_without_version\": 0\n      }\n    }\n  ],\n  \"selections_without_confirmation_events\": 0,\n  \"version_history_available\": false\n}"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

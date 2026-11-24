@@ -12305,6 +12305,42 @@
               "default": 0,
               "title": "Offset"
             }
+          },
+          {
+            "name": "manufacturer_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Manufacturer Key"
+            }
+          },
+          {
+            "name": "model_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model Key"
+            }
           }
         ],
         "responses": {
@@ -18448,6 +18484,512 @@
         }
       }
     },
+    "/api/v2/workspaces/{workspace_id}/inventory-analytics/distribution": {
+      "get": {
+        "summary": "Inventory Distribution",
+        "description": "Active entities, top complete categories plus explicit other/unknown counts.\n\nDevices use physical manufacturer/model; technologies use vendor/product.\nOnly case and whitespace are normalized. No commercial alias inference.",
+        "operationId": "inventory_distribution_api_v2_workspaces__workspace_id__inventory_analytics_distribution_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "inventory_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "devices",
+                "technologies"
+              ],
+              "type": "string",
+              "default": "devices",
+              "title": "Inventory Kind"
+            }
+          },
+          {
+            "name": "dimension",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "vendor",
+                "product"
+              ],
+              "type": "string",
+              "default": "vendor",
+              "title": "Dimension"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryDistribution"
+                },
+                "example": {
+                  "categories": [],
+                  "dimension": "product",
+                  "excluded_inactive": 0,
+                  "inventory_kind": "technologies",
+                  "limit": 10,
+                  "normalization": "case_whitespace_v1",
+                  "observed_at": "2026-11-24T12:00:00Z",
+                  "other": 0,
+                  "scope": "active",
+                  "total": 0,
+                  "unknown": 0,
+                  "workspace_id": "00000000-0000-4000-8000-000000000002"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/workspaces/{workspace_id}/inventory-analytics/events": {
+      "get": {
+        "summary": "Inventory Events",
+        "description": "Recorded events, including inactive entities; no reconstructed state history.\n\nDate is the stored confirmation/revision timestamp, in UTC. The current day\nis partial. A revision changing version and product counts only once.\nTechnology version changes have no ledger and are deliberately not inferred.",
+        "operationId": "inventory_events_api_v2_workspaces__workspace_id__inventory_analytics_events_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "inventory_kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "devices",
+                "technologies"
+              ],
+              "type": "string",
+              "default": "devices",
+              "title": "Inventory Kind"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 90,
+              "minimum": 30,
+              "description": "Ventana diaria UTC: únicamente 30 o 90 días.",
+              "enum": [
+                30,
+                90
+              ],
+              "default": 30,
+              "title": "Days"
+            },
+            "description": "Ventana diaria UTC: únicamente 30 o 90 días."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryEvents"
+                },
+                "example": {
+                  "confirmation_modes": {
+                    "fixture": 0,
+                    "live": 0,
+                    "unknown": 0
+                  },
+                  "daily": [
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-10-26"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-10-27"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-10-28"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-10-29"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-10-30"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-10-31"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-01"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-02"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-03"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-04"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-05"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-06"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-07"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-08"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-09"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-10"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-11"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-12"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-13"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-14"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-15"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-16"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-17"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-18"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-19"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-20"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-21"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-22"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-23"
+                    },
+                    {
+                      "counts": {
+                        "first_confirmations": 0,
+                        "identity_changes_without_version": 0,
+                        "subsequent_confirmations": 0,
+                        "technology_confirmations": 0,
+                        "version_changes": 0
+                      },
+                      "date": "2026-11-24"
+                    }
+                  ],
+                  "inventory_kind": "technologies",
+                  "scope": "recorded_history",
+                  "selections_without_confirmation_events": 0,
+                  "totals": {
+                    "first_confirmations": 0,
+                    "identity_changes_without_version": 0,
+                    "subsequent_confirmations": 0,
+                    "technology_confirmations": 0,
+                    "version_changes": 0
+                  },
+                  "version_history_available": false,
+                  "window": {
+                    "days": 30,
+                    "end_exclusive": "2026-11-25",
+                    "observed_at": "2026-11-24T12:00:00Z",
+                    "start": "2026-10-26",
+                    "timezone": "UTC"
+                  },
+                  "workspace_id": "00000000-0000-4000-8000-000000000002"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v2/workspaces/{workspace_id}/nvd-dashboard/{nvd_mode}": {
       "get": {
         "tags": [
@@ -23734,6 +24276,46 @@
         ],
         "title": "Instructions"
       },
+      "InventoryCategory": {
+        "properties": {
+          "vendor_key": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Vendor Key"
+          },
+          "product_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Key"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vendor_key",
+          "label",
+          "count"
+        ],
+        "title": "InventoryCategory"
+      },
       "InventoryCoverage": {
         "properties": {
           "workspace_id": {
@@ -23761,6 +24343,253 @@
           "technologies"
         ],
         "title": "InventoryCoverage"
+      },
+      "InventoryDistribution": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "inventory_kind": {
+            "type": "string",
+            "enum": [
+              "devices",
+              "technologies"
+            ],
+            "title": "Inventory Kind"
+          },
+          "dimension": {
+            "type": "string",
+            "enum": [
+              "vendor",
+              "product"
+            ],
+            "title": "Dimension"
+          },
+          "scope": {
+            "type": "string",
+            "const": "active",
+            "title": "Scope",
+            "default": "active"
+          },
+          "normalization": {
+            "type": "string",
+            "const": "case_whitespace_v1",
+            "title": "Normalization",
+            "default": "case_whitespace_v1"
+          },
+          "limit": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Limit"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total"
+          },
+          "excluded_inactive": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Excluded Inactive"
+          },
+          "unknown": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Unknown"
+          },
+          "other": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Other"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryCategory"
+            },
+            "type": "array",
+            "maxItems": 10,
+            "title": "Categories"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Observed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace_id",
+          "inventory_kind",
+          "dimension",
+          "limit",
+          "total",
+          "excluded_inactive",
+          "unknown",
+          "other",
+          "categories",
+          "observed_at"
+        ],
+        "title": "InventoryDistribution"
+      },
+      "InventoryEventCounts": {
+        "properties": {
+          "first_confirmations": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "First Confirmations",
+            "default": 0
+          },
+          "subsequent_confirmations": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Subsequent Confirmations",
+            "default": 0
+          },
+          "technology_confirmations": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Technology Confirmations",
+            "default": 0
+          },
+          "version_changes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Version Changes",
+            "default": 0
+          },
+          "identity_changes_without_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Identity Changes Without Version",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "InventoryEventCounts"
+      },
+      "InventoryEventDay": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/InventoryEventCounts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "counts"
+        ],
+        "title": "InventoryEventDay"
+      },
+      "InventoryEventWindow": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "enum": [
+              30,
+              90
+            ],
+            "title": "Days"
+          },
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end_exclusive": {
+            "type": "string",
+            "format": "date",
+            "title": "End Exclusive"
+          },
+          "timezone": {
+            "type": "string",
+            "const": "UTC",
+            "title": "Timezone",
+            "default": "UTC"
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Observed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "start",
+          "end_exclusive",
+          "observed_at"
+        ],
+        "title": "InventoryEventWindow"
+      },
+      "InventoryEvents": {
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "inventory_kind": {
+            "type": "string",
+            "enum": [
+              "devices",
+              "technologies"
+            ],
+            "title": "Inventory Kind"
+          },
+          "scope": {
+            "type": "string",
+            "const": "recorded_history",
+            "title": "Scope",
+            "default": "recorded_history"
+          },
+          "window": {
+            "$ref": "#/components/schemas/InventoryEventWindow"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/InventoryEventCounts"
+          },
+          "confirmation_modes": {
+            "$ref": "#/components/schemas/CatalogModes"
+          },
+          "daily": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryEventDay"
+            },
+            "type": "array",
+            "maxItems": 90,
+            "minItems": 30,
+            "title": "Daily"
+          },
+          "selections_without_confirmation_events": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Selections Without Confirmation Events"
+          },
+          "version_history_available": {
+            "type": "boolean",
+            "title": "Version History Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "workspace_id",
+          "inventory_kind",
+          "window",
+          "totals",
+          "confirmation_modes",
+          "daily",
+          "selections_without_confirmation_events",
+          "version_history_available"
+        ],
+        "title": "InventoryEvents"
       },
       "IssueResult": {
         "properties": {
