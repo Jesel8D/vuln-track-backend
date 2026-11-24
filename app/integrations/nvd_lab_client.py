@@ -21,7 +21,9 @@ class LabCVEClient(CVEClient):
         super().__init__(transport=adapter, live=False, http_policy=HTTPPolicy(timeout=20))
         self.permit = adapter.permit
         self.cache_namespace = "lab:5c2:" + self.permit.plan["nonce"]
-        self.budget = RequestBudget(requests=1, seconds=20, cancelled=cancelled)
+        self.budget = RequestBudget(
+            requests=1, seconds=adapter.pin.remaining(), cancelled=cancelled
+        )
         self._prepared = None
         self._delivered = False
 

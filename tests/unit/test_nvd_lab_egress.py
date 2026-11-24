@@ -477,3 +477,22 @@ def test_redirect_response_has_no_follow_up_and_no_live_proof(monkeypatch):
     with pytest.raises(APIError):
         c.prepare()
     assert len(calls) == 1 and not proven(c) and source_kind(c) == "unknown"
+
+
+def test_dns_and_worker_share_one_twenty_second_deadline(tmp_path, monkeypatch):
+    clock = [100.0]
+    monkeypatch.setattr(nvd_trial_network.time, "monotonic", lambda: clock[0])
+    calls = []
+    monkeypatch.setattr(nvd_trial_network, "install", lambda pg, **kw: calls.append(kw))
+
+    def lookup(*args, **kwargs):
+        clock[0] += 3
+        return SimpleNamespace(returncode=0, stdout=b'["8.8.8.8"]')
+
+    monkeypatch.setattr(nvd_trial_network.subprocess, "run", lookup)
+    nvd_trial_network.setup("10.245.240.2", tmp_path)
+    pin = Pin(**json.loads((tmp_path / "pin.json").read_text()))
+    assert pin.remaining() == 17 and calls[-1] == {"public": "8.8.8.8", "seconds": 17}
+    clock[0] = 120.0
+    with pytest.raises(APIError):
+        pin.check()

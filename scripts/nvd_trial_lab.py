@@ -209,7 +209,9 @@ def child(destination, plan=None, grant=None):
         extra_mounts, extra_args = [], []
         if permit is not None:
             control = destination / "control"
-            control.mkdir(mode=0o700)
+            control.mkdir(mode=0o770)
+            control.chmod(0o770)
+            outputs.chmod(0o750)
             private_json(control / "pg.json", {"address": pg_ip})
             (destination / "image-id").write_text(image)
             run(
@@ -220,10 +222,10 @@ def child(destination, plan=None, grant=None):
                     "--name",
                     guard,
                     "--network",
-                    "none",
+                    network,
                     "--read-only",
                     "--tmpfs=/run:rw,noexec,nosuid,nodev,size=1m",
-                    "--user=0:0",
+                    f"--user=0:{os.getgid()}",
                     "--sysctl=net.ipv6.conf.all.disable_ipv6=1",
                     "--sysctl=net.ipv6.conf.default.disable_ipv6=1",
                     "--cap-drop=ALL",
@@ -254,7 +256,6 @@ def child(destination, plan=None, grant=None):
                 if time.monotonic() >= end:
                     raise RuntimeError("Egress guard not ready; no network attached")
                 time.sleep(0.05)
-            run(["docker", "network", "connect", network, guard])
             run(
                 [
                     "docker",
