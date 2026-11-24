@@ -21,6 +21,7 @@ from sqlalchemy import URL, create_engine, text
 
 from app.core.config import Settings
 from app.db.verify_catalog import verify_catalog_schema
+from app.db.verify_cve_cache import verify_cve_cache_schema
 from app.db.verify_cve_reliability import verify_cve_reliability_schema
 from app.db.verify_devices import verify_devices_schema
 from app.db.verify_schema import CVE_REVISION, verify_schema
@@ -393,6 +394,8 @@ class PersistentV2:
                     text("SELECT to_regprocedure('vulntrack.recover_cve_runs()')")
                 ):
                     verify_cve_reliability_schema(connection)
+                if connection.scalar(text("SELECT to_regnamespace('vulntrack_cve_cache')")):
+                    verify_cve_cache_schema(connection)
                 if connection.scalar(text("SELECT to_regnamespace('vulntrack_verification')")):
                     verify_verification_schema(connection)
                 if self.profile in {"rc2", "rc3", "rc3-catalog31"} or self.profile.startswith(
@@ -560,6 +563,11 @@ class PersistentV2:
             "api_role": API_ROLE,
             "sources": SOURCES,
             "alembic_revision": CVE_REVISION,
+            "verification_revision": self.sql(
+                "SELECT version_num FROM public.alembic_verification_version;"
+            )
+            .decode()
+            .strip(),
         }
         private_json(destination / "manifest.json", metadata)
         return path

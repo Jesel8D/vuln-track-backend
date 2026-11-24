@@ -1,6 +1,7 @@
 """Own a disposable PostgreSQL + fixture-only real HTTP API, optionally run Newman."""
 
 import argparse
+import hashlib
 import json
 import secrets
 import socket
@@ -142,7 +143,11 @@ def fixture_app(settings, *, original_and=True, original_title=False):
     app.state.nvd = NVDClient(transport=httpx.MockTransport(upstream), quota=quota)
     app.state.identifications.nvd = app.state.nvd
     app.state.cve = CVEClient(
-        transport=httpx.MockTransport(upstream), quota=quota, source_kind="fixture"
+        transport=httpx.MockTransport(upstream),
+        quota=quota,
+        source_kind="fixture" if original_and else "simulated",
+        cache_namespace="capture:"
+        + hashlib.sha256(json.dumps(cve, sort_keys=True).encode()).hexdigest(),
     )
     app.state.cve_worker.client = app.state.cve
     app.state.nvd_mode = "fixture"

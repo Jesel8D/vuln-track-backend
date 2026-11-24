@@ -22,6 +22,7 @@ from app.schemas.cpe import Candidate, CandidateList, SearchInput, parse_cpe, un
 from app.services.applicability import encoded
 from app.services.cpe_catalog import Mode
 from app.services.nvd_findings import finding_rows
+from app.services.v2_cve_cache import fetch_page
 from app.services.v2_cve_reliability import context as query_context
 from app.services.v2_cve_reliability import decorate, recover, require_active
 
@@ -514,6 +515,8 @@ def analyze_technology(
                     "run_context",
                     "lease_expires_at",
                     "response_received_at",
+                    "cache_response_id",
+                    "cache_usage",
                     "nvd_mode",
                 }
             }
@@ -635,7 +638,8 @@ def analyze_technology(
             )
 
         # No SQL transaction/connection is held during the external request.
-        page = request.app.state.cve.page(technology["selected_cpe"], 0, 100)
+        result = fetch_page(request, user.id, workspace_id, technology["selected_cpe"])
+        page = result.page
         page_cves, rows, warnings = finding_rows(
             page, technology["selected_cpe"], technology["version"]
         )
@@ -669,7 +673,8 @@ def analyze_technology(
             session.execute(
                 text("""UPDATE vulntrack.application_analysis_runs SET
                     status='completed', coverage=:coverage, completed_at=clock_timestamp(),
-                    response_received_at=clock_timestamp(),
+                    response_received_at=coalesce(:received,clock_timestamp()),
+                    cache_response_id=:cache_response,cache_usage=CAST(:cache_usage AS jsonb),
                     total_results=:total, retrieved_count=:retrieved, stored_count=:stored,
                     page_count=1, next_index=:next, source_timestamp=:timestamp,
                     warning_codes=CAST(:warnings AS jsonb),
@@ -678,6 +683,9 @@ def analyze_technology(
                     WHERE id=:id"""),
                 {
                     "coverage": "complete" if complete else "partial",
+                    "received": result.received_at,
+                    "cache_response": result.response_id,
+                    "cache_usage": json.dumps(result.usage) if result.usage else None,
                     "total": page.totalResults,
                     "retrieved": len(page_cves),
                     "stored": len(rows),
@@ -690,7 +698,15 @@ def analyze_technology(
                 },
             )
     except APIError as exc:
-        _fail_run(request, user.id, workspace_id, application_id, run_id, exc.code)
+        _fail_run(
+            request,
+            user.id,
+            workspace_id,
+            application_id,
+            run_id,
+            exc.code,
+            getattr(exc, "cache_usage", None),
+        )
         raise
     except Exception as exc:
         _fail_run(request, user.id, workspace_id, application_id, run_id, "PROCESSING_ERROR")
@@ -702,7 +718,7 @@ def analyze_technology(
     return get_analysis(workspace_id, application_id, run_id, user, request)
 
 
-def _fail_run(request, actor, workspace, application, run_id, code):
+def _fail_run(request, actor, workspace, application, run_id, code, cache_usage=None):
     if run_id is None:
         return
     try:
@@ -712,11 +728,13 @@ def _fail_run(request, actor, workspace, application, run_id, code):
             _authorize(session, workspace, application, "writer", active_only=False)
             session.execute(
                 text("""UPDATE vulntrack.application_analysis_runs SET status='failed',
-                    completed_at=clock_timestamp(), failure_code=:code WHERE id=:id AND status
+                    completed_at=clock_timestamp(), failure_code=:code,
+                    cache_usage=CAST(:cache_usage AS jsonb) WHERE id=:id AND status
                     IN ('queued','running')"""),
                 {
                     "code": code if code.isupper() and len(code) <= 80 else "PROCESSING_ERROR",
                     "id": run_id,
+                    "cache_usage": json.dumps(cache_usage) if cache_usage else None,
                 },
             )
     except Exception as exc:
@@ -754,7 +772,7 @@ def get_analysis(
             session.execute(
                 text("""SELECT
                 id,application_id,technology_id,selected_cpe,status,coverage,total_results,retrieved_count,stored_count,page_count,
-                warning_codes,failure_code,source_timestamp,created_at,started_at,completed_at,run_context,lease_expires_at,response_received_at,
+                warning_codes,failure_code,source_timestamp,created_at,started_at,completed_at,run_context,lease_expires_at,response_received_at,cache_response_id,cache_usage,
                 COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id"""),
@@ -789,7 +807,7 @@ def list_analyses(
             select="r.id,r.application_id,r.technology_id,r.selected_cpe,t.product,t.version,"
             "r.status,r.coverage,r.total_results,r.retrieved_count,r.stored_count,r.page_count,"
             "r.warning_codes,r.failure_code,r.source_timestamp,r.created_at,r.started_at,"
-            "r.completed_at,r.run_context,r.lease_expires_at,r.response_received_at,"
+            "r.completed_at,r.run_context,r.lease_expires_at,r.response_received_at,r.cache_response_id,r.cache_usage,"
             "COALESCE(r.query_parameters->>'nvd_mode','unknown') AS nvd_mode",
             table="vulntrack.application_analysis_runs r JOIN vulntrack.technologies t "
             "ON t.workspace_id=r.workspace_id AND t.application_id=r.application_id "
@@ -826,7 +844,7 @@ def get_findings(
         run = (
             session.execute(
                 text("""SELECT id,application_id,technology_id,selected_cpe,
-                    created_at,status,coverage,run_context,lease_expires_at,response_received_at,source_timestamp,
+                    created_at,status,coverage,run_context,lease_expires_at,response_received_at,cache_response_id,cache_usage,source_timestamp,
                     COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                     FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id"""),
