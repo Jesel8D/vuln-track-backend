@@ -72,7 +72,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.nvd_mode = "live" if settings.nvd_mode == "live" else "unknown"
     app.state.catalog_reads = Quota()
     app.state.nvd = NVDClient(
-        settings.nvd_api_key, settings.nvd_timeout_seconds, live=settings.nvd_mode == "live"
+        settings.nvd_api_key,
+        settings.nvd_timeout_seconds,
+        quota=Quota(spacing=settings.nvd_spacing_seconds),
+        live=settings.nvd_mode == "live",
     )
     app.state.identifications = IdentificationService(
         app.state.session_factory,

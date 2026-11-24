@@ -9,6 +9,7 @@ from sqlalchemy import text
 from app.api.router import Identity
 from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
+from app.services.v2_cve_reliability import decorate, historical_row, recover
 
 router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/dashboard")
 
@@ -44,6 +45,7 @@ def dashboard_data(workspace_id, user, request, nvd_mode=None):
         ):
             raise APIError(404, "WORKSPACE_NOT_FOUND", "Workspace no disponible")
 
+        recover(session)
         # Bound the queries before deduplication. Device runs occupy a separate schema.
         source_predicate = (
             "(CAST(:mode AS text) IS NULL OR "
@@ -108,7 +110,9 @@ def dashboard_data(workspace_id, user, request, nvd_mode=None):
         recent_analyses = (
             session.execute(
                 text(f"""SELECT r.id,r.application_id,a.name AS application_name,
-                r.technology_id,t.product,t.version,r.status,r.coverage,r.stored_count,
+                r.technology_id,r.selected_cpe,r.run_context,r.lease_expires_at,r.response_received_at,
+                r.source_timestamp,COALESCE(r.query_parameters->>'nvd_mode','unknown') AS nvd_mode,
+                t.product,t.version,r.status,r.coverage,r.stored_count,
                 r.warning_codes,r.created_at,r.completed_at,
                 (SELECT count(*) FROM vulntrack.application_findings f
                  WHERE f.workspace_id=r.workspace_id AND f.analysis_id=r.id) AS finding_count
@@ -129,14 +133,21 @@ def dashboard_data(workspace_id, user, request, nvd_mode=None):
         priority_findings = (
             session.execute(
                 text(f"""WITH latest AS (
-                SELECT DISTINCT ON (technology_id) id,technology_id,application_id
+                SELECT DISTINCT ON (technology_id) id,technology_id,application_id,
+                    selected_cpe,run_context,
+                    lease_expires_at,
+                    response_received_at,source_timestamp,status,coverage,created_at,
+                    COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND {source_predicate} AND status='completed'
                 ORDER BY technology_id,created_at DESC,id DESC
             )
             SELECT f.id,f.external_id,f.title,f.severity,f.applicability,f.status,
                 f.observed_at,a.id AS application_id,a.name AS application_name,
-                t.product,t.version
+                t.product,t.version,l.id AS analysis_id,l.technology_id,l.selected_cpe,
+                l.run_context,
+                l.lease_expires_at,l.response_received_at,l.source_timestamp,l.coverage,
+                l.status AS run_status,l.created_at,l.nvd_mode
             FROM latest l
             JOIN vulntrack.application_findings f
               ON f.workspace_id=:workspace AND f.analysis_id=l.id AND f.status='open'
@@ -173,9 +184,25 @@ def dashboard_data(workspace_id, user, request, nvd_mode=None):
             .all()
         )
 
+        recent = decorate(
+            session,
+            request.app.state.settings,
+            "applications",
+            [historical_row(row) for row in recent_analyses],
+        )
+        priority = []
+        for row in priority_findings:
+            item = historical_row(row)
+            state = dict(item, status=item["run_status"], id=item["analysis_id"])
+            analysis = decorate(session, request.app.state.settings, "applications", [state])[0]
+            for field in ("run_context", "lease_expires_at", "response_received_at"):
+                item.pop(field, None)
+            item["analysis"] = {key: analysis[key] for key in ("assessment", "provenance")}
+            priority.append(item)
         return {
+            "cve_metrics_scope": "latest_recorded_per_technology",
             "summary": dict(summary) | dict(latest_stats),
-            "recent_analyses": [dict(row) for row in recent_analyses],
-            "priority_findings": [dict(row) for row in priority_findings],
+            "recent_analyses": recent,
+            "priority_findings": priority,
             "analysis_trend": [dict(row) for row in trend],
         }

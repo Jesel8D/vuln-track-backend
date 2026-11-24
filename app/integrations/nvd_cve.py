@@ -49,6 +49,14 @@ class CVEPage(BaseModel):
 class CVEClient(NVDClient):
     throttle_code = "NVD_THROTTLED"
 
+    def __init__(self, *args, source_kind=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if source_kind not in {None, "fixture", "simulated"}:
+            raise ValueError("Only explicit offline source labels are configurable")
+        if source_kind is not None and self.transport is None:
+            raise ValueError("Offline source labels require an injected transport")
+        self.source_kind = source_kind
+
     def page(self, cpe, start=0, limit=100):
         parse_cpe(cpe)
         if (

@@ -21,6 +21,7 @@ from sqlalchemy import URL, create_engine, text
 
 from app.core.config import Settings
 from app.db.verify_catalog import verify_catalog_schema
+from app.db.verify_cve_reliability import verify_cve_reliability_schema
 from app.db.verify_devices import verify_devices_schema
 from app.db.verify_schema import CVE_REVISION, verify_schema
 from app.db.verify_technology_cpe import verify_technology_cpe_schema
@@ -388,6 +389,10 @@ class PersistentV2:
                 verify_schema(connection, CVE_REVISION)
                 if connection.scalar(text("SELECT to_regnamespace('vulntrack_technology_cpe')")):
                     verify_technology_cpe_schema(connection)
+                if connection.scalar(
+                    text("SELECT to_regprocedure('vulntrack.recover_cve_runs()')")
+                ):
+                    verify_cve_reliability_schema(connection)
                 if connection.scalar(text("SELECT to_regnamespace('vulntrack_verification')")):
                     verify_verification_schema(connection)
                 if self.profile in {"rc2", "rc3", "rc3-catalog31"} or self.profile.startswith(

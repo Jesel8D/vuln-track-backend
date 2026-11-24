@@ -12,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from app.api.router import Identity
 from app.core.errors import APIError
 from app.db.workspace_context import list_user_workspaces, workspace_session
+from app.services.v2_cve_reliability import query_state_sql
 
 router = APIRouter(prefix="/api/v2")
 Name = Annotated[str, StringConstraints(strict=True, min_length=1, max_length=160)]
@@ -367,13 +368,14 @@ def list_technologies(
             raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
         result = (
             session.execute(
-                text("""WITH matches AS MATERIALIZED (SELECT
+                text(f"""WITH matches AS MATERIALIZED (SELECT
                     t.id,t.product,t.vendor,t.version,t.selected_cpe,t.detection_method,
-                    t.confidence,t.observed_at,t.created_at
+                    t.confidence,t.observed_at,t.created_at,t.workspace_id
                     FROM vulntrack.technologies t WHERE t.workspace_id=:workspace
                       AND t.application_id=:application
-                ) SELECT coalesce(jsonb_agg((to_jsonb(p)-'created_at') ||
-                    jsonb_build_object('cpe_confirmation',c.confirmation)
+                ) SELECT coalesce(jsonb_agg((to_jsonb(p)-'created_at'-'workspace_id') ||
+                    jsonb_build_object('cpe_confirmation',c.confirmation,
+                        'current_cve_query_state',{query_state_sql("applications", "p")})
                     ORDER BY p.created_at DESC,p.id),'[]') AS items,
                     (SELECT count(*) FROM matches) AS total,
                     (SELECT count(*) FROM matches WHERE selected_cpe IS NOT NULL

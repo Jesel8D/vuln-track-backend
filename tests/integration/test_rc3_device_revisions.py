@@ -123,9 +123,16 @@ def test_edit_reidentify_and_preserve_cve_evidence(api, postgres):  # noqa: F811
         and blocked.json()["error"]["code"] == "CPE_CONFIRMATION_REQUIRED"
     )
     historical = client.post(device + "/analyses", headers=key).json()
-    assert historical == history | {"is_current_technology": False}
+    assert historical["assessment"]["correspondence"] == "historical"
+    assert historical["assessment"]["requires_new_query"]
+    assert not historical["is_current_technology"]
+    assert (
+        historical | {"assessment": history["assessment"], "is_current_technology": True} == history
+    )
     assert historical["evaluated_technology"]["observed_version"] == "1.0.0.33"
-    assert response(client, actor, finding_path) == reviewed
+    findings_after = response(client, actor, finding_path)
+    assert findings_after["analysis"] == historical
+    assert findings_after | {"analysis": reviewed["analysis"]} == reviewed
     assert response(client, actor, recommendation_path) == recommendations
 
     revisions = response(client, actor, device + "/revisions")["items"]
