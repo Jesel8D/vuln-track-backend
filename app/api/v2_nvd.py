@@ -15,9 +15,10 @@ from sqlalchemy import text
 from app.api.cpe_catalog import Part, admit_catalog, catalog_row, find_candidates, normalized_text
 from app.api.router import Identity
 from app.core.errors import APIError
+from app.db.pagination import page
 from app.db.workspace_context import workspace_session
 from app.schemas.assets import Page
-from app.schemas.cpe import Candidate, CandidateList, SearchInput
+from app.schemas.cpe import Candidate, CandidateList, SearchInput, parse_cpe, unbind_component
 from app.services.applicability import encoded
 from app.services.cpe_catalog import Mode
 from app.services.nvd_findings import finding_rows
@@ -646,6 +647,23 @@ def _fail_run(request, actor, workspace, application, run_id, code):
         )
 
 
+def _historical_run(row):
+    try:
+        _, vendor, product, version, *_ = map(unbind_component, parse_cpe(row["selected_cpe"]))
+        evaluated = {
+            "vendor": vendor,
+            "product": product,
+            "version": version,
+            "basis": "historical_cpe",
+        }
+    except (ValueError, TypeError):
+        evaluated = None
+    result = dict(row) | {"evaluated_technology": evaluated}
+    if evaluated and "product" in row:
+        result.update(product=evaluated["product"], version=evaluated["version"])
+    return result
+
+
 @router.get("/analyses/{run_id}")
 def get_analysis(
     workspace_id: UUID, application_id: UUID, run_id: UUID, user: Identity, request: Request
@@ -653,11 +671,11 @@ def get_analysis(
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        _authorize(session, workspace_id, application_id)
+        _authorize(session, workspace_id, application_id, active_only=False)
         row = (
             session.execute(
                 text("""SELECT
-                id,status,coverage,total_results,retrieved_count,stored_count,page_count,
+                id,application_id,technology_id,selected_cpe,status,coverage,total_results,retrieved_count,stored_count,page_count,
                 warning_codes,failure_code,source_timestamp,created_at,started_at,completed_at,
                 COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs
@@ -669,7 +687,7 @@ def get_analysis(
         )
         if row is None:
             raise APIError(404, "ANALYSIS_NOT_FOUND", "Consulta no encontrada")
-        return dict(row)
+        return _historical_run(row)
 
 
 @router.get("/analyses")
@@ -685,38 +703,24 @@ def list_analyses(
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        _authorize(session, workspace_id, application_id)
-        rows = (
-            session.execute(
-                text("""SELECT r.id,r.technology_id,t.product,t.version,r.status,r.coverage,
-                r.total_results,r.retrieved_count,r.stored_count,r.page_count,r.warning_codes,
-                r.failure_code,r.source_timestamp,r.created_at,r.started_at,r.completed_at,
-                COALESCE(r.query_parameters->>'nvd_mode','unknown') AS nvd_mode
-                FROM vulntrack.application_analysis_runs r
-                JOIN vulntrack.technologies t
-                  ON t.workspace_id=r.workspace_id AND t.application_id=r.application_id
-                 AND t.id=r.technology_id
-                WHERE r.workspace_id=:workspace AND r.application_id=:application
-                ORDER BY r.created_at DESC,r.id DESC LIMIT :limit OFFSET :offset"""),
-                {
-                    "workspace": workspace_id,
-                    "application": application_id,
-                    "limit": limit,
-                    "offset": offset,
-                },
-            )
-            .mappings()
-            .all()
+        _authorize(session, workspace_id, application_id, active_only=False)
+        result = page(
+            session,
+            select="r.id,r.application_id,r.technology_id,r.selected_cpe,t.product,t.version,"
+            "r.status,r.coverage,r.total_results,r.retrieved_count,r.stored_count,r.page_count,"
+            "r.warning_codes,r.failure_code,r.source_timestamp,r.created_at,r.started_at,"
+            "r.completed_at,COALESCE(r.query_parameters->>'nvd_mode','unknown') AS nvd_mode",
+            table="vulntrack.application_analysis_runs r JOIN vulntrack.technologies t "
+            "ON t.workspace_id=r.workspace_id AND t.application_id=r.application_id "
+            "AND t.id=r.technology_id",
+            where="r.workspace_id=:workspace AND r.application_id=:application",
+            sort="created_at DESC,id DESC",
+            scope={"workspace": workspace_id, "application": application_id},
+            limit=limit,
+            offset=offset,
         )
-        total = session.scalar(
-            text("""SELECT count(*) FROM vulntrack.application_analysis_runs
-                WHERE workspace_id=:workspace AND application_id=:application"""),
-            {"workspace": workspace_id, "application": application_id},
-        )
-        return {
-            "items": [dict(row) for row in rows],
-            "page": {"limit": limit, "offset": offset, "total": total},
-        }
+        result["items"] = [_historical_run(row) for row in result["items"]]
+        return result
 
 
 @router.get("/analyses/{run_id}/findings")
@@ -732,10 +736,13 @@ def get_findings(
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        _authorize(session, workspace_id, application_id)
+        _authorize(session, workspace_id, application_id, active_only=False)
         run = (
             session.execute(
-                text("""SELECT status,coverage FROM vulntrack.application_analysis_runs
+                text("""SELECT id,application_id,technology_id,selected_cpe,
+                    created_at,status,coverage,
+                    COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
+                    FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id"""),
                 {"workspace": workspace_id, "application": application_id, "id": run_id},
             )
@@ -744,30 +751,21 @@ def get_findings(
         )
         if run is None:
             raise APIError(404, "ANALYSIS_NOT_FOUND", "Consulta no encontrada")
-        rows = (
-            session.execute(
-                text("""SELECT id,external_id,title,severity,cvss,applicability,status,evidence,
-                published_at,last_modified_at,observed_at,updated_at FROM
-                vulntrack.application_findings
-                WHERE workspace_id=:workspace AND analysis_id=:id
-                ORDER BY external_id LIMIT :limit OFFSET :offset"""),
-                {"workspace": workspace_id, "id": run_id, "limit": limit, "offset": offset},
-            )
-            .mappings()
-            .all()
+        result = page(
+            session,
+            select="id,external_id,title,severity,cvss,applicability,status,evidence,"
+            "published_at,last_modified_at,observed_at,updated_at",
+            table="vulntrack.application_findings",
+            where="workspace_id=:workspace AND analysis_id=:id",
+            sort="external_id,id",
+            scope={"workspace": workspace_id, "id": run_id},
+            limit=limit,
+            offset=offset,
         )
-        total = session.scalar(
-            text(
-                "SELECT count(*) FROM vulntrack.application_findings WHERE "
-                "workspace_id=:workspace AND analysis_id=:id"
-            ),
-            {"workspace": workspace_id, "id": run_id},
-        )
-        return {
-            "items": [dict(row) for row in rows],
-            "page": {"limit": limit, "offset": offset, "total": total},
+        return result | {
             "run_status": run["status"],
             "coverage": run["coverage"],
+            "analysis": _historical_run(run),
         }
 
 
@@ -851,11 +849,14 @@ def list_recommendations(
     finding_id: UUID,
     user: Identity,
     request: Request,
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
+    offset: Annotated[int, Query(ge=0, le=1000000)] = 0,
+    status: Literal["pending", "in_progress", "fixed", "accepted_risk"] | None = None,
 ):
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        _authorize(session, workspace_id, application_id)
+        _authorize(session, workspace_id, application_id, active_only=False)
         found = session.scalar(
             text("""SELECT 1 FROM vulntrack.application_findings f
                 JOIN vulntrack.application_analysis_runs r
@@ -866,18 +867,18 @@ def list_recommendations(
         )
         if not found:
             raise APIError(404, "FINDING_NOT_FOUND", "Hallazgo no disponible")
-        rows = (
-            session.execute(
-                text("""SELECT id,finding_id,recommendation,source_url,status,assigned_to,
-                created_by,due_at,completed_at,created_at,updated_at
-                FROM vulntrack.recommendations WHERE workspace_id=:workspace AND finding_id=:finding
-                ORDER BY created_at,id LIMIT 100"""),
-                {"workspace": workspace_id, "finding": finding_id},
-            )
-            .mappings()
-            .all()
+        return page(
+            session,
+            select="id,finding_id,recommendation,source_url,status,assigned_to,"
+            "created_by,due_at,completed_at,created_at,updated_at",
+            table="vulntrack.recommendations",
+            where="workspace_id=:workspace AND finding_id=:finding "
+            "AND (CAST(:status AS text) IS NULL OR status=:status)",
+            sort="created_at,id",
+            scope={"workspace": workspace_id, "finding": finding_id, "status": status},
+            limit=limit,
+            offset=offset,
         )
-        return {"items": [dict(row) for row in rows]}
 
 
 @router.post("/findings/{finding_id}/recommendations", status_code=201)

@@ -249,9 +249,25 @@ def list_applications(
                     OR EXISTS (SELECT 1 FROM vulntrack.application_targets t
                         WHERE t.workspace_id=a.workspace_id AND t.application_id=a.id
                           AND strpos(lower(t.url),lower(:q))>0))
-            ) SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.created_at DESC,p.id),'[]') AS items,
+            ) SELECT coalesce(jsonb_agg(to_jsonb(p)||jsonb_build_object('target_summary',
+                    jsonb_build_object('total',ts.total,'approved',ts.approved,'items',ts.items))
+                    ORDER BY p.created_at DESC,p.id),'[]') AS items,
                 (SELECT count(*) FROM matches) AS total
             FROM (SELECT * FROM matches ORDER BY created_at DESC,id LIMIT :limit OFFSET :offset) p
+            LEFT JOIN LATERAL (
+                WITH scoped AS MATERIALIZED (
+                    SELECT t.id,t.url,t.label,t.created_at,
+                        CASE WHEN t.authorization_status='approved' AND
+                            t.authorization_expires_at <= statement_timestamp()
+                            THEN 'expired' ELSE t.authorization_status END AS authorization_status
+                    FROM vulntrack.application_targets t
+                    WHERE t.workspace_id=:workspace AND t.application_id=p.id
+                ) SELECT count(*) AS total,
+                    count(*) FILTER (WHERE authorization_status='approved') AS approved,
+                    (SELECT coalesce(jsonb_agg(to_jsonb(preview) ORDER BY created_at,id),'[]')
+                     FROM (SELECT * FROM scoped ORDER BY created_at,id LIMIT 2) preview) AS items
+                FROM scoped
+            ) ts ON TRUE
             """),
                 {
                     "workspace": workspace_id,

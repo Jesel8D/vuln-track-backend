@@ -77,14 +77,15 @@ def main():
             expected[category].update(extension[category])
     # Explicit, reviewable evolution. Frozen prior contracts remain unchanged;
     # every exception carries its exact before/after shape, never a wildcard.
-    evolution = load("consistency-contract.json")
-    for category, changes in evolution["changes"].items():
-        for key, change in changes.items():
-            assert expected[category].get(key) == change["before"], (category, key, "before")
-            expected[category][key] = change["after"]
-    for category, additions in evolution["additions"].items():
-        assert not (expected[category].keys() & additions.keys()), category
-        expected[category].update(additions)
+    for filename in ("consistency-contract.json", "listing-contract.json"):
+        evolution = load(filename)
+        for category, changes in evolution["changes"].items():
+            for key, change in changes.items():
+                assert expected[category].get(key) == change["before"], (category, key, "before")
+                expected[category][key] = change["after"]
+        for category, additions in evolution["additions"].items():
+            assert not (expected[category].keys() & additions.keys()), category
+            expected[category].update(additions)
     assert actual_contract == expected, "Unexpected contract evolution"
     collection = load("VulnTrack-V2.postman_collection.json")
     Draft4Validator(load("vendor/postman-collection-v2.1.schema.json")).validate(collection)
