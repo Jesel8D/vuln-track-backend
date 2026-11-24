@@ -420,8 +420,18 @@ add(
         "expected_selected_cpe": None,
         "part": "o",
         "mode": "{{cpe_catalog_mode}}",
+        "reason": "Comparado manualmente con la versión observada en laboratorio",
+        "evidence": "Ensayo sintético de la colección; no es un activo real",
     },
     pre=CONFIRM_PRE,
+)
+add(
+    "06 · Tecnologías y CPE",
+    "Historial de confirmaciones CPE",
+    "GET",
+    TECH + "/cpe-confirmations?limit=20&offset=0",
+    capture="pm.test('Procedencia persistida',()=>pm.expect(data.page.total).to.be.at.least(1));",
+    description="Historia inmutable; UUID compartido entre fuentes no demuestra procedencia.",
 )
 add(
     "07 · NVD, análisis e historial",

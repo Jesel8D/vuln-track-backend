@@ -6890,7 +6890,7 @@
           "V2 · Aplicaciones"
         ],
         "summary": "List applications",
-        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Lista acotada sin parámetros de paginación: hasta 100 elementos.",
+        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista.",
         "operationId": "list_applications_api_v2_workspaces__workspace_id__applications_get",
         "security": [
           {
@@ -6906,6 +6906,58 @@
               "type": "string",
               "format": "uuid",
               "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 160,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "application_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Application Id"
             }
           }
         ],
@@ -6925,7 +6977,12 @@
                       "status": "active",
                       "updated_at": "2026-11-13T12:00:00.000001Z"
                     }
-                  ]
+                  ],
+                  "page": {
+                    "limit": 100,
+                    "offset": 0,
+                    "total": 1
+                  }
                 }
               }
             }
@@ -7421,7 +7478,7 @@
           "V2 · Tecnologías y CPE"
         ],
         "summary": "List technologies",
-        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Lista acotada sin parámetros de paginación: hasta 100 elementos.",
+        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista.",
         "operationId": "list_technologies_api_v2_workspaces__workspace_id__applications__application_id__technologies_get",
         "security": [
           {
@@ -7448,6 +7505,30 @@
               "format": "uuid",
               "title": "Application Id"
             }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
           }
         ],
         "responses": {
@@ -7468,7 +7549,294 @@
                       "vendor": "cisco",
                       "version": "1.0.0.33"
                     }
-                  ]
+                  ],
+                  "page": {
+                    "limit": 100,
+                    "offset": 0,
+                    "total": 1
+                  },
+                  "summary": {
+                    "confirmed_cpe": 0
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependencia, esquema o servicio no disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Segundos sugeridos antes de reintentar"
+              }
+            }
+          },
+          "401": {
+            "description": "JWT ausente, inválido, expirado o cuenta no autorizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "WWW-Authenticate": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Bearer"
+              }
+            }
+          },
+          "422": {
+            "description": "Solicitud inválida; no se refleja información sensible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Cuerpo supera el límite configurado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso no visible o inexistente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message",
+                        "request_id"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "request_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies/{technology_id}/cpe-confirmations": {
+      "get": {
+        "tags": [
+          "V2 · Tecnologías y CPE"
+        ],
+        "summary": "Cpe confirmations",
+        "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. NVD puede responder 429/502/503/504. La búsqueda NO confirma: seleccionar manualmente un candidato no deprecado y versión exacta. Pruebas offline usan UUID documentado de fixture, nunca el primer candidato por posición. Paginación limit/offset según límites del esquema; consultar page.total cuando exista.",
+        "operationId": "cpe_confirmations_api_v2_workspaces__workspace_id__applications__application_id__technologies__technology_id__cpe_confirmations_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "application_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Application Id"
+            }
+          },
+          {
+            "name": "technology_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Technology Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ejemplo sintético de prueba desechable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnologyCpeHistory"
+                },
+                "example": {
+                  "current_confirmation_id": null,
+                  "items": [],
+                  "legacy_provenance": "not_recorded",
+                  "page": {
+                    "limit": 20,
+                    "offset": 0,
+                    "total": 0
+                  }
                 }
               }
             }
@@ -8179,9 +8547,11 @@
                   "summary": "Ejemplo; sustituir variables y secretos locales antes de enviar",
                   "value": {
                     "cpe_name_id": "c817e5ba-62c1-41e7-a15c-fb851fea761e",
+                    "evidence": "Ensayo sintético de la colección; no es un activo real",
                     "expected_selected_cpe": null,
                     "mode": "fixture",
-                    "part": "o"
+                    "part": "o",
+                    "reason": "Comparado manualmente con la versión observada en laboratorio"
                   }
                 }
               }
@@ -17831,7 +18201,7 @@
                   },
                   "scope": "active",
                   "technologies": {
-                    "confirmation_provenance": "not_recorded",
+                    "confirmation_provenance": "per_confirmation",
                     "confirmed": 0,
                     "excluded_inactive": 0,
                     "needs_review": 0,
@@ -21672,6 +22042,44 @@
             ],
             "title": "Mode",
             "default": "live"
+          },
+          "expected_confirmation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Confirmation Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
           }
         },
         "additionalProperties": false,
@@ -23573,9 +23981,9 @@
           },
           "confirmation_provenance": {
             "type": "string",
-            "const": "not_recorded",
+            "const": "per_confirmation",
             "title": "Confirmation Provenance",
-            "default": "not_recorded"
+            "default": "per_confirmation"
           }
         },
         "type": "object",
@@ -23587,6 +23995,188 @@
           "excluded_inactive"
         ],
         "title": "TechnologyCoverage"
+      },
+      "TechnologyCpeConfirmation": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "event_number": {
+            "type": "integer",
+            "title": "Event Number"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "application_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          },
+          "technology_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Technology Id"
+          },
+          "recorded_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Recorded By"
+          },
+          "confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Confirmed At"
+          },
+          "cpe_name_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cpe Name Id"
+          },
+          "cpe_name": {
+            "type": "string",
+            "title": "Cpe Name"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "nvd-api",
+              "nvd-feed",
+              "nvd-captured-fixture"
+            ],
+            "title": "Source"
+          },
+          "observed_vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Vendor"
+          },
+          "observed_product": {
+            "type": "string",
+            "title": "Observed Product"
+          },
+          "observed_version": {
+            "type": "string",
+            "title": "Observed Version"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "catalog_evidence": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Catalog Evidence"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "event_number",
+          "workspace_id",
+          "application_id",
+          "technology_id",
+          "recorded_by",
+          "confirmed_at",
+          "cpe_name_id",
+          "cpe_name",
+          "mode",
+          "source",
+          "observed_vendor",
+          "observed_product",
+          "observed_version",
+          "reason",
+          "evidence",
+          "catalog_evidence",
+          "is_current"
+        ],
+        "title": "TechnologyCpeConfirmation"
+      },
+      "TechnologyCpeHistory": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TechnologyCpeConfirmation"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          },
+          "current_confirmation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Confirmation Id"
+          },
+          "legacy_provenance": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "not_recorded"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Provenance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "current_confirmation_id",
+          "legacy_provenance"
+        ],
+        "title": "TechnologyCpeHistory"
       },
       "TechnologyCreate": {
         "properties": {

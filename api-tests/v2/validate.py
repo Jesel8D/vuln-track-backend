@@ -69,30 +69,23 @@ def main():
     assert app.openapi() == spec, "Snapshot differs from live generator"
     baseline = load("baseline-contract.json")
     actual_contract = contract(spec)
-    for category in ("operations", "schemas", "securitySchemes"):
-        assert all(
-            actual_contract[category].get(key) == value for key, value in baseline[category].items()
-        ), "Existing contract changed: " + category
-    verified = load("verification-contract.json")
-    rc2 = load("rc2-contract.json")
-    rc22 = load("rc22-contract.json")
-    rc23 = load("rc23-contract.json")
-    rc3 = load("rc3-contract.json")
-    inventory = load("inventory-contract.json")
-    added = {
-        key: verified[key] | rc2[key] | rc22[key] | rc23[key] | rc3[key] | inventory[key]
-        for key in ("operations", "schemas")
-    }
-    assert {
-        key: value
-        for key, value in actual_contract["operations"].items()
-        if key not in baseline["operations"]
-    } == added["operations"]
-    assert {
-        key: value
-        for key, value in actual_contract["schemas"].items()
-        if key not in baseline["schemas"]
-    } == added["schemas"]
+    expected = deepcopy(baseline)
+    for name in ("verification", "rc2", "rc22", "rc23", "rc3", "inventory"):
+        extension = load(name + "-contract.json")
+        for category in ("operations", "schemas"):
+            # RC2.2/RC2.3 explicitly supersede earlier extension shapes.
+            expected[category].update(extension[category])
+    # Explicit, reviewable evolution. Frozen prior contracts remain unchanged;
+    # every exception carries its exact before/after shape, never a wildcard.
+    evolution = load("consistency-contract.json")
+    for category, changes in evolution["changes"].items():
+        for key, change in changes.items():
+            assert expected[category].get(key) == change["before"], (category, key, "before")
+            expected[category][key] = change["after"]
+    for category, additions in evolution["additions"].items():
+        assert not (expected[category].keys() & additions.keys()), category
+        expected[category].update(additions)
+    assert actual_contract == expected, "Unexpected contract evolution"
     collection = load("VulnTrack-V2.postman_collection.json")
     Draft4Validator(load("vendor/postman-collection-v2.1.schema.json")).validate(collection)
     builder_spec = importlib.util.spec_from_file_location(
@@ -214,7 +207,7 @@ def main():
             if request["error"]:
                 assert sample["body"]["error"]["code"] == request["error"]
     assert covered == set(ops), set(ops) - covered
-    assert len(ops) == 70 and len(builder.REQUESTS) == 105
+    assert len(ops) == 71 and len(builder.REQUESTS) == 106
     for env in [
         "local.postman_environment.json",
         "test.postman_environment.json",
@@ -237,7 +230,7 @@ def main():
             (
                 "VALIDATED: OpenAPI 3.1; Postman 2.1; ",
                 f"{len(ops)}",
-                " operations (65 legacy + 4 RC3 + 1 inventory); ",
+                " operations (70 prior + 1 confirmation history); ",
                 f"{len(builder.REQUESTS)}",
                 " requests; ",
                 f"{checked_bodies}",

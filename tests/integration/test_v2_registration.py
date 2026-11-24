@@ -83,7 +83,7 @@ def test_registration_login_me_personal_workspace_and_empty_dashboard(v2, postgr
     assert all(value == 0 for value in summary.values())
     assert client.get(
         f"/api/v2/workspaces/{user['workspace']}/applications", headers=user["headers"]
-    ).json() == {"items": []}
+    ).json() == {"items": [], "page": {"limit": 100, "offset": 0, "total": 0}}
     assets = client.get("/api/v1/assets", headers=user["headers"])
     assert assets.status_code == 200 and assets.json()["page"]["total"] == 0
     with postgres.connect() as connection:

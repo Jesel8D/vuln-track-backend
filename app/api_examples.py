@@ -1238,7 +1238,8 @@ RESPONSE_EXAMPLES = {
                     "status": "active",
                     "updated_at": ("2026-11-13T12:00:00.000001Z"),
                 }
-            ]
+            ],
+            "page": {"limit": 100, "offset": 0, "total": 1},
         },
     ],
     "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/analyses": [
@@ -1889,7 +1890,21 @@ RESPONSE_EXAMPLES = {
                     ("vendor"): ("cisco"),
                     ("version"): ("1.0.0.33"),
                 }
-            ]
+            ],
+            ("page"): {("limit"): 100, ("offset"): 0, ("total"): 1},
+            ("summary"): {("confirmed_cpe"): 0},
+        },
+    ],
+    (
+        "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/techno"
+        "logies/{technology_id}/cpe-confirmations"
+    ): [
+        200,
+        {
+            ("current_confirmation_id"): None,
+            ("items"): [],
+            ("legacy_provenance"): ("not_recorded"),
+            ("page"): {("limit"): 20, ("offset"): 0, ("total"): 0},
         },
     ],
     "GET /api/v2/workspaces/{workspace_id}/dashboard": [
@@ -2697,7 +2712,7 @@ RESPONSE_EXAMPLES = {
             },
             "scope": "active",
             "technologies": {
-                ("confirmation_provenance"): ("not_recorded"),
+                ("confirmation_provenance"): ("per_confirmation"),
                 "confirmed": 0,
                 ("excluded_inactive"): 0,
                 ("needs_review"): 0,
@@ -4996,9 +5011,11 @@ REQUEST_EXAMPLES = {
             ("summary"): ("Ejemplo; sustituir variables y secretos locales antes de enviar"),
             ("value"): {
                 ("cpe_name_id"): ("c817e5ba-62c1-41e7-a15c-fb851fea761e"),
+                ("evidence"): ("Ensayo sintético de la colección; no es un activo real"),
                 ("expected_selected_cpe"): None,
                 ("mode"): ("fixture"),
                 ("part"): ("o"),
+                ("reason"): ("Comparado manualmente con la versión observada en laboratorio"),
             },
         }
     },

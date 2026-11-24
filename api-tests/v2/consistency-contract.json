@@ -1,0 +1,711 @@
+{
+  "previous_openapi_sha256": "872fb8b3b1ee30452e8c871ecfea3d2b413eec626fcb0b3f34ed483fd3487a04",
+  "changes": {
+    "operations": {
+      "GET /api/v2/workspaces/{workspace_id}/applications": {
+        "before": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        },
+        "after": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 100,
+                "minimum": 1,
+                "default": 100,
+                "title": "Limit"
+              }
+            },
+            {
+              "name": "offset",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 10000,
+                "minimum": 0,
+                "default": 0,
+                "title": "Offset"
+              }
+            },
+            {
+              "name": "q",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "maxLength": 160,
+                "default": "",
+                "title": "Q"
+              }
+            },
+            {
+              "name": "application_id",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Application Id"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        }
+      },
+      "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies": {
+        "before": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "application_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Application Id"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        },
+        "after": {
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Workspace Id"
+              }
+            },
+            {
+              "name": "application_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "format": "uuid",
+                "title": "Application Id"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 100,
+                "minimum": 1,
+                "default": 100,
+                "title": "Limit"
+              }
+            },
+            {
+              "name": "offset",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 10000,
+                "minimum": 0,
+                "default": 0,
+                "title": "Offset"
+              }
+            }
+          ],
+          "security": [
+            {
+              "HTTPBearer": []
+            }
+          ],
+          "request": null,
+          "required": false,
+          "success": {
+            "200": {}
+          }
+        }
+      }
+    },
+    "schemas": {
+      "CPESelection": {
+        "before": {
+          "properties": {
+            "cpe_name_id": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cpe Name Id"
+            },
+            "expected_selected_cpe": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Selected Cpe"
+            },
+            "expected_cpe_name": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Cpe Name"
+            },
+            "part": {
+              "type": "string",
+              "enum": [
+                "h",
+                "o",
+                "a"
+              ],
+              "title": "Part",
+              "default": "a"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "fixture",
+                "live"
+              ],
+              "title": "Mode",
+              "default": "live"
+            }
+          },
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "cpe_name_id"
+          ],
+          "title": "CPESelection"
+        },
+        "after": {
+          "properties": {
+            "cpe_name_id": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Cpe Name Id"
+            },
+            "expected_selected_cpe": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Selected Cpe"
+            },
+            "expected_cpe_name": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Cpe Name"
+            },
+            "part": {
+              "type": "string",
+              "enum": [
+                "h",
+                "o",
+                "a"
+              ],
+              "title": "Part",
+              "default": "a"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "fixture",
+                "live"
+              ],
+              "title": "Mode",
+              "default": "live"
+            },
+            "expected_confirmation_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Confirmation Id"
+            },
+            "reason": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 500,
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reason"
+            },
+            "evidence": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Evidence"
+            }
+          },
+          "additionalProperties": false,
+          "type": "object",
+          "required": [
+            "cpe_name_id"
+          ],
+          "title": "CPESelection"
+        }
+      },
+      "TechnologyCoverage": {
+        "before": {
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Total"
+            },
+            "confirmed": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Confirmed"
+            },
+            "pending": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Pending"
+            },
+            "needs_review": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Needs Review"
+            },
+            "excluded_inactive": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Excluded Inactive"
+            },
+            "confirmation_provenance": {
+              "type": "string",
+              "const": "not_recorded",
+              "title": "Confirmation Provenance",
+              "default": "not_recorded"
+            }
+          },
+          "type": "object",
+          "required": [
+            "total",
+            "confirmed",
+            "pending",
+            "needs_review",
+            "excluded_inactive"
+          ],
+          "title": "TechnologyCoverage"
+        },
+        "after": {
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Total"
+            },
+            "confirmed": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Confirmed"
+            },
+            "pending": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Pending"
+            },
+            "needs_review": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Needs Review"
+            },
+            "excluded_inactive": {
+              "type": "integer",
+              "minimum": 0.0,
+              "title": "Excluded Inactive"
+            },
+            "confirmation_provenance": {
+              "type": "string",
+              "const": "per_confirmation",
+              "title": "Confirmation Provenance",
+              "default": "per_confirmation"
+            }
+          },
+          "type": "object",
+          "required": [
+            "total",
+            "confirmed",
+            "pending",
+            "needs_review",
+            "excluded_inactive"
+          ],
+          "title": "TechnologyCoverage"
+        }
+      }
+    },
+    "securitySchemes": {}
+  },
+  "additions": {
+    "operations": {
+      "GET /api/v2/workspaces/{workspace_id}/applications/{application_id}/technologies/{technology_id}/cpe-confirmations": {
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "application_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Application Id"
+            }
+          },
+          {
+            "name": "technology_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Technology Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "request": null,
+        "required": false,
+        "success": {
+          "200": {
+            "$ref": "#/components/schemas/TechnologyCpeHistory"
+          }
+        }
+      }
+    },
+    "schemas": {
+      "TechnologyCpeConfirmation": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "event_number": {
+            "type": "integer",
+            "title": "Event Number"
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "application_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Application Id"
+          },
+          "technology_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Technology Id"
+          },
+          "recorded_by": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Recorded By"
+          },
+          "confirmed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Confirmed At"
+          },
+          "cpe_name_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Cpe Name Id"
+          },
+          "cpe_name": {
+            "type": "string",
+            "title": "Cpe Name"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "fixture",
+              "live"
+            ],
+            "title": "Mode"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "nvd-api",
+              "nvd-feed",
+              "nvd-captured-fixture"
+            ],
+            "title": "Source"
+          },
+          "observed_vendor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Vendor"
+          },
+          "observed_product": {
+            "type": "string",
+            "title": "Observed Product"
+          },
+          "observed_version": {
+            "type": "string",
+            "title": "Observed Version"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence"
+          },
+          "catalog_evidence": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Catalog Evidence"
+          },
+          "is_current": {
+            "type": "boolean",
+            "title": "Is Current"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "event_number",
+          "workspace_id",
+          "application_id",
+          "technology_id",
+          "recorded_by",
+          "confirmed_at",
+          "cpe_name_id",
+          "cpe_name",
+          "mode",
+          "source",
+          "observed_vendor",
+          "observed_product",
+          "observed_version",
+          "reason",
+          "evidence",
+          "catalog_evidence",
+          "is_current"
+        ],
+        "title": "TechnologyCpeConfirmation"
+      },
+      "TechnologyCpeHistory": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TechnologyCpeConfirmation"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          },
+          "current_confirmation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Confirmation Id"
+          },
+          "legacy_provenance": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "not_recorded"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legacy Provenance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "current_confirmation_id",
+          "legacy_provenance"
+        ],
+        "title": "TechnologyCpeHistory"
+      }
+    },
+    "securitySchemes": {}
+  }
+}

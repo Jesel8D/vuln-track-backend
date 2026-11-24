@@ -23,6 +23,7 @@ from app.core.config import Settings
 from app.db.verify_catalog import verify_catalog_schema
 from app.db.verify_devices import verify_devices_schema
 from app.db.verify_schema import CVE_REVISION, verify_schema
+from app.db.verify_technology_cpe import verify_technology_cpe_schema
 from app.db.verify_verification import verify_verification_schema
 from app.main import create_app
 from scripts.disposable_v2 import SOURCES
@@ -385,6 +386,8 @@ class PersistentV2:
         try:
             with engine.connect() as connection:
                 verify_schema(connection, CVE_REVISION)
+                if connection.scalar(text("SELECT to_regnamespace('vulntrack_technology_cpe')")):
+                    verify_technology_cpe_schema(connection)
                 if connection.scalar(text("SELECT to_regnamespace('vulntrack_verification')")):
                     verify_verification_schema(connection)
                 if self.profile in {"rc2", "rc3", "rc3-catalog31"} or self.profile.startswith(

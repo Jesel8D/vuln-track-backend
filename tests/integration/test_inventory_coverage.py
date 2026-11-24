@@ -138,7 +138,7 @@ def test_technology_units_archived_and_unrecorded_provenance(api, postgres):  # 
         "pending": 2,
         "needs_review": 1,
         "excluded_inactive": 1,
-        "confirmation_provenance": "not_recorded",
+        "confirmation_provenance": "per_confirmation",
     }
 
 
