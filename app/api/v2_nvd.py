@@ -22,6 +22,8 @@ from app.schemas.cpe import Candidate, CandidateList, SearchInput, parse_cpe, un
 from app.services.applicability import encoded
 from app.services.cpe_catalog import Mode
 from app.services.nvd_findings import finding_rows
+from app.services.v2_cve_reliability import context as query_context
+from app.services.v2_cve_reliability import decorate, recover, require_active
 
 logger = logging.getLogger("vulntrack.v2.nvd")
 router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/applications/{application_id}")
@@ -170,6 +172,7 @@ def _authorize(
         )
     if not allowed:
         raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
+    recover(session)
     found = session.scalar(
         text("""SELECT 1 FROM vulntrack.applications
                WHERE workspace_id=:workspace AND id=:application
@@ -456,12 +459,13 @@ def analyze_technology(
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        _authorize(session, workspace_id, application_id, "writer")
+        _authorize(session, workspace_id, application_id, "writer", active_only=False)
         technology = (
             session.execute(
-                text("""SELECT selected_cpe, version, confidence FROM vulntrack.technologies
+                text("""SELECT selected_cpe, vendor, product, version, confidence
+                FROM vulntrack.technologies
                 WHERE workspace_id=:workspace AND application_id=:application AND
-                id=:technology"""),
+                id=:technology FOR UPDATE"""),
                 {
                     "workspace": workspace_id,
                     "application": application_id,
@@ -473,14 +477,9 @@ def analyze_technology(
         )
         if technology is None:
             raise APIError(404, "TECHNOLOGY_NOT_FOUND", "Tecnología no encontrada")
-        if technology["confidence"] != "user_confirmed" or not technology["selected_cpe"]:
-            raise APIError(
-                409, "CPE_CONFIRMATION_REQUIRED", "Confirma un CPE NVD antes de consultar CVE"
-            )
         previous = (
             session.execute(
-                text("""SELECT id, request_hash, status, coverage, total_results, stored_count,
-                    COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
+                text("""SELECT *,COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND initiated_by=:actor AND request_key=:key"""),
                 {"workspace": workspace_id, "actor": user.id, "key": key},
@@ -491,7 +490,91 @@ def analyze_technology(
         if previous:
             if previous["request_hash"] != request_hash:
                 raise APIError(409, "IDEMPOTENCY_CONFLICT", "Clave utilizada con otra solicitud")
-            return dict(previous)
+            public = {
+                key: value
+                for key, value in previous.items()
+                if key
+                in {
+                    "id",
+                    "application_id",
+                    "technology_id",
+                    "selected_cpe",
+                    "status",
+                    "coverage",
+                    "total_results",
+                    "retrieved_count",
+                    "stored_count",
+                    "page_count",
+                    "warning_codes",
+                    "failure_code",
+                    "source_timestamp",
+                    "created_at",
+                    "started_at",
+                    "completed_at",
+                    "run_context",
+                    "lease_expires_at",
+                    "response_received_at",
+                    "nvd_mode",
+                }
+            }
+            return decorate(
+                session, request.app.state.settings, "applications", [_historical_run(public)]
+            )[0]
+        _authorize(session, workspace_id, application_id, "writer")
+        if technology["confidence"] != "user_confirmed" or not technology["selected_cpe"]:
+            raise APIError(
+                409, "CPE_CONFIRMATION_REQUIRED", "Confirma un CPE NVD antes de consultar CVE"
+            )
+        try:
+            parsed = parse_cpe(technology["selected_cpe"])
+        except ValueError:
+            raise APIError(409, "CPE_INVALID", "Vuelve a confirmar un CPE válido") from None
+        if (
+            unbind_component(parsed[3]) != technology["version"]
+            or any(c in parsed[3] for c in "*?")
+            or parsed[3] == "-"
+        ):
+            raise APIError(
+                409, "CPE_VERSION_MISMATCH", "Confirma un CPE para la versión observada actual"
+            )
+        confirmation = (
+            session.execute(
+                text("""SELECT id,mode,source,cpe_name,observed_vendor,observed_product,
+                observed_version FROM vulntrack_technology_cpe.confirmations
+            WHERE workspace_id=:workspace AND technology_id=:technology
+            ORDER BY event_number DESC LIMIT 1"""),
+                {"workspace": workspace_id, "technology": technology_id},
+            )
+            .mappings()
+            .first()
+        )
+        if confirmation and any(
+            confirmation[saved] != technology[current]
+            for saved, current in (
+                ("cpe_name", "selected_cpe"),
+                ("observed_vendor", "vendor"),
+                ("observed_product", "product"),
+                ("observed_version", "version"),
+            )
+        ):
+            raise APIError(
+                409, "CPE_CONFIRMATION_REQUIRED", "Vuelve a confirmar la identificación actual"
+            )
+        if request.app.state.nvd_mode == "live" and (
+            not confirmation or confirmation["mode"] != "live"
+        ):
+            raise APIError(
+                409, "CPE_PROVENANCE_REQUIRED", "Confirma un CPE oficial antes de usar CVE live"
+            )
+        saved_context = query_context(
+            request,
+            identification_id=confirmation["id"] if confirmation else None,
+            cpe_mode=confirmation["mode"] if confirmation else None,
+            cpe_source=confirmation["source"] if confirmation else None,
+            vendor=technology["vendor"],
+            product=technology["product"],
+            version=technology["version"],
+        )
         active = session.scalar(
             text("""SELECT id FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND technology_id=:technology
@@ -507,9 +590,10 @@ def analyze_technology(
         session.execute(
             text("""INSERT INTO vulntrack.application_analysis_runs
                 (id, workspace_id, application_id, technology_id, initiated_by, selected_cpe,
-                 status, request_key, request_hash, query_parameters)
+                 status, request_key, request_hash, query_parameters,run_context,lease_expires_at)
                 VALUES (:id,:workspace,:application,:technology,:actor,:cpe,
-                 'queued',:key,:digest,CAST(:params AS jsonb))"""),
+                 'queued',:key,:digest,CAST(:params AS jsonb),CAST(:context AS jsonb),
+                 clock_timestamp()+make_interval(secs=>:seconds))"""),
             {
                 "id": run_id,
                 "workspace": workspace_id,
@@ -519,6 +603,8 @@ def analyze_technology(
                 "cpe": technology["selected_cpe"],
                 "key": key,
                 "digest": request_hash,
+                "context": json.dumps(saved_context),
+                "seconds": request.app.state.settings.cve_execution_seconds,
                 "params": json.dumps(
                     {
                         "cpeName": technology["selected_cpe"],
@@ -539,7 +625,7 @@ def analyze_technology(
         with workspace_session(
             request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
         ) as session:
-            _authorize(session, workspace_id, application_id, "writer")
+            _authorize(session, workspace_id, application_id, "writer", active_only=False)
             session.execute(
                 text(
                     "UPDATE vulntrack.application_analysis_runs SET status='running', "
@@ -559,7 +645,8 @@ def analyze_technology(
         with workspace_session(
             request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
         ) as session:
-            _authorize(session, workspace_id, application_id, "writer")
+            _authorize(session, workspace_id, application_id, "writer", active_only=False)
+            require_active(session, "applications", workspace_id, run_id)
             for row in rows:
                 session.execute(
                     text("""INSERT INTO vulntrack.application_findings
@@ -582,6 +669,7 @@ def analyze_technology(
             session.execute(
                 text("""UPDATE vulntrack.application_analysis_runs SET
                     status='completed', coverage=:coverage, completed_at=clock_timestamp(),
+                    response_received_at=clock_timestamp(),
                     total_results=:total, retrieved_count=:retrieved, stored_count=:stored,
                     page_count=1, next_index=:next, source_timestamp=:timestamp,
                     warning_codes=CAST(:warnings AS jsonb),
@@ -611,17 +699,7 @@ def analyze_technology(
             503, "NVD_PROCESSING_FAILED", "No se pudo completar la consulta NVD"
         ) from None
 
-    return {
-        "id": str(run_id),
-        "status": "completed",
-        "nvd_mode": request.app.state.nvd_mode,
-        "coverage": "complete" if complete else "partial",
-        "total_results": page.totalResults,
-        "retrieved_count": len(page_cves),
-        "stored_count": len(rows),
-        "source_timestamp": page.timestamp.isoformat(),
-        "warning_codes": sorted(set(warnings)),
-    }
+    return get_analysis(workspace_id, application_id, run_id, user, request)
 
 
 def _fail_run(request, actor, workspace, application, run_id, code):
@@ -631,7 +709,7 @@ def _fail_run(request, actor, workspace, application, run_id, code):
         with workspace_session(
             request.app.state.session_factory, request.app.state.settings, actor, workspace
         ) as session:
-            _authorize(session, workspace, application, "writer")
+            _authorize(session, workspace, application, "writer", active_only=False)
             session.execute(
                 text("""UPDATE vulntrack.application_analysis_runs SET status='failed',
                     completed_at=clock_timestamp(), failure_code=:code WHERE id=:id AND status
@@ -676,7 +754,7 @@ def get_analysis(
             session.execute(
                 text("""SELECT
                 id,application_id,technology_id,selected_cpe,status,coverage,total_results,retrieved_count,stored_count,page_count,
-                warning_codes,failure_code,source_timestamp,created_at,started_at,completed_at,
+                warning_codes,failure_code,source_timestamp,created_at,started_at,completed_at,run_context,lease_expires_at,response_received_at,
                 COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id"""),
@@ -687,7 +765,9 @@ def get_analysis(
         )
         if row is None:
             raise APIError(404, "ANALYSIS_NOT_FOUND", "Consulta no encontrada")
-        return _historical_run(row)
+        return decorate(
+            session, request.app.state.settings, "applications", [_historical_run(row)]
+        )[0]
 
 
 @router.get("/analyses")
@@ -709,7 +789,8 @@ def list_analyses(
             select="r.id,r.application_id,r.technology_id,r.selected_cpe,t.product,t.version,"
             "r.status,r.coverage,r.total_results,r.retrieved_count,r.stored_count,r.page_count,"
             "r.warning_codes,r.failure_code,r.source_timestamp,r.created_at,r.started_at,"
-            "r.completed_at,COALESCE(r.query_parameters->>'nvd_mode','unknown') AS nvd_mode",
+            "r.completed_at,r.run_context,r.lease_expires_at,r.response_received_at,"
+            "COALESCE(r.query_parameters->>'nvd_mode','unknown') AS nvd_mode",
             table="vulntrack.application_analysis_runs r JOIN vulntrack.technologies t "
             "ON t.workspace_id=r.workspace_id AND t.application_id=r.application_id "
             "AND t.id=r.technology_id",
@@ -719,7 +800,12 @@ def list_analyses(
             limit=limit,
             offset=offset,
         )
-        result["items"] = [_historical_run(row) for row in result["items"]]
+        result["items"] = decorate(
+            session,
+            request.app.state.settings,
+            "applications",
+            [_historical_run(row) for row in result["items"]],
+        )
         return result
 
 
@@ -740,7 +826,7 @@ def get_findings(
         run = (
             session.execute(
                 text("""SELECT id,application_id,technology_id,selected_cpe,
-                    created_at,status,coverage,
+                    created_at,status,coverage,run_context,lease_expires_at,response_received_at,source_timestamp,
                     COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                     FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:id"""),
@@ -765,7 +851,9 @@ def get_findings(
         return result | {
             "run_status": run["status"],
             "coverage": run["coverage"],
-            "analysis": _historical_run(run),
+            "analysis": decorate(
+                session, request.app.state.settings, "applications", [_historical_run(run)]
+            )[0],
         }
 
 

@@ -23,7 +23,10 @@ class Quota:
     quota before scaling. Supplying a key deliberately does not raise the budget.
     """
 
-    def __init__(self, clock=time.monotonic):
+    def __init__(self, clock=time.monotonic, *, spacing=7):
+        if not 7 <= spacing <= 60:
+            raise ValueError("NVD spacing must remain conservative")
+        self.spacing = spacing
         self.clock = clock
         self.lock = Lock()
         self.next_call = 0.0
@@ -54,8 +57,9 @@ class Quota:
                 raise APIError(503, "NVD_UNAVAILABLE", "NVD temporalmente no disponible")
             if now < self.next_call:
                 raise APIError(429, "NVD_RATE_LIMIT", "Esperar antes de consultar NVD")
-            # Conservative spacing also without API key, no bursts (max 5/30s).
-            self.next_call = now + 7
+            # Project spacing, without bursts or increases for a key. Current official
+            # quotas must be ratified separately before enabling live requests.
+            self.next_call = now + self.spacing
 
     def backoff(self, retry_after=None):
         from email.utils import parsedate_to_datetime

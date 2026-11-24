@@ -24,9 +24,13 @@ def without_verified_v2(connection, actual):
         return actual
     candidates = [
         json.loads(files("app.db").joinpath(name).read_text())
-        for name in ("v2_additions_catalog.json", "v2_stabilized_catalog.json")
+        for name in (
+            "v2_additions_catalog.json",
+            "v2_stabilized_catalog.json",
+            "v2_reliable_catalog.json",
+        )
     ]
-    # Accept only either exact published V2 revision, never arbitrary constraint drift.
+    # Accept only an exact published V2 revision, never arbitrary constraint drift.
     reference = next(
         (
             candidate

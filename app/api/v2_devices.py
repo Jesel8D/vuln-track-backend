@@ -39,6 +39,8 @@ from app.services.device_revisions import (
     require_version,
 )
 from app.services.nvd_findings import finding_rows
+from app.services.v2_cve_reliability import context as query_context
+from app.services.v2_cve_reliability import decorate, query_state_sql, recover, require_active
 
 router = APIRouter(prefix="/api/v2/workspaces/{workspace_id}/devices", tags=["Dispositivos RC2"])
 logger = logging.getLogger(__name__)
@@ -46,12 +48,11 @@ Limit = Annotated[int, Query(ge=1, le=100)]
 Offset = Annotated[int, Query(ge=0, le=1000000)]
 DEVICE_SCOPE = "workspace_id=:workspace AND device_id=:device"
 RUN_FIELDS = """id, identification_id, selected_cpe, observed_version, mode, source,
-    CASE WHEN status='running' AND created_at < statement_timestamp()-interval '2 minutes'
-      THEN 'failed' ELSE status END AS status,
+    status,
     coverage, total_results, retrieved_count, stored_count, warning_codes,
-    CASE WHEN status='running' AND created_at < statement_timestamp()-interval '2 minutes'
-      THEN 'INTERRUPTED' ELSE failure_code END AS failure_code,
+    failure_code,
     source_timestamp, created_at, completed_at, evaluated_technology,
+    device_id,run_context,lease_expires_at,response_received_at,
     (SELECT i.identity_generation FROM vulntrack_devices.identifications i
       WHERE i.workspace_id=runs.workspace_id AND i.device_id=runs.device_id
         AND i.id=runs.identification_id) AS identity_generation,
@@ -78,6 +79,8 @@ def access(request, actor, workspace, *, write=False):
             {"workspace": workspace, "roles": roles},
         ):
             raise APIError(404, "DEVICE_SCOPE_UNAVAILABLE", "Inventario no disponible")
+        recover(session)
+        session.info["cve_settings"] = settings
         yield session
 
 
@@ -366,8 +369,9 @@ def list_devices(
 def device_detail(session, scope):
     return one(
         session,
-        """
-        SELECT d.*, to_jsonb(i) AS current_identification,
+        f"""
+        SELECT d.*, {query_state_sql("devices", "d")} AS current_cve_query_state,
+            to_jsonb(i) AS current_identification,
             CASE WHEN i.id IS NOT NULL THEN 'confirmed'
                  WHEN d.identity_generation > 1 THEN 'needs_review'
                  ELSE 'pending' END AS cpe_review_state
@@ -632,16 +636,23 @@ def list_identifications(
 
 
 def run(session, scope):
-    return present_run(
-        one(
-            session,
-            f"""
+    return decorate(
+        session,
+        session.info["cve_settings"],
+        "devices",
+        [
+            present_run(
+                one(
+                    session,
+                    f"""
         SELECT {RUN_FIELDS} FROM vulntrack_devices.runs WHERE {DEVICE_SCOPE} AND id=:run
     """,
-            scope,
-            "DEVICE_RUN_NOT_FOUND",
-        )
-    )
+                    scope,
+                    "DEVICE_RUN_NOT_FOUND",
+                )
+            )
+        ],
+    )[0]
 
 
 @router.post("/{device_id}/analyses", status_code=201)
@@ -661,9 +672,9 @@ def analyze_device(
     }
     mode = request.app.state.nvd_mode
     with access(request, user.id, workspace_id, write=True) as session:
-        device(session, scope, write=True)
+        device(session, scope)
         lock_device(session, scope)
-        row = device(session, scope, write=True)
+        row = device(session, scope)
         before = session.scalar(
             text(f"""
             SELECT id FROM vulntrack_devices.runs
@@ -673,22 +684,16 @@ def analyze_device(
         )
         if before:
             return run(session, {**scope, "run": before})
+        if row["status"] != "active":
+            raise APIError(409, "DEVICE_RETIRED", "El dispositivo está retirado")
         selected = current_identification(session, scope)
         if not selected or row["version"] is None:
             raise APIError(409, "CPE_CONFIRMATION_REQUIRED", "Confirma un CPE con versión conocida")
         validate_device_cpe(row, selected["cpe_name"])
-        if selected["mode"] != mode:
+        if mode == "live" and selected["mode"] != "live":
             raise APIError(
                 409, "CPE_MODE_CHANGED", "Vuelve a confirmar el CPE en el modo NVD actual"
             )
-        session.execute(
-            text(f"""
-            UPDATE vulntrack_devices.runs SET status='failed', failure_code='INTERRUPTED',
-                completed_at=clock_timestamp()
-            WHERE {DEVICE_SCOPE} AND status='running' AND created_at < now()-interval '2 minutes'
-        """),
-            scope,
-        )
         if session.scalar(
             text(f"""
             SELECT id FROM vulntrack_devices.runs WHERE {DEVICE_SCOPE} AND status='running'
@@ -702,15 +707,30 @@ def analyze_device(
         session.execute(
             text("""
             INSERT INTO vulntrack_devices.runs (id,workspace_id,device_id,identification_id,
-                initiated_by,request_key,selected_cpe,observed_version,mode)
-            VALUES (:run,:workspace,:device,:identification,:actor,:key,:cpe,:version,:mode)
+                initiated_by,request_key,selected_cpe,observed_version,mode,run_context,lease_expires_at)
+            VALUES (:run,:workspace,:device,:identification,:actor,:key,:cpe,:version,:mode,
+                    CAST(:context AS jsonb),clock_timestamp()+make_interval(secs=>:seconds))
         """),
             {
                 **scope,
                 "identification": selected["id"],
                 "cpe": selected["cpe_name"],
                 "version": row["version"],
-                "mode": mode,
+                # The legacy column is bound to the CPE identification by the DB guard.
+                # CVE transport provenance is independent and lives in run_context.
+                "mode": selected["mode"],
+                "context": json.dumps(
+                    query_context(
+                        request,
+                        identification_id=selected["id"],
+                        cpe_mode=selected["mode"],
+                        cpe_source=(selected.get("catalog_evidence") or {}).get("source"),
+                        vendor=row["product_vendor"],
+                        product=row["product"],
+                        version=row["version"],
+                    )
+                ),
+                "seconds": request.app.state.settings.cve_execution_seconds,
             },
         )
         audit(session, scope, "device.analysis_requested", "device_analysis", scope["run"])
@@ -724,15 +744,7 @@ def analyze_device(
             warnings.append("PAGE_BUDGET_REACHED")
         with access(request, user.id, workspace_id, write=True) as session:
             lock_device(session, scope)
-            if not session.scalar(
-                text(f"""
-                SELECT id FROM vulntrack_devices.runs
-                WHERE {DEVICE_SCOPE} AND id=:run AND status='running'
-                AND created_at >= now()-interval '2 minutes'
-            """),
-                scope,
-            ):
-                raise APIError(409, "ANALYSIS_INTERRUPTED", "La consulta dejó de estar activa")
+            require_active(session, "devices", workspace_id, scope["run"])
             for entry in findings:
                 session.execute(
                     text("""
@@ -748,7 +760,8 @@ def analyze_device(
             session.execute(
                 text(f"""
                 UPDATE vulntrack_devices.runs SET status='completed',coverage=:coverage,
-                    completed_at=clock_timestamp(), total_results=:total,
+                    completed_at=clock_timestamp(),response_received_at=clock_timestamp(),
+                    total_results=:total,
                     retrieved_count=:retrieved,
                     stored_count=:stored, source_timestamp=:timestamp,
                     warning_codes=CAST(:warnings AS jsonb)
@@ -811,7 +824,12 @@ def list_analyses(
             limit=limit,
             offset=offset,
         )
-        result["items"] = [present_run(item) for item in result["items"]]
+        result["items"] = decorate(
+            session,
+            request.app.state.settings,
+            "devices",
+            [present_run(item) for item in result["items"]],
+        )
         return result
 
 
@@ -835,8 +853,8 @@ def list_findings(
 ):
     scope = {"workspace": workspace_id, "device": device_id, "run": run_id}
     with access(request, user.id, workspace_id) as session:
-        run(session, scope)
-        return page(
+        analysis = run(session, scope)
+        result = page(
             session,
             select=FINDING_FIELDS,
             table="vulntrack_devices.findings",
@@ -846,6 +864,7 @@ def list_findings(
             limit=limit,
             offset=offset,
         )
+        return result | {"analysis": analysis}
 
 
 def finding(session, scope):

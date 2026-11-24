@@ -108,7 +108,15 @@ def test_devices_separate_history_review_recommendations_and_source(api, postgre
         == "CPE_MODE_CHANGED"
     )
     assert confirm(client, router, a, first["id"]).json()["mode"] == "live"
-    assert client.get(router + "/analyses/" + run["id"], headers=a["headers"]).json() == run
+    historical = client.get(router + "/analyses/" + run["id"], headers=a["headers"]).json()
+    assert historical["assessment"]["correspondence"] == "historical"
+    assert historical["assessment"]["requires_new_query"]
+    assert not historical["is_current_technology"]
+    assert {
+        **historical,
+        "assessment": run["assessment"],
+        "is_current_technology": run["is_current_technology"],
+    } == run
     identities = client.get(router + "/identifications", headers=a["headers"]).json()["items"]
     assert [value["mode"] for value in identities] == ["live", "fixture"]
     finding = client.get(

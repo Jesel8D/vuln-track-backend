@@ -96,9 +96,11 @@ def test_external_catalog_readonly_and_local_registration(api, postgres):  # noq
                 response.json()["current_identification"]["catalog_evidence"]["source"]
                 == "nvd-feed"
             )
-            assert client.post(path + "/analyses", headers=create_headers).json()["error"][
-                "code"
-            ] == ("CPE_MODE_CHANGED")
+            analysis = client.post(path + "/analyses", headers=create_headers)
+            assert analysis.status_code == 201, analysis.json()
+            assert analysis.json()["provenance"]["cpe_mode"] == "live"
+            assert analysis.json()["provenance"]["cpe_source"] == "nvd-feed"
+            assert analysis.json()["provenance"]["cve_source"] == "simulated"
             for revision, version in [(1, None), (2, candidate["version"])]:
                 edit = client.patch(
                     path,
