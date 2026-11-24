@@ -37,11 +37,26 @@ def validated_answers(answers):
 class Pin:
     address: str
     resolved_monotonic: float
+    started_monotonic: float | None = None
 
     def check(self):
         public_ipv4(self.address)
-        if not 0 <= time.monotonic() - self.resolved_monotonic < 20:
+        start = (
+            self.started_monotonic
+            if self.started_monotonic is not None
+            else self.resolved_monotonic
+        )
+        if not start <= self.resolved_monotonic <= time.monotonic() < start + 20:
             raise denied()
+
+    def remaining(self):
+        self.check()
+        start = (
+            self.started_monotonic
+            if self.started_monotonic is not None
+            else self.resolved_monotonic
+        )
+        return 20 - (time.monotonic() - start)
 
 
 class NVDLabTransport(httpx.AsyncBaseTransport):

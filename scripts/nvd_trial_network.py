@@ -21,7 +21,7 @@ from app.integrations.nvd_lab_transport import public_ipv4, validated_answers
 TOOLS = Path("/opt/nvd-netguard")
 
 
-def rules(pg, public=None, dns=False):
+def rules(pg, public=None, dns=False, seconds=20):
     if ipaddress.ip_address(pg).version != 4 or not ipaddress.ip_address(pg).is_private:
         raise ValueError("Owned private PG IPv4 required")
     output = [
@@ -33,7 +33,9 @@ def rules(pg, public=None, dns=False):
         f"-A OUTPUT -d {pg}/32 -p tcp --dport 5432 -j ACCEPT",
     ]
     if public:
-        expiry = (datetime.now(UTC) + timedelta(seconds=20)).strftime("%Y-%m-%dT%H:%M:%S")
+        expiry = (datetime.now(UTC) + timedelta(seconds=max(0, min(20, seconds)))).strftime(
+            "%Y-%m-%dT%H:%M:%S"
+        )
         output.append(
             f"-A OUTPUT -d {public_ipv4(public)}/32 -p tcp --dport 443 "
             f"-m time --datestop {expiry} -j ACCEPT"
@@ -45,18 +47,18 @@ def rules(pg, public=None, dns=False):
     return "\n".join(output + ["COMMIT", ""])
 
 
-def install(pg, public=None, dns=False):
+def install(pg, public=None, dns=False, seconds=20):
     env = {
         "PATH": "/usr/bin:/bin",
         "LD_LIBRARY_PATH": str(TOOLS / "lib"),
         "XTABLES_LIBDIR": str(TOOLS / "xtables"),
     }
-    # Docker disables IPv6 in THIS namespace before interfaces are attached.
+    # Docker disables IPv6 in THIS namespace before a public interface is attached.
     # Do not load a missing host ip6tables module or alter host IPv6 settings.
     for name in ("all", "default"):
         if Path(f"/proc/sys/net/ipv6/conf/{name}/disable_ipv6").read_text().strip() != "1":
             raise RuntimeError("Lab namespace IPv6 must be disabled")
-    for binary, data in [("iptables-restore", rules(pg, public, dns))]:
+    for binary, data in [("iptables-restore", rules(pg, public, dns, seconds))]:
         result = subprocess.run(
             [str(TOOLS / binary), "-w", "2"],
             input=data.encode(),
@@ -85,13 +87,13 @@ def hold(pg, directory):
         pin = directory / "pin.json"
         if opened is None and pin.exists():
             data = json.loads(pin.read_text())
-            if set(data) != {"address", "resolved_monotonic"}:
+            if set(data) != {"address", "resolved_monotonic", "started_monotonic"}:
                 raise ValueError("Unexpected pin")
             age = time.monotonic() - data["resolved_monotonic"]
             if not 0 <= age < 20:
                 raise ValueError("Expired pin")
             # setup process installs the one pinned public rule before writing pin
-            opened = data["resolved_monotonic"]
+            opened = data["started_monotonic"]
         if not closed and (
             Path("/output/close-egress").exists()
             or opened is not None
@@ -105,6 +107,7 @@ def hold(pg, directory):
 
 
 def setup(pg, directory):
+    started = time.monotonic()
     install(pg, dns=True)
     try:
         result = subprocess.run(
@@ -116,8 +119,15 @@ def setup(pg, directory):
         if result.returncode:
             raise RuntimeError("Controlled DNS failed")
         answers = validated_answers(json.loads(result.stdout))
-        pin = {"address": answers[0], "resolved_monotonic": time.monotonic()}
-        install(pg, public=pin["address"])
+        pin = {
+            "address": answers[0],
+            "resolved_monotonic": time.monotonic(),
+            "started_monotonic": started,
+        }
+        remaining = 20 - (time.monotonic() - started)
+        if remaining <= 0:
+            raise ValueError("DNS consumed the execution deadline")
+        install(pg, public=pin["address"], seconds=remaining)
         p = directory / "pin.json"
         pending = directory / "pin.pending.json"
         fd = os.open(pending, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
