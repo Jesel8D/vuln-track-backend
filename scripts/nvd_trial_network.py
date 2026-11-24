@@ -51,13 +51,12 @@ def install(pg, public=None, dns=False):
         "LD_LIBRARY_PATH": str(TOOLS / "lib"),
         "XTABLES_LIBDIR": str(TOOLS / "xtables"),
     }
-    for binary, data in [
-        (
-            "ip6tables-restore",
-            "*filter\n:INPUT DROP [0:0]\n:OUTPUT DROP [0:0]\n:FORWARD DROP [0:0]\nCOMMIT\n",
-        ),
-        ("iptables-restore", rules(pg, public, dns)),
-    ]:
+    # Docker disables IPv6 in THIS namespace before interfaces are attached.
+    # Do not load a missing host ip6tables module or alter host IPv6 settings.
+    for name in ("all", "default"):
+        if Path(f"/proc/sys/net/ipv6/conf/{name}/disable_ipv6").read_text().strip() != "1":
+            raise RuntimeError("Lab namespace IPv6 must be disabled")
+    for binary, data in [("iptables-restore", rules(pg, public, dns))]:
         result = subprocess.run(
             [str(TOOLS / binary), "-w", "2"],
             input=data.encode(),
