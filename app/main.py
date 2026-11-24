@@ -15,6 +15,7 @@ from app.api.router import router
 from app.api.v2_dashboard import router as v2_dashboard_router
 from app.api.v2_dashboard import source_router as v2_source_dashboard_router
 from app.api.v2_devices import router as v2_devices_router
+from app.api.v2_inventory import router as v2_inventory_router
 from app.api.v2_nvd import router as v2_nvd_router
 from app.api.v2_resources import router as v2_resources_router
 from app.api.v2_targets import (
@@ -237,6 +238,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(v2_nvd_router)
     app.include_router(v2_devices_router)
     app.include_router(v2_dashboard_router)
+    app.include_router(v2_inventory_router)
     app.include_router(v2_source_dashboard_router)
     app.include_router(v2_targets_router)
     app.include_router(v2_workspace_targets_router)
@@ -251,6 +253,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             v2_nvd_router,
             v2_devices_router,
             v2_dashboard_router,
+            v2_inventory_router,
             v2_source_dashboard_router,
             v2_targets_router,
             v2_workspace_targets_router,

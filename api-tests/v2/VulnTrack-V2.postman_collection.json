@@ -968,6 +968,63 @@
               "body": "{\n  \"summary\": {\n    \"applications_total\": 1,\n    \"targets_total\": 0,\n    \"authorized_targets_total\": 0,\n    \"technologies_total\": 0,\n    \"confirmed_cpe_total\": 0,\n    \"analyses_total\": 0,\n    \"analyses_in_progress\": 0,\n    \"analyses_failed\": 0,\n    \"findings_total\": 0,\n    \"findings_open\": 0,\n    \"critical_open\": 0,\n    \"high_open\": 0,\n    \"medium_open\": 0,\n    \"low_open\": 0,\n    \"severity_unknown\": 0,\n    \"technologies_with_completed_analysis\": 0\n  },\n  \"recent_analyses\": [],\n  \"priority_findings\": [],\n  \"analysis_trend\": [\n    {\n      \"month\": \"2026-11-13T12:00:00.000001Z\",\n      \"analyses\": 0\n    },\n    {\n      \"month\": \"2026-11-13T12:00:00.000001Z\",\n      \"analyses\": 0\n    },\n    {\n      \"month\": \"2026-11-13T12:00:00.000001Z\",\n      \"analyses\": 0\n    },\n    {\n      \"month\": \"2026-11-13T12:00:00.000001Z\",\n      \"analyses\": 0\n    },\n    {\n      \"month\": \"2026-11-13T12:00:00.000001Z\",\n      \"analyses\": 0\n    },\n    {\n      \"month\": \"2026-11-13T12:00:00.000001Z\",\n      \"analyses\": 0\n    }\n  ]\n}"
             }
           ]
+        },
+        {
+          "id": "24444a65-0c97-57e5-a707-4b4dd06cd4bb",
+          "name": "Cobertura CPE del inventario",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-coverage",
+            "description": "Lectura agregada de entidades activas del workspace; no consulta catálogo ni CVE."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Particiones de inventario',()=>{['devices','technologies'].forEach(k=>pm.expect(data[k].confirmed+data[k].pending+data[k].needs_review).to.eql(data[k].total));});",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/inventory-coverage",
+                "description": "Lectura agregada de entidades activas del workspace; no consulta catálogo ni CVE."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000001\",\n  \"scope\": \"active\",\n  \"devices\": {\n    \"total\": 0,\n    \"confirmed\": 0,\n    \"pending\": 0,\n    \"needs_review\": 0,\n    \"excluded_inactive\": 0,\n    \"without_version\": 0,\n    \"confirmed_by_mode\": {\n      \"live\": 0,\n      \"fixture\": 0,\n      \"unknown\": 0\n    }\n  },\n  \"technologies\": {\n    \"total\": 0,\n    \"confirmed\": 0,\n    \"pending\": 0,\n    \"needs_review\": 0,\n    \"excluded_inactive\": 0,\n    \"confirmation_provenance\": \"not_recorded\"\n  }\n}"
+            }
+          ]
         }
       ]
     },

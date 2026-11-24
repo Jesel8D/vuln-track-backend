@@ -2683,6 +2683,30 @@ RESPONSE_EXAMPLES = {
             ("to_version"): 4,
         },
     ],
+    "GET /api/v2/workspaces/{workspace_id}/inventory-coverage": [
+        200,
+        {
+            "devices": {
+                "confirmed": 0,
+                ("confirmed_by_mode"): {("fixture"): 0, ("live"): 0, ("unknown"): 0},
+                ("excluded_inactive"): 0,
+                "needs_review": 0,
+                "pending": 0,
+                "total": 0,
+                "without_version": 0,
+            },
+            "scope": "active",
+            "technologies": {
+                ("confirmation_provenance"): ("not_recorded"),
+                "confirmed": 0,
+                ("excluded_inactive"): 0,
+                ("needs_review"): 0,
+                "pending": 0,
+                "total": 0,
+            },
+            "workspace_id": ("00000000-0000-4000-8000-000000000001"),
+        },
+    ],
     "GET /api/v2/workspaces/{workspace_id}/nvd-dashboard/{nvd_mode}": [
         200,
         {
