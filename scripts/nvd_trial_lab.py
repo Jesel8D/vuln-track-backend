@@ -223,6 +223,8 @@ def child(destination, plan=None, grant=None):
                     "none",
                     "--read-only",
                     "--user=0:0",
+                    "--sysctl=net.ipv6.conf.all.disable_ipv6=1",
+                    "--sysctl=net.ipv6.conf.default.disable_ipv6=1",
                     "--cap-drop=ALL",
                     "--cap-add=NET_ADMIN",
                     "--cap-add=NET_RAW",
