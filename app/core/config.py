@@ -81,6 +81,14 @@ class Settings(BaseSettings):
     nvd_mode: Literal["disabled", "live"] = "disabled"
     nvd_api_key: SecretStr | None = Field(default=None, repr=False)
     cpe_catalog_read_url: SecretStr | None = Field(default=None, repr=False)
+    cve_live_enabled: bool = False
+    cve_http_max_bytes: int = Field(default=2097152, ge=1024, le=2097152)
+    cve_http_total_seconds: int = Field(default=10, ge=1, le=30)
+    cve_max_pages: int = Field(default=5, ge=1, le=5)
+    cve_max_requests: int = Field(default=15, ge=1, le=15)
+    cve_max_records: int = Field(default=500, ge=1, le=500)
+    cve_max_bytes: int = Field(default=10485760, ge=1024, le=10485760)
+    cve_max_seconds: int = Field(default=300, ge=1, le=300)
     cve_freshness_seconds: int = Field(default=86400, ge=60, le=604800)
     cve_execution_seconds: int = Field(default=120, ge=30, le=300)
     cve_cache_enabled: bool = True
@@ -117,6 +125,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def secure_configuration(self):
+        if self.cve_live_enabled:
+            raise ValueError(
+                "CVE live requiere una versión posterior revisada y autorización específica"
+            )
         if self.registration_enabled and self.workspace_hmac_key is None:
             raise ValueError("Registro V2 requiere WORKSPACE_HMAC_KEY")
         try:

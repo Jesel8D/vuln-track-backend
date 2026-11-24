@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from app.core.errors import APIError
+from app.integrations.cve_transport import HTTPPolicy, content
 from app.integrations.nvd import NVDClient
 from app.schemas.cpe import parse_cpe
 
@@ -49,7 +50,7 @@ class CVEPage(BaseModel):
 class CVEClient(NVDClient):
     throttle_code = "NVD_THROTTLED"
 
-    def __init__(self, *args, source_kind=None, cache_namespace=None, **kwargs):
+    def __init__(self, *args, source_kind=None, cache_namespace=None, http_policy=None, **kwargs):
         super().__init__(*args, **kwargs)
         if source_kind not in {None, "fixture", "simulated"}:
             raise ValueError("Only explicit offline source labels are configurable")
@@ -57,8 +58,12 @@ class CVEClient(NVDClient):
             raise ValueError("Offline source labels require an injected transport")
         self.source_kind = source_kind
         self.cache_namespace = cache_namespace
+        self.http_policy = http_policy or HTTPPolicy(timeout=self.timeout)
 
-    def page(self, cpe, start=0, limit=100):
+    def _content(self, url, params):
+        return content(self, url, params)
+
+    def page(self, cpe, start=0, limit=100, *, budget=None):
         parse_cpe(cpe)
         if (
             type(start) is not int
@@ -68,9 +73,8 @@ class CVEClient(NVDClient):
         ):
             raise ValueError("Invalid bounded CVE pagination")
         try:
-            raw = self._content(
-                CVE_URL, {"cpeName": cpe, "startIndex": start, "resultsPerPage": limit}
-            )
+            params = {"cpeName": cpe, "startIndex": start, "resultsPerPage": limit}
+            raw = content(self, CVE_URL, params, budget=budget)
 
             # Reject duplicate keys/NaN rather than silently accepting ambiguous evidence.
             def pairs(items):
