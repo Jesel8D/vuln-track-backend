@@ -435,3 +435,45 @@ def test_actual_local_tls_keeps_nvd_sni_rejects_untrusted_ca_and_nonpublic_peer(
     finally:
         thread.join(timeout=6)
         listener.close()
+
+
+def test_active_cancellation_closes_the_lab_exchange_without_retry(monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+
+    a = adapter()
+    entered = Event()
+    stop = Event()
+    closed = []
+
+    async def lower(request):
+        entered.set()
+        try:
+            await asyncio.sleep(5)
+        finally:
+            closed.append(True)
+
+    monkeypatch.setattr(a._http, "handle_async_request", lower)
+    c = LabCVEClient(a, stop)
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(c.prepare)
+        assert entered.wait(1)
+        stop.set()
+        with pytest.raises(APIError) as error:
+            future.result(timeout=1)
+    assert error.value.code == "INTERRUPTED" and closed == [True] and a.attempts == 1
+    assert source_kind(c) == "unknown" and not proven(c)
+
+
+def test_redirect_response_has_no_follow_up_and_no_live_proof(monkeypatch):
+    a = adapter()
+    calls = []
+
+    async def lower(request):
+        calls.append(request)
+        return httpx.Response(302, headers={"Location": "http://169.254.169.254/private"})
+
+    monkeypatch.setattr(a._http, "handle_async_request", lower)
+    c = LabCVEClient(a, Event())
+    with pytest.raises(APIError):
+        c.prepare()
+    assert len(calls) == 1 and not proven(c) and source_kind(c) == "unknown"

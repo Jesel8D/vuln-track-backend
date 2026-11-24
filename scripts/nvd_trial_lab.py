@@ -201,7 +201,7 @@ def child(destination, plan=None, grant=None):
         outputs = destination / "results"
         outputs.mkdir(mode=0o700)
         image = (
-            os.environ.get("TRIAL_IMAGE", "vulntrack-backend:5c1r-trial")
+            os.environ.get("TRIAL_IMAGE", "vulntrack-backend:5c2-egress")
             if permit is None
             else permit.plan["image"]
         )
@@ -222,6 +222,7 @@ def child(destination, plan=None, grant=None):
                     "--network",
                     "none",
                     "--read-only",
+                    "--tmpfs=/run:rw,noexec,nosuid,nodev,size=1m",
                     "--user=0:0",
                     "--sysctl=net.ipv6.conf.all.disable_ipv6=1",
                     "--sysctl=net.ipv6.conf.default.disable_ipv6=1",
@@ -267,6 +268,7 @@ def child(destination, plan=None, grant=None):
                 ]
             )
             run(["docker", "network", "connect", egress, guard])
+            permit.check()  # Expiry also applies before DNS, not only before HTTPS.
             run(
                 [
                     "docker",
@@ -475,7 +477,14 @@ def execute(args):
         # Burn before setup/DNS; failures never rearm this approval, even when a
         # new destination is selected. Do not remove this ledger to retry.
         fd = os.open(directory / permit.plan["nonce"], os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        os.write(fd, (permit.grant_sha256 + "\n").encode())
+        os.fsync(fd)
         os.close(fd)
+        directory_fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
         return launch(
             args.catalogue_record.resolve(),
             None,
@@ -505,7 +514,13 @@ def main():
     elif args.plan_real:
         create_plan(args.plan_real)
     elif args.mode == "real":
-        execute(args)
+        from app.core.errors import APIError
+
+        try:
+            execute(args)
+        except APIError:
+            print("NO-GO: trusted documentary review and a signed one-use grant are required")
+            return 2
     else:
         if not args.catalogue_record or not args.fixture:
             p.error("explicit public catalogue record and simulated fixture required")
@@ -513,4 +528,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
