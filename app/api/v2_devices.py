@@ -218,6 +218,9 @@ def assisted_identity(session, scope, selection, reader):
         "nvd_modified": row["nvd_modified"].isoformat(),
         "synchronized_at": row["synchronized_at"].isoformat(),
         "observed_version": scope["version"],
+        "observed_vendor": scope["product_vendor"],
+        "observed_product": scope["product"],
+        "component_kind": scope["component_kind"],
     }
 
 
@@ -550,7 +553,17 @@ def confirm_identification(
             raise APIError(409, "CPE_SELECTION_CHANGED", "La identificación vigente cambió")
         validate_device_candidate(row, candidate)
         return register_identification(
-            session, scope, candidate, request.app.state.nvd_mode, payload.reason
+            session,
+            scope,
+            candidate,
+            request.app.state.nvd_mode,
+            payload.reason,
+            {
+                "observed_vendor": row["product_vendor"],
+                "observed_product": row["product"],
+                "observed_version": row["version"],
+                "component_kind": row["component_kind"],
+            },
         )
 
 
@@ -581,6 +594,10 @@ def reidentify_device(
             "source": record["source"],
             "nvd_modified": record["nvd_modified"].isoformat(),
             "cpe_name_id": str(candidate.cpe_name_id),
+            "observed_vendor": row["product_vendor"],
+            "observed_product": row["product"],
+            "observed_version": row["version"],
+            "component_kind": row["component_kind"],
         }
         return register_identification(
             session, scope, candidate, payload.mode, payload.reason, evidence

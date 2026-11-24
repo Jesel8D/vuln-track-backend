@@ -4,7 +4,7 @@ import hashlib
 import json
 import logging
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from urllib.parse import urlsplit
 from uuid import UUID, uuid4
 
@@ -16,6 +16,7 @@ from app.api.cpe_catalog import Part, admit_catalog, catalog_row, find_candidate
 from app.api.router import Identity
 from app.core.errors import APIError
 from app.db.workspace_context import workspace_session
+from app.schemas.assets import Page
 from app.schemas.cpe import Candidate, CandidateList, SearchInput
 from app.services.applicability import encoded
 from app.services.cpe_catalog import Mode
@@ -47,6 +48,47 @@ class CPESelection(BaseModel):
     expected_cpe_name: str | None = Field(default=None, max_length=1024)
     part: Part = "a"
     mode: Mode = "live"
+    expected_confirmation_id: UUID | None = None
+    reason: str | None = Field(default=None, min_length=1, max_length=500)
+    evidence: str | None = Field(default=None, min_length=1, max_length=2000)
+
+    @field_validator("reason", "evidence")
+    @classmethod
+    def clean_explanation(cls, value):
+        if value is None:
+            return None
+        value = " ".join(value.split())
+        if not value or any(ord(c) < 32 or ord(c) == 127 for c in value):
+            raise ValueError("Texto inválido")
+        return value
+
+
+class TechnologyCpeConfirmation(BaseModel):
+    id: UUID
+    event_number: int
+    workspace_id: UUID
+    application_id: UUID
+    technology_id: UUID
+    recorded_by: UUID
+    confirmed_at: datetime
+    cpe_name_id: UUID
+    cpe_name: str
+    mode: Mode
+    source: Literal["nvd-api", "nvd-feed", "nvd-captured-fixture"]
+    observed_vendor: str | None
+    observed_product: str
+    observed_version: str
+    reason: str | None
+    evidence: str | None
+    catalog_evidence: dict
+    is_current: bool
+
+
+class TechnologyCpeHistory(BaseModel):
+    items: list[TechnologyCpeConfirmation]
+    page: Page
+    current_confirmation_id: UUID | None
+    legacy_provenance: Literal["not_recorded"] | None
 
 
 class FindingReview(BaseModel):
@@ -110,7 +152,9 @@ class RecommendationUpdate(BaseModel):
         return value
 
 
-def _authorize(session, workspace_id, application_id, role="owner", actor_id=None):
+def _authorize(
+    session, workspace_id, application_id, role="owner", actor_id=None, *, active_only=True
+):
     if role == "writer":
         allowed = session.scalar(
             text("SELECT vulntrack.has_workspace_role(:workspace, ARRAY['owner','editor'])"),
@@ -127,8 +171,9 @@ def _authorize(session, workspace_id, application_id, role="owner", actor_id=Non
         raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
     found = session.scalar(
         text("""SELECT 1 FROM vulntrack.applications
-               WHERE workspace_id=:workspace AND id=:application AND status='active'"""),
-        {"workspace": workspace_id, "application": application_id},
+               WHERE workspace_id=:workspace AND id=:application
+                 AND (NOT :active_only OR status='active')"""),
+        {"workspace": workspace_id, "application": application_id, "active_only": active_only},
     )
     if not found:
         raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
@@ -152,6 +197,71 @@ def _technology(session, workspace_id, application_id, technology_id):
 
 def _catalog_name(value):
     return "_".join(normalized_text(value or "").casefold().split())
+
+
+def _confirmation_id(session, workspace_id, application_id, technology_id):
+    return session.scalar(
+        text("""SELECT id FROM vulntrack_technology_cpe.confirmations
+            WHERE workspace_id=:workspace AND application_id=:application
+              AND technology_id=:technology ORDER BY event_number DESC LIMIT 1"""),
+        {"workspace": workspace_id, "application": application_id, "technology": technology_id},
+    )
+
+
+@router.get("/technologies/{technology_id}/cpe-confirmations", response_model=TechnologyCpeHistory)
+def cpe_confirmations(
+    workspace_id: UUID,
+    application_id: UUID,
+    technology_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0, le=10000)] = 0,
+):
+    with workspace_session(
+        request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
+    ) as session:
+        _authorize(session, workspace_id, application_id, active_only=False)
+        current = _technology(session, workspace_id, application_id, technology_id)
+        latest = _confirmation_id(session, workspace_id, application_id, technology_id)
+        params = {
+            "workspace": workspace_id,
+            "application": application_id,
+            "technology": technology_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        result = (
+            session.execute(
+                text("""WITH matches AS MATERIALIZED (
+                SELECT * FROM vulntrack_technology_cpe.confirmations
+                WHERE workspace_id=:workspace AND application_id=:application
+                  AND technology_id=:technology
+            ) SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.event_number DESC),'[]') AS items,
+                     (SELECT count(*) FROM matches) AS total
+                FROM (SELECT * FROM matches ORDER BY event_number DESC
+                      LIMIT :limit OFFSET :offset) p"""),
+                params,
+            )
+            .mappings()
+            .one()
+        )
+        items = []
+        for row in result["items"]:
+            row["is_current"] = (
+                row["id"] == str(latest)
+                and row["cpe_name"] == current["selected_cpe"]
+                and row["observed_vendor"] == current["vendor"]
+                and row["observed_product"] == current["product"]
+                and row["observed_version"] == current["version"]
+            )
+            items.append(row)
+        return {
+            "items": items,
+            "page": Page(limit=limit, offset=offset, total=result["total"]),
+            "current_confirmation_id": latest,
+            "legacy_provenance": "not_recorded" if current["selected_cpe"] and not latest else None,
+        }
 
 
 @router.get("/cpe-candidates", response_model=CandidateList)
@@ -206,10 +316,29 @@ def confirm_cpe(
         current = _technology(session, workspace_id, application_id, technology_id)
         if current["selected_cpe"] != payload.expected_selected_cpe:
             raise APIError(409, "CPE_SELECTION_CHANGED", "La selección CPE cambió")
+        if _confirmation_id(session, workspace_id, application_id, technology_id) != (
+            payload.expected_confirmation_id
+        ):
+            raise APIError(409, "CPE_SELECTION_CHANGED", "La confirmación CPE cambió")
 
     admit_catalog(request, user)
     with request.app.state.catalog_reader.connect(payload.mode) as connection:
         candidate = catalog_row(connection, payload.mode, payload.cpe_name_id)
+        feed = None
+        if candidate["source"] == "nvd-feed":
+            row = (
+                connection.execute(
+                    text("""SELECT digest,source_modified,status
+                FROM vulntrack_catalog.feed_imports ORDER BY updated_at DESC LIMIT 1""")
+                )
+                .mappings()
+                .first()
+            )
+            feed = dict(row) if row else None
+    if candidate["mode"] != payload.mode or (
+        (candidate["source"] == "nvd-captured-fixture") != (payload.mode == "fixture")
+    ):
+        raise APIError(409, "CPE_SOURCE_MISMATCH", "La fuente del CPE no coincide")
     if candidate["deprecated"]:
         raise APIError(409, "CPE_DEPRECATED", "El CPE seleccionado está deprecado")
     if payload.expected_cpe_name is not None and candidate["cpe_name"] != payload.expected_cpe_name:
@@ -235,6 +364,18 @@ def confirm_cpe(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
         _authorize(session, workspace_id, application_id, "writer")
+        # Serialize re-confirmations even when two sources contain the same CPE
+        # string. A CAS on selected_cpe alone cannot detect that race.
+        session.execute(
+            text("""SELECT id FROM vulntrack.technologies
+                WHERE workspace_id=:workspace AND application_id=:application
+                  AND id=:technology FOR UPDATE"""),
+            {"workspace": workspace_id, "application": application_id, "technology": technology_id},
+        )
+        if _confirmation_id(session, workspace_id, application_id, technology_id) != (
+            payload.expected_confirmation_id
+        ):
+            raise APIError(409, "CPE_SELECTION_CHANGED", "La confirmación CPE cambió")
         updated = session.execute(
             text("""UPDATE vulntrack.technologies SET selected_cpe=:cpe, confidence='user_confirmed'
                 WHERE workspace_id=:workspace AND application_id=:application AND id=:technology
@@ -254,6 +395,32 @@ def confirm_cpe(
         ).first()
         if updated is None:
             raise APIError(409, "CPE_SELECTION_CHANGED", "La selección CPE cambió")
+        session.execute(
+            text("""INSERT INTO vulntrack_technology_cpe.confirmations
+                (id,workspace_id,application_id,technology_id,recorded_by,cpe_name_id,cpe_name,
+                 mode,source,observed_vendor,observed_product,observed_version,
+                 reason,evidence,catalog_evidence)
+                VALUES (:id,:workspace,:application,:technology,:actor,:name_id,:name,:mode,
+                    :source,:vendor,:product,:version,:reason,:evidence,
+                    CAST(:catalog AS jsonb))"""),
+            {
+                "id": uuid4(),
+                "workspace": workspace_id,
+                "application": application_id,
+                "technology": technology_id,
+                "actor": user.id,
+                "name_id": candidate["cpe_name_id"],
+                "name": candidate["cpe_name"],
+                "mode": payload.mode,
+                "source": candidate["source"],
+                "vendor": current["vendor"],
+                "product": current["product"],
+                "version": current["version"],
+                "reason": payload.reason,
+                "evidence": payload.evidence,
+                "catalog": json.dumps({"record": candidate, "feed": feed}, default=str),
+            },
+        )
         session.execute(
             text("""INSERT INTO vulntrack.audit_events
                 (workspace_id,actor_id,action,object_type,object_id)

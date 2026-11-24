@@ -867,7 +867,7 @@
               }
             ],
             "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications",
-            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Lista acotada sin parámetros de paginación: hasta 100 elementos."
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
           },
           "event": [
             {
@@ -898,7 +898,7 @@
                   }
                 ],
                 "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications",
-                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Lista acotada sin parámetros de paginación: hasta 100 elementos."
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
               },
               "status": "Example",
               "code": 200,
@@ -908,7 +908,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000004\",\n      \"name\": \"Laboratorio API V2\",\n      \"description\": \"Fixture aislado; no representa un sistema público\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"updated_at\": \"2026-11-13T12:00:00.000001Z\"\n    }\n  ]\n}"
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000004\",\n      \"name\": \"Laboratorio API V2\",\n      \"description\": \"Fixture aislado; no representa un sistema público\",\n      \"status\": \"active\",\n      \"created_at\": \"2026-11-13T12:00:00.000001Z\",\n      \"updated_at\": \"2026-11-13T12:00:00.000001Z\"\n    }\n  ],\n  \"page\": {\n    \"limit\": 100,\n    \"offset\": 0,\n    \"total\": 1\n  }\n}"
             }
           ]
         },
@@ -1022,7 +1022,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000001\",\n  \"scope\": \"active\",\n  \"devices\": {\n    \"total\": 0,\n    \"confirmed\": 0,\n    \"pending\": 0,\n    \"needs_review\": 0,\n    \"excluded_inactive\": 0,\n    \"without_version\": 0,\n    \"confirmed_by_mode\": {\n      \"live\": 0,\n      \"fixture\": 0,\n      \"unknown\": 0\n    }\n  },\n  \"technologies\": {\n    \"total\": 0,\n    \"confirmed\": 0,\n    \"pending\": 0,\n    \"needs_review\": 0,\n    \"excluded_inactive\": 0,\n    \"confirmation_provenance\": \"not_recorded\"\n  }\n}"
+              "body": "{\n  \"workspace_id\": \"00000000-0000-4000-8000-000000000001\",\n  \"scope\": \"active\",\n  \"devices\": {\n    \"total\": 0,\n    \"confirmed\": 0,\n    \"pending\": 0,\n    \"needs_review\": 0,\n    \"excluded_inactive\": 0,\n    \"without_version\": 0,\n    \"confirmed_by_mode\": {\n      \"live\": 0,\n      \"fixture\": 0,\n      \"unknown\": 0\n    }\n  },\n  \"technologies\": {\n    \"total\": 0,\n    \"confirmed\": 0,\n    \"pending\": 0,\n    \"needs_review\": 0,\n    \"excluded_inactive\": 0,\n    \"confirmation_provenance\": \"per_confirmation\"\n  }\n}"
             }
           ]
         }
@@ -2068,7 +2068,7 @@
               }
             ],
             "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/technologies",
-            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Lista acotada sin parámetros de paginación: hasta 100 elementos."
+            "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
           },
           "event": [
             {
@@ -2099,7 +2099,7 @@
                   }
                 ],
                 "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/technologies",
-                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Lista acotada sin parámetros de paginación: hasta 100 elementos."
+                "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. Paginación limit/offset según límites del esquema; consultar page.total cuando exista."
               },
               "status": "Example",
               "code": 200,
@@ -2109,7 +2109,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000006\",\n      \"product\": \"small_business_rv340_firmware\",\n      \"vendor\": \"cisco\",\n      \"version\": \"1.0.0.33\",\n      \"selected_cpe\": null,\n      \"detection_method\": \"manual\",\n      \"confidence\": \"unconfirmed\",\n      \"observed_at\": \"2026-11-13T12:00:00.000001Z\"\n    }\n  ]\n}"
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"00000000-0000-4000-8000-000000000006\",\n      \"product\": \"small_business_rv340_firmware\",\n      \"vendor\": \"cisco\",\n      \"version\": \"1.0.0.33\",\n      \"selected_cpe\": null,\n      \"detection_method\": \"manual\",\n      \"confidence\": \"unconfirmed\",\n      \"observed_at\": \"2026-11-13T12:00:00.000001Z\"\n    }\n  ],\n  \"page\": {\n    \"limit\": 100,\n    \"offset\": 0,\n    \"total\": 1\n  },\n  \"summary\": {\n    \"confirmed_cpe\": 0\n  }\n}"
             }
           ]
         },
@@ -2189,7 +2189,7 @@
             "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. NVD puede responder 429/502/503/504. La búsqueda NO confirma: seleccionar manualmente un candidato no deprecado y versión exacta. Pruebas offline usan UUID documentado de fixture, nunca el primer candidato por posición.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"cpe_name_id\": \"{{cpe_name_id}}\",\n  \"expected_selected_cpe\": null,\n  \"part\": \"o\",\n  \"mode\": \"{{cpe_catalog_mode}}\"\n}",
+              "raw": "{\n  \"cpe_name_id\": \"{{cpe_name_id}}\",\n  \"expected_selected_cpe\": null,\n  \"part\": \"o\",\n  \"mode\": \"{{cpe_catalog_mode}}\",\n  \"reason\": \"Comparado manualmente con la versión observada en laboratorio\",\n  \"evidence\": \"Ensayo sintético de la colección; no es un activo real\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2245,7 +2245,7 @@
                 "description": "Requiere membresía del workspace y contexto HMAC transaccional con RLS. Lectura: owner/editor/viewer; escritura: owner/editor. Recursos ajenos suelen ocultarse como 404; algunas listas devuelven items vacío. No usar una respuesta vacía para inferir existencia. NVD puede responder 429/502/503/504. La búsqueda NO confirma: seleccionar manualmente un candidato no deprecado y versión exacta. Pruebas offline usan UUID documentado de fixture, nunca el primer candidato por posición.",
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"cpe_name_id\": \"{{cpe_name_id}}\",\n  \"expected_selected_cpe\": null,\n  \"part\": \"o\",\n  \"mode\": \"{{cpe_catalog_mode}}\"\n}",
+                  "raw": "{\n  \"cpe_name_id\": \"{{cpe_name_id}}\",\n  \"expected_selected_cpe\": null,\n  \"part\": \"o\",\n  \"mode\": \"{{cpe_catalog_mode}}\",\n  \"reason\": \"Comparado manualmente con la versión observada en laboratorio\",\n  \"evidence\": \"Ensayo sintético de la colección; no es un activo real\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2262,6 +2262,63 @@
                 }
               ],
               "body": "{\n  \"cpe_name_id\": \"c817e5ba-62c1-41e7-a15c-fb851fea761e\",\n  \"cpe_name\": \"cpe:2.3:o:cisco:small_business_rv340_firmware:1.0.0.33:*:*:*:*:*:*:*\",\n  \"title\": \"Cisco Small Business RV340 Firmware 1.0.0.33\",\n  \"deprecated\": false\n}"
+            }
+          ]
+        },
+        {
+          "id": "f9802828-5d51-5064-89ac-334421aa5caa",
+          "name": "Historial de confirmaciones CPE",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/technologies/{{technology_id}}/cpe-confirmations?limit=20&offset=0",
+            "description": "Historia inmutable; UUID compartido entre fuentes no demuestra procedencia."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(function(){",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('JSON',()=>pm.expect(data).to.be.an('object'));",
+                  "pm.test('Sin envelope de error',()=>pm.expect(data).not.to.have.property('error'));",
+                  "pm.test('Procedencia persistida',()=>pm.expect(data.page.total).to.be.at.least(1));",
+                  "})();"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "Ejemplo sintético sanitizado",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{base_url}}/api/v2/workspaces/{{workspace_id}}/applications/{{application_id}}/technologies/{{technology_id}}/cpe-confirmations?limit=20&offset=0",
+                "description": "Historia inmutable; UUID compartido entre fuentes no demuestra procedencia."
+              },
+              "status": "Example",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [],\n  \"page\": {\n    \"limit\": 20,\n    \"offset\": 0,\n    \"total\": 0\n  },\n  \"current_confirmation_id\": null,\n  \"legacy_provenance\": \"not_recorded\"\n}"
             }
           ]
         }

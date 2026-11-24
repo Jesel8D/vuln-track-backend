@@ -35,7 +35,7 @@ class DeviceCoverage(CoverageCounts):
 
 
 class TechnologyCoverage(CoverageCounts):
-    confirmation_provenance: Literal["not_recorded"] = "not_recorded"
+    confirmation_provenance: Literal["per_confirmation"] = "per_confirmation"
 
 
 class InventoryCoverage(BaseModel):

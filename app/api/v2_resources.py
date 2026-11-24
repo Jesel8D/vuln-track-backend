@@ -4,7 +4,7 @@ import unicodedata
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, StringConstraints, field_validator
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
@@ -220,21 +220,54 @@ def create_application(
 
 
 @router.get("/workspaces/{workspace_id}/applications")
-def list_applications(workspace_id: UUID, user: Identity, request: Request):
+def list_applications(
+    workspace_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
+    offset: Annotated[int, Query(ge=0, le=10000)] = 0,
+    q: Annotated[str, Query(max_length=160)] = "",
+    application_id: UUID | None = None,
+):
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        rows = (
+        if not session.scalar(
+            text(
+                "SELECT vulntrack.has_workspace_role(:workspace,ARRAY['owner','editor','viewer'])"
+            ),
+            {"workspace": workspace_id},
+        ):
+            raise APIError(404, "WORKSPACE_NOT_FOUND", "Workspace no disponible")
+        result = (
             session.execute(
-                text("""SELECT id,name,description,status,created_at,updated_at
-                FROM vulntrack.applications WHERE workspace_id=:workspace
-                ORDER BY created_at DESC,id LIMIT 100"""),
-                {"workspace": workspace_id},
+                text("""WITH matches AS MATERIALIZED (
+                SELECT id,name,description,status,created_at,updated_at
+                FROM vulntrack.applications a WHERE workspace_id=:workspace
+                  AND (CAST(:application AS uuid) IS NULL OR id=:application)
+                  AND (:q='' OR strpos(lower(name||' '||coalesce(description,'')),lower(:q))>0
+                    OR EXISTS (SELECT 1 FROM vulntrack.application_targets t
+                        WHERE t.workspace_id=a.workspace_id AND t.application_id=a.id
+                          AND strpos(lower(t.url),lower(:q))>0))
+            ) SELECT coalesce(jsonb_agg(to_jsonb(p) ORDER BY p.created_at DESC,p.id),'[]') AS items,
+                (SELECT count(*) FROM matches) AS total
+            FROM (SELECT * FROM matches ORDER BY created_at DESC,id LIMIT :limit OFFSET :offset) p
+            """),
+                {
+                    "workspace": workspace_id,
+                    "application": application_id,
+                    "q": q.strip(),
+                    "limit": limit,
+                    "offset": offset,
+                },
             )
             .mappings()
-            .all()
+            .one()
         )
-        return {"items": [dict(row) for row in rows]}
+        return {
+            "items": result["items"],
+            "page": {"limit": limit, "offset": offset, "total": result["total"]},
+        }
 
 
 @router.post(
@@ -299,22 +332,56 @@ def create_technology(
 
 
 @router.get("/workspaces/{workspace_id}/applications/{application_id}/technologies")
-def list_technologies(workspace_id: UUID, application_id: UUID, user: Identity, request: Request):
+def list_technologies(
+    workspace_id: UUID,
+    application_id: UUID,
+    user: Identity,
+    request: Request,
+    limit: Annotated[int, Query(ge=1, le=100)] = 100,
+    offset: Annotated[int, Query(ge=0, le=10000)] = 0,
+):
     with workspace_session(
         request.app.state.session_factory, request.app.state.settings, user.id, workspace_id
     ) as session:
-        rows = (
+        if not session.scalar(
+            text("""SELECT 1 FROM vulntrack.applications
+                WHERE workspace_id=:workspace AND id=:application"""),
+            {"workspace": workspace_id, "application": application_id},
+        ):
+            raise APIError(404, "APPLICATION_NOT_FOUND", "Aplicación no disponible")
+        result = (
             session.execute(
-                text(
-                    """SELECT
-                    id,product,vendor,version,selected_cpe,detection_method,confidence,observed_at
-                FROM vulntrack.technologies WHERE workspace_id=:workspace AND
-                application_id=:application
-                ORDER BY created_at DESC,id LIMIT 100"""
-                ),
-                {"workspace": workspace_id, "application": application_id},
+                text("""WITH matches AS MATERIALIZED (SELECT
+                    t.id,t.product,t.vendor,t.version,t.selected_cpe,t.detection_method,
+                    t.confidence,t.observed_at,t.created_at
+                    FROM vulntrack.technologies t WHERE t.workspace_id=:workspace
+                      AND t.application_id=:application
+                ) SELECT coalesce(jsonb_agg((to_jsonb(p)-'created_at') ||
+                    jsonb_build_object('cpe_confirmation',c.confirmation)
+                    ORDER BY p.created_at DESC,p.id),'[]') AS items,
+                    (SELECT count(*) FROM matches) AS total,
+                    (SELECT count(*) FROM matches WHERE selected_cpe IS NOT NULL
+                        AND confidence='user_confirmed') AS confirmed
+                FROM (SELECT * FROM matches ORDER BY created_at DESC,id
+                    LIMIT :limit OFFSET :offset) p
+                LEFT JOIN LATERAL (
+                    SELECT to_jsonb(h)-'catalog_evidence' AS confirmation
+                    FROM vulntrack_technology_cpe.confirmations h
+                    WHERE h.workspace_id=:workspace AND h.application_id=:application
+                      AND h.technology_id=p.id ORDER BY event_number DESC LIMIT 1
+                ) c ON TRUE"""),
+                {
+                    "workspace": workspace_id,
+                    "application": application_id,
+                    "limit": limit,
+                    "offset": offset,
+                },
             )
             .mappings()
-            .all()
+            .one()
         )
-        return {"items": [dict(row) for row in rows]}
+        return {
+            "items": result["items"],
+            "page": {"limit": limit, "offset": offset, "total": result["total"]},
+            "summary": {"confirmed_cpe": result["confirmed"]},
+        }

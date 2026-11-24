@@ -96,7 +96,12 @@
           "created_at": "2026-11-13T12:00:00.000001Z",
           "updated_at": "2026-11-13T12:00:00.000001Z"
         }
-      ]
+      ],
+      "page": {
+        "limit": 100,
+        "offset": 0,
+        "total": 1
+      }
     }
   },
   "Dashboard": {
@@ -280,7 +285,15 @@
           "confidence": "unconfirmed",
           "observed_at": "2026-11-13T12:00:00.000001Z"
         }
-      ]
+      ],
+      "page": {
+        "limit": 100,
+        "offset": 0,
+        "total": 1
+      },
+      "summary": {
+        "confirmed_cpe": 0
+      }
     }
   },
   "Buscar candidatos CPE V2": {
@@ -4074,8 +4087,21 @@
         "pending": 0,
         "needs_review": 0,
         "excluded_inactive": 0,
-        "confirmation_provenance": "not_recorded"
+        "confirmation_provenance": "per_confirmation"
       }
+    }
+  },
+  "Historial de confirmaciones CPE": {
+    "status": 200,
+    "body": {
+      "items": [],
+      "page": {
+        "limit": 20,
+        "offset": 0,
+        "total": 0
+      },
+      "current_confirmation_id": null,
+      "legacy_provenance": "not_recorded"
     }
   }
 }
