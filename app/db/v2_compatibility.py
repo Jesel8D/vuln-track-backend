@@ -28,6 +28,7 @@ def without_verified_v2(connection, actual):
             "v2_additions_catalog.json",
             "v2_stabilized_catalog.json",
             "v2_reliable_catalog.json",
+            "v2_cached_catalog.json",
         )
     ]
     # Accept only an exact published V2 revision, never arbitrary constraint drift.

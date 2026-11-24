@@ -39,6 +39,7 @@ from app.services.device_revisions import (
     require_version,
 )
 from app.services.nvd_findings import finding_rows
+from app.services.v2_cve_cache import fetch_page
 from app.services.v2_cve_reliability import context as query_context
 from app.services.v2_cve_reliability import decorate, query_state_sql, recover, require_active
 
@@ -52,7 +53,7 @@ RUN_FIELDS = """id, identification_id, selected_cpe, observed_version, mode, sou
     coverage, total_results, retrieved_count, stored_count, warning_codes,
     failure_code,
     source_timestamp, created_at, completed_at, evaluated_technology,
-    device_id,run_context,lease_expires_at,response_received_at,
+    device_id,run_context,lease_expires_at,response_received_at,cache_response_id,cache_usage,
     (SELECT i.identity_generation FROM vulntrack_devices.identifications i
       WHERE i.workspace_id=runs.workspace_id AND i.device_id=runs.device_id
         AND i.id=runs.identification_id) AS identity_generation,
@@ -737,7 +738,8 @@ def analyze_device(
 
     # NVD is called without any database connection or transaction.
     try:
-        upstream = request.app.state.cve.page(selected["cpe_name"], 0, 100)
+        result = fetch_page(request, user.id, workspace_id, selected["cpe_name"])
+        upstream = result.page
         records, findings, warnings = finding_rows(upstream, selected["cpe_name"], row["version"])
         partial = upstream.totalResults > len(records)
         if partial:
@@ -760,7 +762,8 @@ def analyze_device(
             session.execute(
                 text(f"""
                 UPDATE vulntrack_devices.runs SET status='completed',coverage=:coverage,
-                    completed_at=clock_timestamp(),response_received_at=clock_timestamp(),
+                    completed_at=clock_timestamp(),response_received_at=coalesce(:received,clock_timestamp()),
+                    cache_response_id=:cache_response,cache_usage=CAST(:cache_usage AS jsonb),
                     total_results=:total,
                     retrieved_count=:retrieved,
                     stored_count=:stored, source_timestamp=:timestamp,
@@ -770,6 +773,9 @@ def analyze_device(
                 {
                     **scope,
                     "coverage": "partial" if partial else "complete",
+                    "received": result.received_at,
+                    "cache_response": result.response_id,
+                    "cache_usage": json.dumps(result.usage) if result.usage else None,
                     "total": upstream.totalResults,
                     "retrieved": len(records),
                     "stored": len(findings),
@@ -786,9 +792,16 @@ def analyze_device(
                     text(f"""
                     UPDATE vulntrack_devices.runs SET status='failed',
                         completed_at=clock_timestamp(),
-                        failure_code=:code WHERE {DEVICE_SCOPE} AND id=:run AND status='running'
+                        failure_code=:code,cache_usage=CAST(:cache_usage AS jsonb)
+                        WHERE {DEVICE_SCOPE} AND id=:run AND status='running'
                 """),
-                    {**scope, "code": code},
+                    {
+                        **scope,
+                        "code": code,
+                        "cache_usage": json.dumps(exc.cache_usage)
+                        if getattr(exc, "cache_usage", None)
+                        else None,
+                    },
                 )
         except Exception:
             logger.error("device_analysis_failed_to_finalize run_id=%s", scope["run"])

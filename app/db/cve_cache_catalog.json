@@ -1,0 +1,364 @@
+{
+  "columns": [
+    {
+      "table_name": "responses",
+      "column_name": "body",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "responses",
+      "column_name": "coverage",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "responses",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "clock_timestamp()"
+    },
+    {
+      "table_name": "responses",
+      "column_name": "digest",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "responses",
+      "column_name": "expires_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "responses",
+      "column_name": "fetched_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "clock_timestamp()"
+    },
+    {
+      "table_name": "responses",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "responses",
+      "column_name": "slot_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "responses",
+      "column_name": "warning_codes",
+      "type": "jsonb",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "slots",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": true,
+      "default": "clock_timestamp()"
+    },
+    {
+      "table_name": "slots",
+      "column_name": "current_response_id",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "slots",
+      "column_name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "slots",
+      "column_name": "key",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "slots",
+      "column_name": "lease_expires_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "slots",
+      "column_name": "lease_token",
+      "type": "uuid",
+      "not_null": false,
+      "default": null
+    },
+    {
+      "table_name": "slots",
+      "column_name": "query",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "slots",
+      "column_name": "source",
+      "type": "text",
+      "not_null": true,
+      "default": null
+    },
+    {
+      "table_name": "slots",
+      "column_name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default": null
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "responses",
+      "name": "responses_body_check",
+      "type": "c",
+      "definition": "CHECK (((octet_length(body) <= 2097152) AND (jsonb_typeof((body)::jsonb) = 'object'::text)))"
+    },
+    {
+      "table_name": "responses",
+      "name": "responses_check",
+      "type": "c",
+      "definition": "CHECK ((digest = encode(sha256(convert_to(body, 'UTF8'::name)), 'hex'::text)))"
+    },
+    {
+      "table_name": "responses",
+      "name": "responses_check1",
+      "type": "c",
+      "definition": "CHECK (((expires_at > fetched_at) AND (expires_at <= (fetched_at + '7 days'::interval))))"
+    },
+    {
+      "table_name": "responses",
+      "name": "responses_coverage_check",
+      "type": "c",
+      "definition": "CHECK ((coverage = ANY (ARRAY['complete'::text, 'partial'::text])))"
+    },
+    {
+      "table_name": "responses",
+      "name": "responses_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "responses",
+      "name": "responses_slot_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (slot_id) REFERENCES vulntrack_cve_cache.slots(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "responses",
+      "name": "responses_slot_id_id_key",
+      "type": "u",
+      "definition": "UNIQUE (slot_id, id)"
+    },
+    {
+      "table_name": "responses",
+      "name": "responses_warning_codes_check",
+      "type": "c",
+      "definition": "CHECK (((jsonb_typeof(warning_codes) = 'array'::text) AND (jsonb_array_length(warning_codes) <= 20)))"
+    },
+    {
+      "table_name": "slots",
+      "name": "cache_current_response_fk",
+      "type": "f",
+      "definition": "FOREIGN KEY (id, current_response_id) REFERENCES vulntrack_cve_cache.responses(slot_id, id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_check",
+      "type": "c",
+      "definition": "CHECK ((key = encode(sha256(convert_to(query, 'UTF8'::name)), 'hex'::text)))"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_check1",
+      "type": "c",
+      "definition": "CHECK ((((query)::jsonb ->> 'mode'::text) = source))"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_check2",
+      "type": "c",
+      "definition": "CHECK (((lease_token IS NULL) = (lease_expires_at IS NULL)))"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_key_check",
+      "type": "c",
+      "definition": "CHECK ((key ~ '^[0-9a-f]{64}$'::text))"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_pkey",
+      "type": "p",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_query_check",
+      "type": "c",
+      "definition": "CHECK (((octet_length(query) <= 4096) AND (jsonb_typeof((query)::jsonb) = 'object'::text)))"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_source_check",
+      "type": "c",
+      "definition": "CHECK ((source = ANY (ARRAY['fixture'::text, 'simulated'::text, 'live'::text, 'unknown'::text])))"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_workspace_id_fkey",
+      "type": "f",
+      "definition": "FOREIGN KEY (workspace_id) REFERENCES vulntrack.workspaces(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "slots",
+      "name": "slots_workspace_id_key_key",
+      "type": "u",
+      "definition": "UNIQUE (workspace_id, key)"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "responses",
+      "indexname": "cache_response_slot_created_idx",
+      "indexdef": "CREATE INDEX cache_response_slot_created_idx ON vulntrack_cve_cache.responses USING btree (slot_id, created_at, id)"
+    },
+    {
+      "tablename": "responses",
+      "indexname": "responses_pkey",
+      "indexdef": "CREATE UNIQUE INDEX responses_pkey ON vulntrack_cve_cache.responses USING btree (id)"
+    },
+    {
+      "tablename": "responses",
+      "indexname": "responses_slot_id_id_key",
+      "indexdef": "CREATE UNIQUE INDEX responses_slot_id_id_key ON vulntrack_cve_cache.responses USING btree (slot_id, id)"
+    },
+    {
+      "tablename": "slots",
+      "indexname": "slots_pkey",
+      "indexdef": "CREATE UNIQUE INDEX slots_pkey ON vulntrack_cve_cache.slots USING btree (id)"
+    },
+    {
+      "tablename": "slots",
+      "indexname": "slots_workspace_id_key_key",
+      "indexdef": "CREATE UNIQUE INDEX slots_workspace_id_key_key ON vulntrack_cve_cache.slots USING btree (workspace_id, key)"
+    }
+  ],
+  "triggers": [
+    {
+      "table_name": "responses",
+      "name": "cache_response_guard",
+      "definition": "CREATE TRIGGER cache_response_guard BEFORE INSERT OR DELETE OR UPDATE ON vulntrack_cve_cache.responses FOR EACH ROW EXECUTE FUNCTION vulntrack_cve_cache.guard_response()",
+      "enabled": "O"
+    },
+    {
+      "table_name": "slots",
+      "name": "cache_slot_guard",
+      "definition": "CREATE TRIGGER cache_slot_guard BEFORE INSERT OR DELETE OR UPDATE ON vulntrack_cve_cache.slots FOR EACH ROW EXECUTE FUNCTION vulntrack_cve_cache.guard_slot()",
+      "enabled": "O"
+    }
+  ],
+  "functions": [
+    {
+      "name": "guard_response",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_cve_cache.guard_response()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE s vulntrack_cve_cache.slots%ROWTYPE;\nBEGIN\n    IF TG_OP<>'INSERT' THEN\n        RAISE EXCEPTION 'Cache evidence is immutable' USING ERRCODE='23514';\n    END IF;\n    SELECT * INTO s FROM vulntrack_cve_cache.slots WHERE id=NEW.slot_id FOR UPDATE NOWAIT;\n    IF s.id IS NULL OR s.workspace_id IS DISTINCT FROM vulntrack.current_workspace_id()\n        OR NOT vulntrack.has_workspace_role(s.workspace_id,ARRAY['owner','editor'])\n        OR s.lease_token IS NULL OR s.lease_expires_at<=clock_timestamp()\n        OR s.lease_token::text IS DISTINCT FROM current_setting('vulntrack.cache_lease',true)\n        OR NEW.fetched_at>clock_timestamp() THEN\n        RAISE EXCEPTION 'Cache publication requires active scoped lease' USING ERRCODE='23514';\n    END IF;\n    IF NOT pg_try_advisory_xact_lock(hashtextextended(s.workspace_id::text,55)) THEN\n        RAISE EXCEPTION 'Cache coordinator busy' USING ERRCODE='55P03';\n    END IF;\n    IF (SELECT count(*) FROM vulntrack_cve_cache.responses r JOIN vulntrack_cve_cache.slots p\n            ON p.id=r.slot_id WHERE p.workspace_id=s.workspace_id)>=500 OR\n       (SELECT coalesce(sum(octet_length(r.body)),0) FROM vulntrack_cve_cache.responses r\n            JOIN vulntrack_cve_cache.slots p ON p.id=r.slot_id WHERE p.workspace_id=s.workspace_id)\n            +octet_length(NEW.body)>104857600 THEN\n        RAISE EXCEPTION 'Cache evidence capacity limit' USING ERRCODE='23514';\n    END IF;\n    RETURN NEW;\nEND $function$\n"
+    },
+    {
+      "name": "guard_run",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_cve_cache.guard_run()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\nDECLARE evidence record; used timestamptz; resolution text;\nBEGIN\n    IF TG_OP='INSERT' THEN\n        IF NEW.cache_response_id IS NOT NULL OR NEW.cache_usage IS NOT NULL THEN\n            RAISE EXCEPTION 'Cache association is a finalization fact' USING ERRCODE='23514';\n        END IF;\n        RETURN NEW;\n    END IF;\n    IF (OLD.cache_response_id IS NOT NULL OR OLD.cache_usage IS NOT NULL) AND\n        ROW(NEW.cache_response_id,NEW.cache_usage) IS DISTINCT FROM\n        ROW(OLD.cache_response_id,OLD.cache_usage) THEN\n        RAISE EXCEPTION 'Immutable cache association' USING ERRCODE='23514';\n    END IF;\n    IF NEW.cache_usage IS NULL THEN\n        IF NEW.cache_response_id IS NOT NULL THEN\n            RAISE EXCEPTION 'Cache association requires usage' USING ERRCODE='23514';\n        END IF;\n        RETURN NEW;\n    END IF;\n    resolution:=NEW.cache_usage->>'resolution';\n    IF NOT (NEW.cache_usage ?& ARRAY['resolution','refresh_attempted','used_at'])\n       OR (NEW.cache_usage-ARRAY['resolution','refresh_attempted','used_at'])<>'{}'::jsonb\n       OR coalesce(resolution,'') NOT IN ('provider','reused','failed')\n       OR jsonb_typeof(NEW.cache_usage->'refresh_attempted') IS DISTINCT FROM 'boolean' THEN\n        RAISE EXCEPTION 'Invalid cache usage' USING ERRCODE='23514';\n    END IF;\n    IF resolution='failed' THEN\n        IF NEW.status<>'failed' OR NEW.cache_response_id IS NOT NULL OR\n            NEW.cache_usage->'used_at'<>'null'::jsonb THEN\n            RAISE EXCEPTION 'Invalid failed cache usage' USING ERRCODE='23514';\n        END IF;\n        RETURN NEW;\n    END IF;\n    used:=(NEW.cache_usage->>'used_at')::timestamptz;\n    SELECT p.workspace_id,p.source,p.query,r.fetched_at,r.expires_at,r.coverage INTO evidence\n      FROM vulntrack_cve_cache.responses r JOIN vulntrack_cve_cache.slots p ON p.id=r.slot_id\n      WHERE r.id=NEW.cache_response_id;\n    IF NEW.status<>'completed' OR evidence.workspace_id IS DISTINCT FROM NEW.workspace_id\n       OR evidence.source IS DISTINCT FROM NEW.run_context->>'cve_source'\n       OR (evidence.query::jsonb)->'params'->>'cpeName' IS DISTINCT FROM NEW.selected_cpe\n       OR NEW.response_received_at IS DISTINCT FROM evidence.fetched_at\n       OR used IS NULL OR used<evidence.fetched_at OR used>clock_timestamp()\n       OR (resolution='reused' AND (evidence.coverage<>'complete' OR used>=evidence.expires_at)) THEN\n        RAISE EXCEPTION 'Cache evidence must match private query snapshot' USING ERRCODE='23514';\n    END IF;\n    RETURN NEW;\nEND $function$\n"
+    },
+    {
+      "name": "guard_slot",
+      "definition": "CREATE OR REPLACE FUNCTION vulntrack_cve_cache.guard_slot()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$\nBEGIN\n    IF TG_OP='DELETE' OR (TG_OP='UPDATE' AND\n        ROW(NEW.id,NEW.workspace_id,NEW.key,NEW.query,NEW.source,NEW.created_at)\n        IS DISTINCT FROM ROW(OLD.id,OLD.workspace_id,OLD.key,OLD.query,OLD.source,OLD.created_at)) THEN\n        RAISE EXCEPTION 'Immutable cache identity' USING ERRCODE='23514';\n    END IF;\n    IF NOT pg_try_advisory_xact_lock(hashtextextended(NEW.workspace_id::text,55)) THEN\n        RAISE EXCEPTION 'Cache coordinator busy' USING ERRCODE='55P03';\n    END IF;\n    IF TG_OP='INSERT' THEN\n        IF NEW.current_response_id IS NOT NULL OR NEW.lease_token IS NOT NULL OR\n            (SELECT count(*) FROM vulntrack_cve_cache.slots WHERE workspace_id=NEW.workspace_id)>=500\n        THEN RAISE EXCEPTION 'Cache admission limit' USING ERRCODE='23514'; END IF;\n    ELSE\n        IF (OLD.lease_token IS NOT NULL AND OLD.lease_expires_at>clock_timestamp()\n            AND NEW.lease_token IS DISTINCT FROM OLD.lease_token AND NEW.lease_token IS NOT NULL)\n            OR (OLD.lease_token IS NOT NULL AND NEW.lease_token IS NULL AND\n                OLD.lease_token::text IS DISTINCT FROM current_setting('vulntrack.cache_lease',true))\n            OR (NEW.lease_token IS NOT NULL AND\n                (NEW.lease_token::text IS DISTINCT FROM current_setting('vulntrack.cache_lease',true)\n                 OR NEW.lease_expires_at<=clock_timestamp()\n                 OR NEW.lease_expires_at>clock_timestamp()+interval '5 minutes')) THEN\n            RAISE EXCEPTION 'Invalid cache lease transition' USING ERRCODE='23514';\n        END IF;\n        IF NEW.current_response_id IS DISTINCT FROM OLD.current_response_id AND\n            (OLD.lease_token IS NULL OR OLD.lease_expires_at IS NULL\n             OR OLD.lease_token::text IS DISTINCT FROM current_setting('vulntrack.cache_lease',true)\n             OR OLD.lease_expires_at<=clock_timestamp()\n             OR NOT EXISTS (SELECT 1 FROM vulntrack_cve_cache.responses r\n                WHERE r.id=NEW.current_response_id AND r.slot_id=NEW.id AND r.coverage='complete'))\n        THEN RAISE EXCEPTION 'Invalid cache publication' USING ERRCODE='23514'; END IF;\n    END IF;\n    RETURN NEW;\nEND $function$\n"
+    }
+  ],
+  "tables": [
+    {
+      "name": "responses",
+      "row_security": true,
+      "force_row_security": true
+    },
+    {
+      "name": "slots",
+      "row_security": true,
+      "force_row_security": true
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "responses",
+      "policyname": "cache_responses_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(EXISTS ( SELECT 1\n   FROM vulntrack_cve_cache.slots s\n  WHERE ((s.id = responses.slot_id) AND vulntrack.has_workspace_role(s.workspace_id, ARRAY['owner'::text, 'editor'::text]))))"
+    },
+    {
+      "tablename": "responses",
+      "policyname": "cache_responses_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM vulntrack_cve_cache.slots s\n  WHERE (s.id = responses.slot_id)))",
+      "with_check": null
+    },
+    {
+      "tablename": "slots",
+      "policyname": "cache_slots_create",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    },
+    {
+      "tablename": "slots",
+      "policyname": "cache_slots_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text, 'viewer'::text]))",
+      "with_check": null
+    },
+    {
+      "tablename": "slots",
+      "policyname": "cache_slots_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))",
+      "with_check": "((workspace_id = vulntrack.current_workspace_id()) AND vulntrack.has_workspace_role(workspace_id, ARRAY['owner'::text, 'editor'::text]))"
+    }
+  ]
+}

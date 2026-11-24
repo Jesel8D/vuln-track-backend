@@ -60,6 +60,9 @@ def decorate(session, settings, kind, rows):
     if not rows:
         return []
     rows = [dict(r) for r in rows]
+    from app.services.v2_cve_cache import storage_metadata
+
+    cached = storage_metadata(session, rows)
     key = "technology_id" if kind == "applications" else "device_id"
     ids = list({UUID(str(r[key])) for r in rows if r.get(key)})
     if kind == "applications":
@@ -83,6 +86,19 @@ def decorate(session, settings, kind, rows):
         saved = r.pop("run_context", None)
         r.pop("lease_expires_at", None)
         received = as_date(r.get("response_received_at"))
+        cache_id = r.pop("cache_response_id", None)
+        usage = r.pop("cache_usage", None)
+        cache = cached.get(str(cache_id)) if cache_id else None
+        if cache_id and cache is None:
+            raise APIError(503, "CVE_CACHE_INTEGRITY", "Evidencia almacenada no disponible")
+        if usage:
+            r["storage"] = {
+                "resolution": usage["resolution"],
+                "refresh_attempted": usage["refresh_attempted"],
+                "used_at": usage["used_at"],
+                "obtained_at": cache["fetched_at"] if cache else None,
+                "expires_at": cache["expires_at"] if cache else None,
+            }
         source = (
             saved["cve_source"]
             if saved
@@ -133,7 +149,12 @@ def decorate(session, settings, kind, rows):
                     )
                     else "historical"
                 )
-        expires = received + timedelta(seconds=settings.cve_freshness_seconds) if received else None
+        policy_seconds = settings.cve_freshness_seconds
+        if cache and received:
+            policy_seconds = min(
+                policy_seconds, int((cache["expires_at"] - received).total_seconds())
+            )
+        expires = received + timedelta(seconds=policy_seconds) if received else None
         freshness = (
             "unknown" if not received or received > now else ("fresh" if now < expires else "stale")
         )
@@ -152,7 +173,7 @@ def decorate(session, settings, kind, rows):
                 and correspondence == "current"
             ),
             "expires_at": expires,
-            "freshness_policy_seconds": settings.cve_freshness_seconds,
+            "freshness_policy_seconds": policy_seconds,
         }
         r["provenance"] = provenance
     return rows

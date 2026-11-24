@@ -83,6 +83,12 @@ class Settings(BaseSettings):
     cpe_catalog_read_url: SecretStr | None = Field(default=None, repr=False)
     cve_freshness_seconds: int = Field(default=86400, ge=60, le=604800)
     cve_execution_seconds: int = Field(default=120, ge=30, le=300)
+    cve_cache_enabled: bool = True
+    cve_cache_ttl_seconds: int = Field(default=86400, ge=1, le=604800)
+    cve_cache_empty_ttl_seconds: int = Field(default=3600, ge=1, le=86400)
+    cve_cache_lease_seconds: int = Field(default=120, ge=1, le=300)
+    cve_cache_max_entries: int = Field(default=500, ge=1, le=500)
+    cve_cache_max_bytes: int = Field(default=104857600, ge=1024, le=104857600)
     nvd_spacing_seconds: int = Field(default=7, ge=7, le=60)
     nvd_timeout_seconds: int = Field(default=10, ge=1, le=20)
     login_attempts_per_minute: int = Field(default=10, ge=1, le=100)

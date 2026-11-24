@@ -110,7 +110,7 @@ def dashboard_data(workspace_id, user, request, nvd_mode=None):
         recent_analyses = (
             session.execute(
                 text(f"""SELECT r.id,r.application_id,a.name AS application_name,
-                r.technology_id,r.selected_cpe,r.run_context,r.lease_expires_at,r.response_received_at,
+                r.technology_id,r.selected_cpe,r.run_context,r.lease_expires_at,r.response_received_at,r.cache_response_id,r.cache_usage,
                 r.source_timestamp,COALESCE(r.query_parameters->>'nvd_mode','unknown') AS nvd_mode,
                 t.product,t.version,r.status,r.coverage,r.stored_count,
                 r.warning_codes,r.created_at,r.completed_at,
@@ -136,7 +136,7 @@ def dashboard_data(workspace_id, user, request, nvd_mode=None):
                 SELECT DISTINCT ON (technology_id) id,technology_id,application_id,
                     selected_cpe,run_context,
                     lease_expires_at,
-                    response_received_at,source_timestamp,status,coverage,created_at,
+                    response_received_at,cache_response_id,cache_usage,source_timestamp,status,coverage,created_at,
                     COALESCE(query_parameters->>'nvd_mode','unknown') AS nvd_mode
                 FROM vulntrack.application_analysis_runs
                 WHERE workspace_id=:workspace AND {source_predicate} AND status='completed'
@@ -146,7 +146,7 @@ def dashboard_data(workspace_id, user, request, nvd_mode=None):
                 f.observed_at,a.id AS application_id,a.name AS application_name,
                 t.product,t.version,l.id AS analysis_id,l.technology_id,l.selected_cpe,
                 l.run_context,
-                l.lease_expires_at,l.response_received_at,l.source_timestamp,l.coverage,
+                l.lease_expires_at,l.response_received_at,l.cache_response_id,l.cache_usage,l.source_timestamp,l.coverage,
                 l.status AS run_status,l.created_at,l.nvd_mode
             FROM latest l
             JOIN vulntrack.application_findings f
@@ -195,9 +195,19 @@ def dashboard_data(workspace_id, user, request, nvd_mode=None):
             item = historical_row(row)
             state = dict(item, status=item["run_status"], id=item["analysis_id"])
             analysis = decorate(session, request.app.state.settings, "applications", [state])[0]
-            for field in ("run_context", "lease_expires_at", "response_received_at"):
+            for field in (
+                "run_context",
+                "lease_expires_at",
+                "response_received_at",
+                "cache_response_id",
+                "cache_usage",
+            ):
                 item.pop(field, None)
-            item["analysis"] = {key: analysis[key] for key in ("assessment", "provenance")}
+            item["analysis"] = {
+                key: analysis[key]
+                for key in ("assessment", "provenance", "storage")
+                if key in analysis
+            }
             priority.append(item)
         return {
             "cve_metrics_scope": "latest_recorded_per_technology",
