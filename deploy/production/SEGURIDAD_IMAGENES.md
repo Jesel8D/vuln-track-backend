@@ -1,0 +1,25 @@
+# Advisories de imágenes — consulta fechada del candidato
+
+24 de noviembre de 2026 local / 25 UTC. Trivy oficial 0.76.2, digest `sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb`, base actualizada 2026-11-25T01:10:40Z. Análisis local de imágenes de ejecución, sin escaneo de servicios ni solicitudes NVD. Se usó el artefacto de base de advisories del proveedor. Scanner `vuln`, severidades HIGH/CRITICAL, sin excluir los no corregidos. No se analizó el sistema operativo host ni el Node usado solo para construir.
+
+| Imagen de ejecución | CRITICAL | HIGH |
+|---|---:|---:|
+| Backend, Python3.12/Debian13.8 | 0 | 53 |
+| Frontend estático/Caddy2.11.9/Alpine3.24.4 | 0 | 2 |
+| PostgreSQL16.15/Alpine3.24.3 (misma imagen en ambas bases) | 1 | 45 |
+
+**No es un resultado de cero vulnerabilidades.** No se ocultaron avisos por falta de parche ni se cambió el catálogo para obtener estos resultados. `imagenes-advisories.json` de la entrega incluye los identificadores, paquetes, versiones, digests y huellas de informes. La ausencia de advisories Python/npm en sus consultas separadas tampoco elimina los del sistema base.
+
+## Evaluación de relevancia para esta configuración
+
+El crítico `CVE-2025-68121` aparece por Go1.24.6 dentro de `/usr/local/bin/gosu`1.19, no en el servidor PostgreSQL ni su TLS OpenSSL. Trata reanudación de sesiones `crypto/tls` tras mutar autoridades de confianza ([aviso Go](https://pkg.go.dev/vuln/GO-2026-4337)). Se verificó la versión del ejecutable y [el punto de entrada oficial de gosu1.19](https://github.com/tianon/gosu/blob/1.19/main.go): cambia identidad y hace exec, sin cliente/servidor TLS. No existe ruta de reanudación TLS ni entrada HTTP en ese uso de gosu. **Se considera no alcanzable en este despliegue concreto**, inferencia sobre su función y configuración; el detector por metadatos no hace análisis de alcanzabilidad. Se conserva el hallazgo para reevaluación en EC2 y seguimiento de la imagen oficial; no se declara la imagen libre de críticos por severidad del escáner.
+
+Otros25HIGH de esa imagen pertenecen también al runtime Go de gosu. Los20HIGH de paquetes Alpine afectan Kerberos (16), libxml2 (1) y libxslt (3), con versiones corregidas declaradas por el scanner. No se opera KDC/kadmind/GSS; pg_hba exige SCRAM sobre TLS y no hay endpoint SQL público ni operaciones XML/XSLT del producto. No se permite que cuentas del producto ejecuten SQL arbitrario. El responsable debe actualizar a una imagen oficial compatible parcheada y repetir el ensayo, o registrar una evaluación específica antes de abrir; no hacer `apk upgrade` flotante en un contenedor persistente ni cambiar el respaldo anterior.
+
+Los53HIGH de Debian se reparten entre util-linux/mount y bibliotecas asociadas, libacl, ncurses, SQLite, OpenSSL, systemd/udev y perl. Todos aparecieron sin versión corregida para esa distribución en la base consultada. El API no usa SQLite/FTS5 ni carga bases SQLite; no recibe archivos terminfo ni ejecuta infocmp, systemd-homed, montajes o extracción TAR aportados por usuarios. Corre sin root/capacidades y con raíz de solo lectura. OpenSSL reporta dos problemas de QUIC; el API no usa QUIC ni escucha TLS público (SQL es TLS sobre TCP). Se infiere una superficie reducida en estas rutas, sin convertirlo en exención universal. Referencias primarias: [OpenSSL QUIC](https://security-tracker.debian.org/tracker/CVE-2026-107494), [ncurses/infocmp](https://security-tracker.debian.org/tracker/CVE-2025-69720), [SQLite FTS5](https://security-tracker.debian.org/tracker/CVE-2026-119374).
+
+Los2HIGH de Caddy son `CVE-2026-116587` en go-jose/v3.0.5 (RSA JWK sin límites, sin parche v3 declarado) y `CVE-2026-78661` en x/net/html0.60.0 (corregido0.62.0). Solo se sirve contenido estático y proxy, sin templates, JWT/JWK de clientes ni módulos de autenticación JOSE. El JWT de la aplicación lo maneja Python. La gestión ACME sigue siendo una ruta de confianza distinta que debe comprobar el responsable, no se probó con certificados públicos aquí. No se ha demostrado una ruta explotable desde los endpoints montados; **no se declara una ausencia universal de impacto**. Se seleccionó [la versión oficial Caddy2.11.9](https://github.com/caddyserver/caddy/releases/tag/v2.11.9); reconstruir un Caddy propio con dependencias distintas no forma parte de esta entrega. [Aviso JOSE del mantenedor](https://github.com/go-jose/go-jose/security/advisories/GHSA-mgcc-cww5-fp2q).
+
+## Dictamen
+
+No se identificó un crítico relevante alcanzable en la configuración local ensayada. GO para entregar/publicar el candidato y su configuración, con estos riesgos expresos; **NO-GO para afirmar aptitud pública o seguridad sin reservas**. Antes de abrir EC2, repetir advisories del host y de imágenes exactas, preferir imágenes oficiales con los parches disponibles y validar compatibilidad. Si aparece un crítico alcanzable, una nueva ruta vulnerable o no puede justificarse/aceptarse el riesgo de los HIGH restantes, mantener NO-GO público. No aceptar la simple etiqueta `latest`, un build exitoso o un semáforo automático como sustituto de esa revisión.
