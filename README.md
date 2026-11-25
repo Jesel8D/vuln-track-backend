@@ -1,8 +1,12 @@
-# VulnTrack Backend — RC4.1-local
+# VulnTrack Backend — RC4.1 / candidato de entrega
 
 API FastAPI para inventario local con workspaces, roles owner/editor/viewer, dispositivos, aplicaciones, tecnologías y su historial. Identifica productos mediante un catálogo CPE PostgreSQL independiente y de solo lectura. Las consultas CVE habituales son **fixtures capturados**: no prueban vulnerabilidad ni riesgo. CVE externo/NVD live, verificación remota, OWASP ZAP y despliegue público están aplazados.
 
 La documentación de esta instalación está en [el índice vigente](../evolucion-vulntrack/00_INDICE_DOCUMENTACION_VIGENTE.md), [operación](../evolucion-vulntrack/MANUAL_OPERACION_LOCAL.md) y [seguridad](../evolucion-vulntrack/AUDITORIA_FINAL_SEGURIDAD.md). Los documentos anteriores en `docs/` conservan contratos y evidencia histórica; no constituyen permiso de activar integraciones.
+
+## Preparación de producción
+
+La configuración aislada del candidato `release/v1.0.0-rc1` y la guía autosuficiente están en [deploy/production](deploy/production/GUIA_DESPLIEGUE_VULNTRACK_PRODUCCION.md). Compila React, usa Caddy/HTTPS, dos PostgreSQL privados con TLS y un socket Unix para FastAPI. Genera secretos propios y restaura únicamente el catálogo público en volúmenes nuevos. No depende de Context ni de los enlaces locales de documentación de esta laptop. La apertura pública requiere completar las verificaciones del servidor; CVE live y ZAP siguen bloqueados.
 
 ## Arquitectura y configuración
 

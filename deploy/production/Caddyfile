@@ -1,0 +1,56 @@
+{
+ admin off
+ skip_install_trust
+ email {$ACME_EMAIL}
+ http_port 8080
+ https_port 8443
+ servers {
+  timeouts {
+   read_header 10s
+   read_body 20s
+   write 60s
+   idle 60s
+  }
+ }
+}
+https://{$SITE_HOST} {
+ tls {$TLS_MODE}
+ header {
+  -Server
+  X-Content-Type-Options nosniff
+  X-Frame-Options DENY
+  Referrer-Policy no-referrer
+  Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Strict-Transport-Security "max-age=86400"
+  Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+ }
+ request_body {
+  max_size 8192
+ }
+ @api path /api/* /health /ready
+ handle @api {
+  reverse_proxy unix//run/backend/api.sock {
+   header_up X-Forwarded-For {remote_host}
+   header_up X-Forwarded-Proto https
+   header_up -Forwarded
+   header_up -X-Real-IP
+  }
+ }
+ @private_docs path /docs /docs/* /redoc /openapi.json
+ handle @private_docs {
+  respond 404
+ }
+ handle {
+  root * /srv
+  try_files {path} /index.html
+  file_server
+ }
+}
+
+http://127.0.0.1:8081 {
+ respond /proxy-health 200
+}
+
+http://{$SITE_HOST} {
+ redir {$PUBLIC_ORIGIN}{uri} 308
+}

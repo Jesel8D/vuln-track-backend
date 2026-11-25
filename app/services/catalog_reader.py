@@ -50,15 +50,22 @@ class InvalidCatalogRole(RuntimeError):
 def readonly_engine(secret):
     try:
         url = make_url(secret.get_secret_value())
+        loopback = url.host in {"127.0.0.1", "::1"} and not url.query
+        production = (
+            url.host == "catalog"
+            and url.port == 5432
+            and dict(url.query) == {"sslmode": "verify-full", "sslrootcert": "/run/tls/ca.crt"}
+        )
         if (
             url.drivername != "postgresql+psycopg"
-            or url.host not in {"127.0.0.1", "::1"}
+            or not (loopback or production)
             or not (url.port and url.database and url.username and url.password)
-            or url.query
         ):
             raise ValueError
     except (SQLAlchemyError, ValueError):
-        raise ValueError("External catalog requires a dedicated PostgreSQL loopback URL") from None
+        raise ValueError(
+            "Catalog URL requires loopback or the verified production TLS endpoint"
+        ) from None
     engine = create_engine(
         url,
         hide_parameters=True,

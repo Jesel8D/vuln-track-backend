@@ -1,0 +1,151 @@
+name: ${COMPOSE_PROJECT_NAME:?}
+x-pg: &pg
+  image: postgres:16.15-alpine@sha256:0cefaabd882e42bcb2a2f3dc56d3ce4770560ba62fd7f197f1a2e008fd5731ab
+  environment: &pg-env
+    POSTGRES_DB: vulntrack
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    TZ: UTC
+    PGTZ: UTC
+  command: [postgres, -c, ssl=on, -c, ssl_cert_file=/run/tls/server.crt, -c, ssl_key_file=/run/tls/server.key, -c, hba_file=/etc/postgresql/pg_hba.conf, -c, shared_buffers=128MB, -c, max_connections=50]
+  restart: unless-stopped
+  healthcheck:
+    test: [CMD-SHELL, pg_isready -U postgres -d vulntrack]
+    interval: 5s
+    timeout: 3s
+    retries: 30
+  stop_grace_period: 30s
+  mem_limit: 2g
+  cpus: 1.5
+services:
+  prepare:
+    image: vulntrack-backend:production-rc1
+    build:
+      context: ../..
+      secrets: [proxy_ca]
+    user: '0:0'
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [CHOWN, FOWNER, DAC_OVERRIDE]
+    security_opt: [no-new-privileges:true]
+    command: [python, /prepare.py]
+    volumes:
+      - ./prepare.py:/prepare.py:ro
+      - ${RUNTIME_DIR:?}:/run/bootstrap:ro
+      - postgres_tls:/tls-postgres
+      - catalog_tls:/tls-catalog
+      - api_runtime:/runtime
+      - api_socket:/socket
+      - caddy_data:/caddy-data
+      - caddy_config:/caddy-config
+  postgres:
+    <<: *pg
+    depends_on: {prepare: {condition: service_completed_successfully}}
+    networks: [private_db]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - postgres_tls:/run/tls:ro
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    secrets: [postgres-password]
+  catalog:
+    <<: *pg
+    depends_on: {prepare: {condition: service_completed_successfully}}
+    networks: [private_catalog]
+    volumes:
+      - catalog_data:/var/lib/postgresql/data
+      - catalog_tls:/run/tls:ro
+      - ./pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    secrets:
+      - source: catalog-password
+        target: postgres-password
+  migrate:
+    image: vulntrack-backend:production-rc1
+    user: '0:0'
+    depends_on: {postgres: {condition: service_healthy}}
+    networks: [private_db]
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [DAC_OVERRIDE]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    command: [python, -m, app.migrate_production]
+    volumes:
+      - ${RUNTIME_DIR:?}:/run/bootstrap:ro
+      - ${RUNTIME_DIR:?}/ca.crt:/run/tls/ca.crt:ro
+    profiles: [maintenance]
+  api:
+    image: vulntrack-backend:production-rc1
+    depends_on:
+      postgres: {condition: service_healthy}
+      catalog: {condition: service_healthy}
+    networks: [private_db, private_catalog]
+    user: '10001:10001'
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    volumes:
+      - api_runtime:/run/runtime:ro
+      - api_socket:/run/backend
+      - ${RUNTIME_DIR:?}/ca.crt:/run/tls/ca.crt:ro
+    command: [uvicorn, app.production:create_app, --factory, --uds, /run/backend/api.sock, --workers, '1', --proxy-headers, --forwarded-allow-ips, '*', --no-access-log]
+    healthcheck:
+      test: [CMD, python, -c, "import httpx; c=httpx.Client(transport=httpx.HTTPTransport(uds='/run/backend/api.sock')); r=c.get('http://localhost/ready',timeout=3); r.raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1.5
+  proxy:
+    image: vulntrack-web:production-rc1
+    build:
+      context: ../../../vuln-track-frontend
+      secrets: [proxy_ca]
+    depends_on: {api: {condition: service_healthy}}
+    user: '10001:10001'
+    networks: [edge]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    environment:
+      SITE_HOST: ${SITE_HOST:?}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?}
+      ACME_EMAIL: ${ACME_EMAIL:?}
+      TLS_MODE: ${TLS_MODE:-}
+    ports:
+      - '${PUBLIC_BIND:-127.0.0.1}:${HTTP_PORT:-80}:8080'
+      - '${PUBLIC_BIND:-127.0.0.1}:${HTTPS_PORT:-443}:8443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - api_socket:/run/backend:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    tmpfs: [/tmp]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:8081/proxy-health']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    mem_limit: 256m
+    cpus: 1
+secrets:
+  proxy_ca: {file: '${PROXY_CA_FILE:-/etc/ssl/certs/ca-certificates.crt}'}
+  postgres-password: {file: '${RUNTIME_DIR:?}/postgres-password'}
+  catalog-password: {file: '${RUNTIME_DIR:?}/catalog-password'}
+volumes:
+  pgdata: {}
+  catalog_data: {}
+  postgres_tls: {}
+  catalog_tls: {}
+  api_runtime: {}
+  api_socket: {}
+  caddy_data: {}
+  caddy_config: {}
+networks:
+  edge: {}
+  private_db: {internal: true}
+  private_catalog: {internal: true}
