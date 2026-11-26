@@ -125,10 +125,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def secure_configuration(self):
-        if self.cve_live_enabled:
-            raise ValueError(
-                "CVE live requiere una versión posterior revisada y autorización específica"
-            )
+        if self.cve_live_enabled and self.nvd_mode != "live":
+            raise ValueError("CVE live requiere NVD_MODE=live")
         if self.registration_enabled and self.workspace_hmac_key is None:
             raise ValueError("Registro V2 requiere WORKSPACE_HMAC_KEY")
         try:
