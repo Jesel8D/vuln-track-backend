@@ -528,6 +528,7 @@ def main():
     p.add_argument("--directory", type=Path)
     p.add_argument("--archive", type=Path)
     p.add_argument("--registration", choices=["on", "off"])
+    p.add_argument("--cve-live", choices=["on", "off"])
     p.add_argument("--rotate-token", action="store_true")
     a = p.parse_args()
     if a.action == "generate":
@@ -563,11 +564,16 @@ def main():
     elif a.action == "backup":
         s.backup()
     elif a.action == "configure":
-        if a.registration is None and not a.rotate_token:
-            p.error("Select --registration on/off or --rotate-token")
+        if a.registration is None and a.cve_live is None and not a.rotate_token:
+            p.error("Select --registration on/off, --cve-live on/off or --rotate-token")
         values = json.loads((s.root / "api-settings.json").read_text())
         if a.registration is not None:
             values["registration_enabled"] = a.registration == "on"
+        if a.cve_live is not None:
+            enabled = a.cve_live == "on"
+            values["nvd_mode"] = "live" if enabled else "disabled"
+            values["cve_live_enabled"] = enabled
+            values["cve_worker_enabled"] = enabled
         if a.rotate_token:
             values["token_secret"] = secrets.token_urlsafe(48)
             credentials = json.loads((s.root / "credentials.json").read_text())
