@@ -29,10 +29,25 @@ aplicación. La variable del frontend solo cambia la interfaz; no habilita el
 backend. El backend exige ambas variables de activación y sigue aplicando
 autenticación, rol owner/editor, aislamiento del workspace y confirmación CPE.
 
-El punto de entrada de producción `app/production.py` continúa rechazando
-cualquier modo NVD externo y mantiene desactivado el worker. No despliegues CVE
-live en producción sin revisar salida de red, configuración del worker y cuota
-global compartida para todas las réplicas.
+El launcher local `scripts.v2_development up --nvd-mode live` configura ambos
+interruptores del backend (`nvd_mode=live` y `cve_live_enabled=true`) y compila
+el frontend con `VITE_NVD_MODE=live`. En el modo predeterminado `fixture`, los
+botones y las respuestas permanecen identificados como demostración.
+
+El punto de entrada `app/production.py` admite el modo `live` solo si el archivo
+privado de configuración establece explícitamente `cve_live_enabled=true`; el
+operador lo gestiona con `deploy/production/operate.py configure --cve-live on`.
+La configuración de producción sigue requiriendo revisar salida de red,
+procedencia del catálogo CPE y límites de cuota antes de habilitarla. El
+procedimiento operativo y sus verificaciones están en
+`deploy/production/GUIA_DESPLIEGUE_VULNTRACK_PRODUCCION.md`.
+
+La búsqueda y confirmación de CPE usan el catálogo local de fuente `live` (por
+ejemplo, un feed oficial importado o sincronización acotada), no cambian
+automáticamente a fixture si ese catálogo está vacío. Comprueba
+`GET /api/v2/cpe-catalog/status?mode=live`; requiere registros y una procedencia
+oficial antes de confirmar el CPE. La consulta CVE posterior sí obtiene datos
+de la API CVE de NVD o de la caché persistida para ese mismo CPE y workspace.
 
 ## Protección de la conexión
 
@@ -62,6 +77,9 @@ TLS con el servicio actual, cuota de la cuenta y respuesta real siguen pendiente
 de verificarse en el entorno del usuario. Mantener la capacidad apagada hasta que
 la instancia pueda probarse. La conexión real no debe declararse verificada por
 un fixture, un caché o una respuesta simulada.
+
+Para el recorrido de usuario, datos requeridos, estados, respuestas y errores,
+consulta [Guía de uso: aplicaciones y consultas CVE reales](GUIA_USO_CONSULTA_CVE_NVD_REAL.md).
 
 La validación del esquema oficial local se conserva en
 `tests/fixtures/nvd_cve_api_2_2_4.schema.json`; no reemplaza una respuesta real.
