@@ -35,6 +35,32 @@ como aplicable.
    para consultar CVE por CPE; la autorización de targets corresponde a otros
    análisis remotos.
 
+En el checkout RC2.4/WSL documentado, al momento de usarlo el arranque live se
+selecciona así (el perfil debe existir y sus puertos estar libres):
+
+```bash
+.venv/bin/python -m scripts.v2_development up --profile rc2-catalog24 \
+  --frontend ../vuln-track-frontend --nvd-mode live
+```
+
+Para compilar/probar en modo demostración se usa `--nvd-mode fixture`. No
+habilites live hasta que quieras que ese proceso haga solicitudes reales. El
+launcher live lee una clave opcional desde el archivo privado
+`.local/rc2-catalog24/nvd-api-key`; no la pases como argumento ni la pongas en
+una variable `VITE_*`.
+
+Si el catálogo CPE live está vacío, la sincronización acotada del perfil RC2.4
+se realiza desde el backend, usando el fabricante y producto CPE observados:
+
+```bash
+.venv/bin/python -m scripts.sync_cpe_catalog --mode live \
+  --vendor <vendor-cpe> --product <product-cpe> --pages 1
+```
+
+Este comando contacta la API oficial de productos NVD y consume su presupuesto;
+no lo ejecutes solo para probar la interfaz. El backend expone el estado y la
+procedencia del catálogo en `/api/v2/cpe-catalog/status?mode=live`.
+
 ## Recorrido en la interfaz
 
 ### 1. Crear o elegir un workspace y una aplicación
