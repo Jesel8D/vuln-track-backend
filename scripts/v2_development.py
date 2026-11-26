@@ -830,6 +830,7 @@ def nvd_live_settings(stack):
             **settings.model_dump(),
             "nvd_api_key": key.read_text().strip() or None if key.exists() else None,
             "nvd_mode": "live",
+            "cve_live_enabled": True,
         }
     )
 
