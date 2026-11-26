@@ -49,7 +49,7 @@ def configure_api_documentation(app: FastAPI, routers: tuple[APIRouter, ...]) ->
             tag = "Autenticación"
             detail = {
                 "register_account": (
-                    "Alta opt-in (REGISTRATION_ENABLED). Crea usuario, workspace "
+                    "Alta pública controlada (REGISTRATION_ENABLED). Crea usuario, workspace "
                     "personal y membresía owner en una transacción. No permite campos"
                     " internos ni privilegios globales. Username ASCII normalizado "
                     "3–80; contraseña privada 15–128. No inicia sesión. Duplicado: "
