@@ -70,6 +70,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.catalog_reader = catalog_reader
     app.state.session_factory = build_session_factory(engine)
     app.state.assets = AssetService(app.state.session_factory, AssetAuthorization())
+    cve_live = settings.nvd_mode == "live" and settings.cve_live_enabled
     app.state.nvd_mode = "live" if settings.nvd_mode == "live" else "unknown"
     app.state.catalog_reads = Quota()
     app.state.nvd = NVDClient(
@@ -90,7 +91,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         http_policy=HTTPPolicy(
             timeout=settings.cve_http_total_seconds, max_bytes=settings.cve_http_max_bytes
         ),
-        live=settings.nvd_mode == "live",
+        live=cve_live,
+        live_transport_enabled=cve_live,
     )
     app.state.analyses = AnalysisService(app.state.session_factory, AssetAuthorization())
     app.state.cve_worker = CVEWorker(
