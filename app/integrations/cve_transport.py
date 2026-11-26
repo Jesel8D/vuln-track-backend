@@ -120,6 +120,12 @@ async def _exchange(client, url, params, budget, policy):
     if client.api_key:
         headers["apiKey"] = client.api_key.get_secret_value()
 
+    transport = client.transport
+    if transport is None and getattr(client, "live_transport_enabled", False):
+        from app.integrations.nvd_pinned_transport import create_nvd_transport
+
+        transport = create_nvd_transport()
+
     # Do not propagate an injected adapter exception/body/header or key to logs/errors.
     async def request():
         async with (
@@ -133,7 +139,7 @@ async def _exchange(client, url, params, budget, policy):
                     pool=min(1, deadline),
                     write=min(5, deadline),
                 ),
-                transport=client.transport,
+                transport=transport,
             ) as http,
             http.stream("GET", url, params=params, headers=headers) as response,
         ):
@@ -202,11 +208,16 @@ async def _exchange(client, url, params, budget, policy):
 
 def content(client, url, params, *, budget=None):
     validate_request(url, params)
-    # Stronger than an env flag: no transport constructor, DNS, socket or quota
-    # consumption is possible for real CVE requests in the 5C.1 release.
+    # Only a MockTransport, a scoped lab permit, or the configured pinned NVD
+    # transport can pass this capability gate; a mode flag alone is insufficient.
     from app.integrations.nvd_lab_client import lab_client
 
-    if not isinstance(client.transport, httpx.MockTransport) and not lab_client(client):
+    live_transport = bool(getattr(client, "live_transport_enabled", False))
+    if (
+        not isinstance(client.transport, httpx.MockTransport)
+        and not lab_client(client)
+        and not live_transport
+    ):
         raise APIError(503, "CVE_LIVE_DISABLED", "CVE live no habilitado en esta versión")
     if lab_client(client):
         client.permit.check()
