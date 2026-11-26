@@ -1,7 +1,9 @@
 # Registro público controlado de usuarios V2
 
-Implementación para revisión, 2026-11-13. No constituye aprobación global del
-modelo V2, producción ni del reemplazo del inventario de dispositivos.
+Implementación para revisión, 2026-11-13. Estado actual: el registro está habilitado
+por defecto para permitir que nuevos usuarios creen su propia cuenta. El operador
+puede cerrarlo con `REGISTRATION_ENABLED=false`. Requiere HMAC válido, SQL006 y
+privilegios dedicados; no concede acceso entre workspaces.
 
 ## Base inspeccionada
 
@@ -22,7 +24,8 @@ en `users`. Los roles `owner/editor/viewer` pertenecen a una membresía concreta
 
 ## Contrato y transacción
 
-`POST /api/v1/auth/register` es público **solo si `REGISTRATION_ENABLED=true`**.
+`POST /api/v1/auth/register` es público si `REGISTRATION_ENABLED=true` (valor
+predeterminado). Para cerrar el alta, establecer `REGISTRATION_ENABLED=false`.
 Campos exclusivos: `username` y `password`; extras se rechazan con 422.
 Usuario ASCII de 3–80 caracteres `[a-z0-9][a-z0-9_.-]*`, normalizado con trim y
 minúsculas. El login mantiene su contrato histórico, incluido el rango 1–80 para
@@ -92,7 +95,8 @@ CORS_ORIGINS=["http://127.0.0.1:5173"]
 ```
 
 También se requieren `DATABASE_URL`, `TOKEN_SECRET` y `WORKSPACE_HMAC_KEY` privados.
-El registro se deshabilita por defecto y exige HMAC válido en configuración.
+El registro exige HMAC válido, SQL006 y el rol dedicado en configuración. Está
+habilitado por defecto; el operador puede cerrarlo con `REGISTRATION_ENABLED=false`.
 El limitador usa una ventana de 60 segundos, almacenamiento acotado y HMAC de la IP
 del socket; no guarda IPs/usuarios en claro ni confía en X-Forwarded-For.
 El launcher usa `--no-proxy-headers --no-access-log`. Detrás de un proxy debe
