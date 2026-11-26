@@ -37,7 +37,7 @@ class NVDPinnedTransport(httpx.AsyncBaseTransport):
             request.method != "GET"
             or request.url.scheme != "https"
             or request.url.host != NVD_HOST
-            or request.url.port != 443
+            or request.url.port not in {None, 443}
             or request.url.path != NVD_PATH
             or set(request.url.params) != {"cpeName", "startIndex", "resultsPerPage"}
         ):
