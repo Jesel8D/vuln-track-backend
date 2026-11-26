@@ -1,56 +1,67 @@
-# CVE transport preparation 5C.1 (offline only)
+# Consultas CVE reales por CPE confirmado
 
-This release has **no real CVE network capability**, including the legacy V1
-worker. CVEClient accepts only an explicitly injected httpx.MockTransport;
-no adapter, a different adapter, `live=True`, NVD_MODE=live or an API key cannot
-open CVE egress. CVE_LIVE_ENABLED defaults false and true is rejected by Settings.
-V2 keeps its additional live gate. Normal CPE/catalog operations are retained; the base CPE helper now rejects
-the CVE URL as well, preventing it from becoming a second CVE path.
+## Alcance
 
-The CVE boundary retains the canonical HTTPS endpoint and three public params,
-sets verify=True, trust_env=False, follow_redirects=False, requests identity
-encoding and rejects any compression before reading. It checks declared/raw byte
-limits and rejects ambiguous JSON. An asynchronous exchange has an overall
-monotonic deadline and worker cancellation observer; a bounded phase timeout is
-also configured. This is tested on simulated async streams, not NVD TLS/DNS.
-The body is public provider data, without inventory/review/credential context.
+El backend puede consultar la API CVE 2.0 de NVD para un CPE seleccionado y
+confirmado por una persona. El resultado indica CVE potencialmente relacionados;
+no demuestra que la versión esté instalada, que el activo sea explotable ni que
+haya ocurrido un escaneo. Este flujo no ejecuta ZAP, pruebas activas ni tráfico
+hacia los activos inventariados.
 
-The transport owns no retries. The existing worker retains at most two retries,
-its backoff/cooldown and durable per-page transactions. New per-execution budgets
-are shared across pages/attempts: CVE_MAX_REQUESTS=15, CVE_MAX_PAGES=5,
-CVE_MAX_RECORDS=500, CVE_MAX_BYTES=10485760, CVE_MAX_SECONDS=300. HTTP defaults:
-CVE_HTTP_MAX_BYTES=2097152, CVE_HTTP_TOTAL_SECONDS=10. V2 stays one page/100;
-there is no new collection endpoint. A budget/error after a valid page produces
-partial coverage, before one failed coverage, preserving history. Retry-After
-supports seconds/date without shortening large delays to force retries.
+La ruta consultada es fija: `https://services.nvd.nist.gov/rest/json/cves/2.0`.
+Solo se envían `cpeName`, `startIndex` y `resultsPerPage`; nunca se siguen
+referencias recibidas en la respuesta.
 
-Clients sharing the application's quota share a CVE concurrency mutex and a
-workspace-independent spacing budget. Cache hits remain before provider I/O.
-This is not a distributed egress limiter. Multiple processes or other consumers
-still need exclusive/shared coordination before any future live experiment.
+## Activación local
 
-The public cache field allowlist was aligned with fields found in the official
-CVE JSON schema2.2.4 (recorded in a test fixture); parser identity becomes
-public-cve-5c1-1, so older evidence is never rewritten. The parser is a restricted
-subset, not a full schema/$ref validator; for example vulnStatus remains required
-by the local model although optional in that schema. Such differences and current
-service semantics must be reviewed before live. Fixture/simulated data never
-become live merely because this schema was read.
+La capacidad está apagada por defecto. En el `.env` privado del backend:
 
-`scripts.nvd_controlled_probe --plan` only reads the existing local readonly CPE
-catalogue and prepares a public-identity plan with no inventory or API key.
-`--execute-live` always returns2 before any DB or network operation in5C.1.
-No frontend toggle, hidden environment bypass or auto-enable by key exists.
+```dotenv
+NVD_MODE=live
+CVE_LIVE_ENABLED=true
+# Opcional: clave NVD exclusivamente del backend
+NVD_API_KEY=
+```
 
-Official six NVD documentation pages returned403 during this increment; the
-schema at csrc.nist.gov was accessible. Endpoint/request semantics, current
-quotas and attribution are not certified from the schema. Real DNS/public-IP
-pinning/egress and TLS behavior have not been tested against NVD. A future
-reviewed5C.2 release plus later explicit authorization is required; technical
-readiness to request that experiment remains NO-GO until the documented controls
-are closed. The normal installation stays fixture, schema v10 unchanged.
+Configura el entorno público de compilación del frontend con
+`VITE_NVD_MODE=live` y su URL habitual de API, después recompila/reinicia la
+aplicación. La variable del frontend solo cambia la interfaz; no habilita el
+backend. El backend exige ambas variables de activación y sigue aplicando
+autenticación, rol owner/editor, aislamiento del workspace y confirmación CPE.
 
-Official schema receipt: https://csrc.nist.gov/schema/nvd/api/2.0/cve_api_json_2.0.schema
-(2026-11-24, SHA256 2b9c4e8ab7e6e42aa17ea787f58167beff47c119c6f291405f86ac19c6149e01).
-The unchanged official bytes are in tests/fixtures/nvd_cve_api_2_2_4.schema.json.
-This is a schema document, never a live CVE response.
+El punto de entrada de producción `app/production.py` continúa rechazando
+cualquier modo NVD externo y mantiene desactivado el worker. No despliegues CVE
+live en producción sin revisar salida de red, configuración del worker y cuota
+global compartida para todas las réplicas.
+
+## Protección de la conexión
+
+`app/integrations/nvd_pinned_transport.py` resuelve únicamente el host oficial,
+rechaza respuestas DNS no públicas y conecta a una IP validada y fijada para esa
+solicitud. Conserva el nombre oficial en `Host` y TLS SNI para validar el
+certificado. El transporte usa validación TLS, no lee proxies del entorno, no
+admite redirecciones, reintentos del transporte, HTTP/2, hosts ni rutas
+configurables. También comprueba que la IP del peer sea la fijada.
+
+`cve_transport.py` conserva parámetros CPE/paginación validados, límite de
+respuesta de 2 MiB, límite por ejecución de 10 MiB/15 solicitudes/5 páginas/500
+registros/300 s, tiempo máximo HTTP de 10 s, una consulta concurrente y espera
+mínima compartida de 7 s por proceso. NVD_API_KEY no se registra y no eleva esos
+límites. Los límites de cuota son por proceso; la configuración desplegada debe
+mantener una sola API/worker con salida hasta implementar cuota distribuida.
+
+El caché es aislado por workspace y conserva procedencia/frescura. Las
+coincidencias se presentan como indicios sujetos a revisión. Un CVE no se
+convierte en hallazgo confirmado solo por estar asociado al CPE.
+
+## Verificación pendiente
+
+El cambio habilita el transporte, pero no se ha iniciado Docker ni la instancia
+ni se hizo una consulta externa desde esta estación. Por lo tanto, DNS, firewall,
+TLS con el servicio actual, cuota de la cuenta y respuesta real siguen pendientes
+de verificarse en el entorno del usuario. Mantener la capacidad apagada hasta que
+la instancia pueda probarse. La conexión real no debe declararse verificada por
+un fixture, un caché o una respuesta simulada.
+
+La validación del esquema oficial local se conserva en
+`tests/fixtures/nvd_cve_api_2_2_4.schema.json`; no reemplaza una respuesta real.
