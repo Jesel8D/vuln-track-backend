@@ -58,7 +58,15 @@ class CVEPage(BaseModel):
 class CVEClient(NVDClient):
     throttle_code = "NVD_THROTTLED"
 
-    def __init__(self, *args, source_kind=None, cache_namespace=None, http_policy=None, **kwargs):
+    def __init__(
+        self,
+        *args,
+        source_kind=None,
+        cache_namespace=None,
+        http_policy=None,
+        live_transport_enabled=False,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         if source_kind not in {None, "fixture", "simulated"}:
             raise ValueError("Only explicit offline source labels are configurable")
@@ -67,6 +75,9 @@ class CVEClient(NVDClient):
         self.source_kind = source_kind
         self.cache_namespace = cache_namespace
         self.http_policy = http_policy or HTTPPolicy(timeout=self.timeout)
+        self.live_transport_enabled = bool(live_transport_enabled)
+        if self.live_transport_enabled and (self.live is not True or self.transport is not None):
+            raise ValueError("NVD CVE live requiere el transporte seguro sin adaptadores externos")
         self.last_response_bytes = None
 
     def _content(self, url, params):
