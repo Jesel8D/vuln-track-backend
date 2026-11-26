@@ -1,4 +1,4 @@
-"""Production entry point: one process, private settings, external CVE disabled."""
+"""Production entry point: one process, private settings, optional explicit live NVD."""
 
 import json
 import os
@@ -20,12 +20,16 @@ def create_app():
         raise ValueError("Production settings require an owner-only private file")
     values = json.loads(path.read_text())
     settings = Settings(_env_file=None, **values)
-    if (
-        settings.environment != "production"
-        or settings.nvd_mode != "disabled"
-        or settings.cve_worker_enabled
-    ):
-        raise ValueError("Production requires external CVE and workers disabled")
+    if settings.environment != "production":
+        raise ValueError("Production entry point requires production environment")
+    if settings.nvd_mode == "disabled":
+        if settings.cve_live_enabled or settings.cve_worker_enabled:
+            raise ValueError("Disabled NVD mode requires external CVE and workers disabled")
+    elif settings.nvd_mode == "live":
+        if not settings.cve_live_enabled:
+            raise ValueError("Live NVD mode requires cve_live_enabled=true")
+    else:
+        raise ValueError("Production supports only disabled or explicit live NVD mode")
     if len(settings.cors_origins) != 1:
         raise ValueError("Production requires exactly one HTTPS frontend origin")
     validate_origin(settings.cors_origins[0])

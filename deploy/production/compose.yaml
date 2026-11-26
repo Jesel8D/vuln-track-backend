@@ -80,7 +80,7 @@ services:
     depends_on:
       postgres: {condition: service_healthy}
       catalog: {condition: service_healthy}
-    networks: [private_db, private_catalog]
+    networks: [private_db, private_catalog, egress]
     user: '10001:10001'
     read_only: true
     cap_drop: [ALL]
@@ -103,6 +103,8 @@ services:
     image: vulntrack-web:production-rc1
     build:
       context: ../../../vuln-track-frontend
+      args:
+        VITE_NVD_MODE: ${VITE_NVD_MODE:-live}
       secrets: [proxy_ca]
     depends_on: {api: {condition: service_healthy}}
     user: '10001:10001'
@@ -147,5 +149,6 @@ volumes:
   caddy_config: {}
 networks:
   edge: {}
+  egress: {}
   private_db: {internal: true}
   private_catalog: {internal: true}
