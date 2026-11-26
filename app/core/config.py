@@ -101,7 +101,7 @@ class Settings(BaseSettings):
     nvd_timeout_seconds: int = Field(default=10, ge=1, le=20)
     login_attempts_per_minute: int = Field(default=10, ge=1, le=100)
     workspace_hmac_key: SecretStr | None = Field(default=None, repr=False)
-    registration_enabled: bool = False
+    registration_enabled: bool = True
     registration_attempts_per_minute: int = Field(default=3, ge=1, le=10)
     registration_total_per_minute: int = Field(default=20, ge=1, le=100)
 
