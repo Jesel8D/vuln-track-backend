@@ -21,7 +21,7 @@ https://{$SITE_HOST} {
   X-Frame-Options DENY
   Referrer-Policy no-referrer
   Permissions-Policy "camera=(), microphone=(), geolocation=()"
-  Strict-Transport-Security "max-age=86400"
+  Strict-Transport-Security "max-age=31536000"
   Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
  }
  request_body {
