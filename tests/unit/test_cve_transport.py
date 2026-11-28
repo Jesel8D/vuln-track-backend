@@ -291,11 +291,14 @@ def test_retry_after_seconds_dates_malformed_and_excessive():
     assert math.isinf(retry_delay("999999999999999999999"))
 
 
-def test_settings_key_or_live_mode_cannot_enable_cve_egress(settings):
+def test_cve_egress_requires_explicit_backend_enablement(settings):
     values = settings.model_dump() | {"nvd_mode": "live", "nvd_api_key": "synthetic"}
     assert Settings(_env_file=None, **values).cve_live_enabled is False
     with pytest.raises(ValidationError):
-        Settings(_env_file=None, **(values | {"cve_live_enabled": True}))
+        Settings(_env_file=None, **(values | {"nvd_mode": "disabled", "cve_live_enabled": True}))
+    assert Settings(
+        _env_file=None, **(values | {"nvd_mode": "live", "cve_live_enabled": True})
+    ).cve_live_enabled is True
     for patch in [
         {"cve_max_requests": 16},
         {"cve_http_max_bytes": 2097153},
