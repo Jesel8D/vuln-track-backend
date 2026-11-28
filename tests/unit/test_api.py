@@ -51,6 +51,36 @@ def test_chunked_body(client):
     assert client.post("/api/v1/auth/login", content=chunks()).status_code == 413
 
 
+def test_declared_oversized_body_is_rejected_before_reading_body():
+    import asyncio
+
+    from app.core.http import RequestBoundary
+
+    calls = []
+    messages = []
+
+    async def app(scope, receive, send):
+        calls.append("app")
+
+    async def receive():
+        calls.append("receive")
+        return {"type": "http.request", "body": b""}
+
+    async def send(message):
+        messages.append(message)
+
+    asyncio.run(
+        RequestBoundary(app, max_body_bytes=8192)(
+            {"type": "http", "headers": [(b"content-length", b"9000")]}, receive, send
+        )
+    )
+
+    assert calls == []
+    assert next(message for message in messages if message["type"] == "http.response.start")[
+        "status"
+    ] == 413
+
+
 def test_unexpected_error_is_logged_without_message(app, caplog):
     @app.get("/test-error")
     def broken():
