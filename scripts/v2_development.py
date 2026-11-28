@@ -1,7 +1,6 @@
 "Owned V2 development only: named-volume PostgreSQL, verified bootstrap and local API/web."
 
 import argparse
-import fcntl
 import hashlib
 import importlib.util
 import json
@@ -29,6 +28,7 @@ from app.db.verify_technology_cpe import verify_technology_cpe_schema
 from app.db.verify_verification import verify_verification_schema
 from app.main import create_app
 from scripts.disposable_v2 import SOURCES
+from scripts.file_lock import FileLockBusy, exclusive_nonblocking_lock
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "dev/v2/compose.yaml"
@@ -73,11 +73,63 @@ def free_port(preferred=0):
 
 
 def process_identity(pid):
+    if os.name == "nt":
+        import ctypes
+        from ctypes import wintypes
+
+        class FileTime(ctypes.Structure):
+            _fields_ = [("low", wintypes.DWORD), ("high", wintypes.DWORD)]
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.GetProcessTimes.argtypes = [
+            wintypes.HANDLE,
+            ctypes.POINTER(FileTime),
+            ctypes.POINTER(FileTime),
+            ctypes.POINTER(FileTime),
+            ctypes.POINTER(FileTime),
+        ]
+        kernel32.GetProcessTimes.restype = wintypes.BOOL
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        handle = kernel32.OpenProcess(0x1000, False, int(pid))
+        if not handle:
+            return None
+        created = FileTime()
+        try:
+            if not kernel32.GetProcessTimes(
+                handle,
+                ctypes.byref(created),
+                ctypes.byref(FileTime()),
+                ctypes.byref(FileTime()),
+                ctypes.byref(FileTime()),
+            ):
+                return None
+            return f"{created.high:08x}{created.low:08x}"
+        finally:
+            kernel32.CloseHandle(handle)
     try:
         # starttime guards against terminating a reused process ID.
         return Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()[19]
     except (OSError, IndexError):
         return None
+
+
+def process_group_options():
+    if os.name == "nt":
+        return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    return {"start_new_session": True}
+
+
+def signal_process_tree(pid, *, force=False):
+    if os.name == "nt":
+        args = ["taskkill", "/PID", str(int(pid)), "/T"]
+        if force:
+            args.append("/F")
+        subprocess.run(args, capture_output=True, check=False)
+        return
+    with suppress(ProcessLookupError):
+        os.killpg(int(pid), signal.SIGKILL if force else signal.SIGTERM)
 
 
 class PersistentV2:
@@ -129,8 +181,11 @@ class PersistentV2:
     @contextmanager
     def lock(self):
         with (self.directory / "control.lock").open("a") as stream:
-            fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            yield
+            try:
+                with exclusive_nonblocking_lock(stream):
+                    yield
+            except FileLockBusy:
+                raise RuntimeError("Another local VulnTrack process is using this profile") from None
 
     def inspect(self, kind, name):
         result = subprocess.run(["docker", kind, "inspect", name], capture_output=True)
@@ -656,8 +711,7 @@ class PersistentV2:
             processes = json.loads(path.read_text()).get("processes", [])
             for process in reversed(processes):
                 if process_identity(process["pid"]) == process["starttime"]:
-                    with suppress(ProcessLookupError):
-                        os.killpg(process["pid"], signal.SIGTERM)
+                    signal_process_tree(process["pid"])
 
     def up(self, *, frontend=None, nvd_mode="fixture"):
         runtime = self.directory / "runtime.json"
@@ -715,7 +769,7 @@ class PersistentV2:
                         env=api_env,
                         stdout=api_log,
                         stderr=api_log,
-                        start_new_session=True,
+                        **process_group_options(),
                     )
                 )
                 public_env = {
@@ -732,7 +786,7 @@ class PersistentV2:
                         env=public_env,
                         stdout=web_log,
                         stderr=web_log,
-                        start_new_session=True,
+                        **process_group_options(),
                     )
                 )
                 private_json(
@@ -787,13 +841,11 @@ class PersistentV2:
         finally:
             for process in reversed(processes):
                 if process.poll() is None:
-                    with suppress(ProcessLookupError):
-                        os.killpg(process.pid, signal.SIGTERM)
+                    signal_process_tree(process.pid)
                     try:
                         process.wait(timeout=15)
                     except subprocess.TimeoutExpired:
-                        with suppress(ProcessLookupError):
-                            os.killpg(process.pid, signal.SIGKILL)
+                        signal_process_tree(process.pid, force=True)
                         process.wait()
             self.stop_database()
             private_json(runtime, {"processes": []})
@@ -814,10 +866,14 @@ def catalog_live_lock(stack):
     with lock_file.open("a+") as handle:
         os.chmod(lock_file, 0o600)
         try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
+            lock = exclusive_nonblocking_lock(handle)
+            lock.__enter__()
+        except FileLockBusy:
             raise RuntimeError("RC2.2 live NVD budget in use by another process") from None
-        yield
+        try:
+            yield
+        finally:
+            lock.__exit__(None, None, None)
 
 
 def nvd_live_settings(stack):
