@@ -460,7 +460,7 @@ def generate(args):
     )
     private(
         root / "compose.env",
-        f"COMPOSE_PROJECT_NAME={project}\nRUNTIME_DIR={root}\nSITE_HOST={u.hostname}\nPUBLIC_ORIGIN={args.origin}\nACME_EMAIL={args.email}\nPUBLIC_BIND=127.0.0.1\nHTTP_PORT={args.http_port}\nHTTPS_PORT={args.https_port}\nTLS_MODE={'internal' if args.tls_internal else ''}\n",
+        f"COMPOSE_PROJECT_NAME={project}\nRUNTIME_DIR={root}\nSITE_HOST={u.hostname}\nPUBLIC_ORIGIN={args.origin}\nACME_EMAIL={args.email}\nPUBLIC_BIND=127.0.0.1\nHTTP_PORT={args.http_port}\nHTTPS_PORT={args.https_port}\nVITE_NVD_MODE=disabled\nTLS_MODE={'internal' if args.tls_internal else ''}\n",
     )
     ids = subprocess.check_output(["docker", "network", "ls", "-q"], text=True).split()
     used = []
