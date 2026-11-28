@@ -130,7 +130,7 @@ python3 deploy/production/operate.py generate \
 
 Genera credenciales aleatorias diferentes para ambas administraciones SQL, API, lector CPE y JWT; CA privada y certificados SQL. Runtime 0700; secretos 0600. `compose.env` contiene metadatos públicos y referencia al runtime; `api-settings.json` contiene secretos y no debe versionarse/transferirse como ejemplo. `prepare` copia solo lo requerido a volúmenes protegidos, con UID correcto. No modificar el runtime de la laptop ni reutilizar sus secretos.
 
-Valores efectivos: `environment=production`, un único origen HTTPS exacto, `cors_allow_credentials=false`, JWT 300 segundos, `nvd_mode=disabled`, `cve_live_enabled=false`, `cve_worker_enabled=false`, pool SQL 5 sin overflow. No API key, autoridad experimental ni credenciales de NVD. Los certificados generados son solo transporte SQL, no permisos para integraciones. La variable pública de build `VITE_NVD_MODE=disabled` no es un control de autorización: el servidor bloquea por separado.
+Valores efectivos: `environment=production`, un único origen HTTPS exacto, `cors_allow_credentials=false`, JWT 300 segundos, `nvd_mode=disabled`, `cve_live_enabled=false`, `cve_worker_enabled=false`, pool SQL 5 sin overflow y `VITE_NVD_MODE=disabled`. No API key, autoridad experimental ni credenciales de NVD. Los certificados generados son solo transporte SQL, no permisos para integraciones. `VITE_NVD_MODE` solo controla la interfaz; el servidor bloquea por separado y conserva la decisión de autorización.
 
 `PUBLIC_BIND=127.0.0.1` es el valor inicial seguro. `TLS_MODE=` vacío significa ACME público; `--tls-internal` sirve exclusivamente para un laboratorio sin certificado público. No copiar el modo internal a la apertura de EC2. El ejemplo público está en `deploy/production/compose.env.example`; no reemplazar el archivo generado con él porque perdería nombre/rutas propios.
 
@@ -293,6 +293,16 @@ python3 deploy/production/operate.py configure --runtime "$VULNTRACK_RUNTIME" --
 ```
 
 El reinicio es solo del API propio; usuarios y datos persistentes no se borran. Probar que nueva cuenta se rechaza y que la existente aún entra. No incluir usuario/password en historial de shell ni tickets. El acceso de otros miembros debe planificarse por el procedimiento autorizado de membresías de la aplicación; no insertar SQL improvisado para repartir privilegios.
+
+NVD live permanece deshabilitado al instalar. Solo después de autorizar esa operación en el entorno correspondiente, habilita primero el backend y después construye la interfaz con el mismo modo; el backend valida independientemente cada solicitud:
+
+```sh
+python3 deploy/production/operate.py configure --runtime "$VULNTRACK_RUNTIME" --cve-live on
+VITE_NVD_MODE=live python3 deploy/production/operate.py build --runtime "$VULNTRACK_RUNTIME"
+VITE_NVD_MODE=live python3 deploy/production/operate.py up --runtime "$VULNTRACK_RUNTIME"
+```
+
+Para apagarlo, deshabilita primero el backend, después reconstruye y recrea el proxy con `VITE_NVD_MODE=disabled`. La bandera Vite no es un control de seguridad y no reemplaza la configuración del servidor. El comando no habilita ZAP, verificación remota ni pruebas sobre activos.
 
 ## 23. Pruebas de aceptación del servidor
 
