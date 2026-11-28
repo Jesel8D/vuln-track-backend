@@ -2,6 +2,10 @@
 
 API del sistema VulnTrack. Administra inventario y aplicaciones, identifica productos con CPE, consulta vulnerabilidades CVE de NVD cuando el servidor está configurado para ello y conserva resultados con su procedencia para revisión humana.
 
+## About
+
+Backend de VulnTrack: API que centraliza autenticación, autorización, inventario, identificación de productos mediante CPE y consultas CVE a NVD cuando el operador habilita el modo live. Conserva historial y procedencia para que los resultados potenciales sean revisados por una persona.
+
 <p align="left"><img src="logo.png" alt="Logotipo de VulnTrack" width="96"></p>
 
 <p><img src="preview.png" alt="Vista previa de VulnTrack" width="100%"></p>
