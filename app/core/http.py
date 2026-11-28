@@ -35,18 +35,33 @@ class RequestBoundary:
                 )
             await send(message)
 
+        async def too_large():
+            response = JSONResponse(
+                error_body("BODY_TOO_LARGE", "Cuerpo demasiado grande", request_id),
+                status_code=413,
+            )
+            await response(scope, receive, secure_send)
+
+        content_lengths = [
+            value for name, value in scope.get("headers", []) if name.lower() == b"content-length"
+        ]
+        if (
+            len(content_lengths) == 1
+            and len(content_lengths[0]) <= 20
+            and content_lengths[0].isdigit()
+            and int(content_lengths[0]) > self.maximum
+        ):
+            return await too_large()
+
         body = bytearray()
         while True:
             message = await receive()
             if message["type"] == "http.disconnect":
                 return
-            body.extend(message.get("body", b""))
-            if len(body) > self.maximum:
-                response = JSONResponse(
-                    error_body("BODY_TOO_LARGE", "Cuerpo demasiado grande", request_id),
-                    status_code=413,
-                )
-                return await response(scope, receive, secure_send)
+            chunk = message.get("body", b"")
+            if len(chunk) > self.maximum - len(body):
+                return await too_large()
+            body.extend(chunk)
             if not message.get("more_body", False):
                 break
         delivered = False
